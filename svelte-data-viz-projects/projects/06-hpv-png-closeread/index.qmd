@@ -10,8 +10,7 @@ format: closeread-html
 #| label: setup
 #| include: false
 
-library(ggplot2)
-library(dplyr)
+library(tidyverse)
 library(scales)
 library(showtext)
 
