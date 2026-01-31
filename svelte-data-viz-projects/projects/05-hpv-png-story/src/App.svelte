@@ -274,7 +274,7 @@
             <LineChart
               data={projectedLivesSaved}
               {width}
-              height={Math.min(height, 400)}
+              height={450}
               showArea={true}
             />
             <p class="chart-source">
