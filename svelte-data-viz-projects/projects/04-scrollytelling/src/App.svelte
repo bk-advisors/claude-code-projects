@@ -18,6 +18,9 @@
   // Scrolly state
   let currentStep = 0;
 
+  // Debug: log when step changes
+  $: console.log("Current step:", currentStep);
+
   // Story steps with different data views
   const steps = [
     {
@@ -76,13 +79,23 @@
   // Hover state
   let hoveredData = null;
 
+  // Reactive highlighted set - recomputes when currentStep changes
+  $: highlightFn = currentConfig.highlight;
+  $: highlightedData = highlightFn
+    ? data.filter(highlightFn)
+    : data;
+
   function isHighlighted(d) {
-    if (!currentConfig.highlight) return true;
-    return currentConfig.highlight(d);
+    return highlightedData.includes(d);
   }
 </script>
 
 <article>
+  <!-- Debug: shows current step -->
+  <div style="position: fixed; top: 10px; right: 10px; background: black; color: white; padding: 10px; z-index: 999; border-radius: 4px;">
+    Step: {currentStep}
+  </div>
+
   <header>
     <h1>The Relationship Between Study Time and Exam Performance</h1>
     <p class="byline">A data-driven story using Svelte and D3</p>

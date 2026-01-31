@@ -5,9 +5,8 @@
 
   export let value = undefined;
   export let root = null;
-  export let top = 0;
-  export let bottom = 0;
-  export let threshold = 0.5;
+  export let offset = 0.5; // 0 = top of viewport, 1 = bottom, 0.5 = middle
+  export let threshold = 0;
 
   let steps = [];
   let container;
@@ -24,9 +23,14 @@
   };
 
   onMount(() => {
+    // Calculate rootMargin to create a trigger line at the offset position
+    // Negative margins shrink the intersection area
+    const topMargin = -offset * 100;
+    const bottomMargin = -(1 - offset) * 100;
+
     const options = {
       root,
-      rootMargin: `${top}px 0px ${bottom}px 0px`,
+      rootMargin: `${topMargin}% 0px ${bottomMargin}% 0px`,
       threshold,
     };
 
