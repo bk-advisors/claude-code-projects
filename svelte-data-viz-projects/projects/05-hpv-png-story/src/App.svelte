@@ -130,7 +130,7 @@
       <p class="subtitle">
         Cervical cancer is devastating women across Papua New Guinea. A proven vaccine could save nearly 100,000 lives by 2070.
       </p>
-      <p class="byline">An interactive data story</p>
+      <p class="byline">An interactive data story by Matthew Kuch</p>
     </div>
     <div class="scroll-indicator">
       <span>Scroll to explore</span>
