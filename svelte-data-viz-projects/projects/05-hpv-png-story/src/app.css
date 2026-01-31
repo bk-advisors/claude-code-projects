@@ -6,25 +6,42 @@
 }
 
 :root {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 18px;
-  line-height: 1.7;
+  /* NYT-inspired typography */
+  --font-serif: "Georgia", "Times New Roman", Times, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 1.65;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 
-  /* Color palette */
-  --color-primary: #1e3a5f;
-  --color-primary-light: #2d5a87;
-  --color-accent-blue: #94d3ff;
-  --color-danger: #dc2626;
-  --color-danger-light: #fef2f2;
-  --color-success: #16a34a;
-  --color-success-light: #f0fdf4;
-  --color-text: #333;
-  --color-text-light: #666;
-  --color-bg: #fafafa;
+  /* Refined color palette - more muted, editorial feel */
+  --color-primary: #121f2b;
+  --color-primary-light: #1d3245;
+  --color-accent-blue: #6eb5d9;
+  --color-danger: #c41d3a;
+  --color-danger-muted: #9e2a2a;
+  --color-danger-light: #fdf6f6;
+  --color-success: #1a7f4b;
+  --color-success-light: #f4faf7;
+  --color-text: #1a1a1a;
+  --color-text-secondary: #555;
+  --color-text-light: #777;
+  --color-border: #e0e0e0;
+  --color-grid: #eaeaea;
+  --color-bg: #fcfcfc;
   --color-white: #ffffff;
+
+  /* Spacing scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
 }
 
 html {
@@ -37,64 +54,73 @@ body {
   overflow-x: hidden;
 }
 
-/* Typography */
+/* Typography - refined hierarchy */
 h1, h2, h3, h4, h5, h6 {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+h1 {
   font-weight: 700;
-  line-height: 1.25;
+  letter-spacing: -0.02em;
 }
 
 p {
   margin-bottom: 1rem;
+  color: var(--color-text-secondary);
 }
 
 a {
   color: var(--color-primary);
   text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  transition: opacity 0.15s ease;
 }
 
 a:hover {
-  text-decoration: underline;
+  opacity: 0.7;
 }
 
-/* Selection */
+/* Selection - subtle highlight */
 ::selection {
-  background: var(--color-primary);
-  color: white;
+  background: rgba(18, 31, 43, 0.15);
+  color: inherit;
 }
 
-/* Scrollbar styling */
+/* Minimal scrollbar - Tufte principle: reduce non-data ink */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
+  background: rgba(0, 0, 0, 0.25);
 }
 
-/* Global SVG text styling */
+/* Global SVG text styling - cleaner, more refined */
 .tick text,
 .axis-title {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 11px;
-  fill: #666;
+  fill: var(--color-text-light);
 }
 
-/* Transitions for smoother animations */
+/* Subtle transitions - not distracting */
 svg circle,
 svg rect,
 svg path {
-  transition: all 300ms ease;
+  transition: opacity 200ms ease, fill 200ms ease;
 }
 
 /* Focus styles for accessibility */

@@ -12,7 +12,8 @@
     { period: "50-year return", value: 61.32, label: "$61", isInvestment: false }
   ];
 
-  const margin = { top: 50, right: 30, bottom: 60, left: 50 };
+  // Clean margins
+  const margin = { top: 45, right: 25, bottom: 55, left: 45 };
 
   $: innerWidth = width - margin.left - margin.right;
   $: innerHeight = height - margin.top - margin.bottom;
@@ -35,42 +36,42 @@
 
   <svg {width} {height}>
     <g transform="translate({margin.left}, {margin.top})">
-      <!-- Y-axis grid lines -->
+      <!-- Y-axis grid lines - subtle -->
       {#each yTicks as tick}
         <g transform="translate(0, {yScale(tick)})">
-          <line x1={0} x2={innerWidth} stroke="#e5e7eb" />
-          <text x={-10} y={4} text-anchor="end" class="tick-label">
+          <line x1={0} x2={innerWidth} stroke="#f0f0f0" />
+          <text x={-8} y={4} text-anchor="end" class="tick-label">
             ${tick}
           </text>
         </g>
       {/each}
 
-      <!-- Bars -->
+      <!-- Bars - clean styling -->
       {#each data as d, i}
         <g transform="translate({xScale(d.period)}, 0)">
           {#if animate}
             <rect
-              in:fly={{ y: innerHeight - yScale(d.value), duration: 600, delay: i * 200 }}
+              in:fly={{ y: innerHeight - yScale(d.value), duration: 500, delay: i * 150 }}
               y={yScale(d.value)}
               width={xScale.bandwidth()}
               height={innerHeight - yScale(d.value)}
-              fill={d.isInvestment ? "#94a3b8" : "#16a34a"}
-              rx="4"
+              fill={d.isInvestment ? "#c4c9cf" : "#1a7f4b"}
+              rx="2"
             />
           {:else}
             <rect
               y={yScale(d.value)}
               width={xScale.bandwidth()}
               height={innerHeight - yScale(d.value)}
-              fill={d.isInvestment ? "#94a3b8" : "#16a34a"}
-              rx="4"
+              fill={d.isInvestment ? "#c4c9cf" : "#1a7f4b"}
+              rx="2"
             />
           {/if}
 
-          <!-- Value label -->
+          <!-- Value label - direct labeling -->
           <text
             x={xScale.bandwidth() / 2}
-            y={yScale(d.value) - 10}
+            y={yScale(d.value) - 8}
             text-anchor="middle"
             class="value-label"
             class:highlight={!d.isInvestment}
@@ -81,7 +82,7 @@
           <!-- X-axis label -->
           <text
             x={xScale.bandwidth() / 2}
-            y={innerHeight + 20}
+            y={innerHeight + 18}
             text-anchor="middle"
             class="x-label"
           >
@@ -90,14 +91,15 @@
         </g>
       {/each}
 
-      <!-- Arrow annotation -->
-      <g transform="translate({xScale('Investment') + xScale.bandwidth()}, {yScale(1) - 30})">
+      <!-- Arrow annotation - subtle -->
+      <g transform="translate({xScale('Investment') + xScale.bandwidth()}, {yScale(1) - 25})">
         <path
-          d="M 10,0 L {xScale('30-year return') - xScale('Investment') - xScale.bandwidth() - 20},0"
-          stroke="#16a34a"
-          stroke-width="2"
+          d="M 8,0 L {xScale('30-year return') - xScale('Investment') - xScale.bandwidth() - 16},0"
+          stroke="#1a7f4b"
+          stroke-width="1.5"
           fill="none"
           marker-end="url(#arrowhead)"
+          opacity="0.6"
         />
       </g>
 
@@ -105,15 +107,16 @@
       <defs>
         <marker
           id="arrowhead"
-          markerWidth="10"
-          markerHeight="7"
-          refX="9"
-          refY="3.5"
+          markerWidth="8"
+          markerHeight="6"
+          refX="7"
+          refY="3"
           orient="auto"
         >
           <polygon
-            points="0 0, 10 3.5, 0 7"
-            fill="#16a34a"
+            points="0 0, 8 3, 0 6"
+            fill="#1a7f4b"
+            opacity="0.6"
           />
         </marker>
       </defs>
@@ -121,7 +124,7 @@
   </svg>
 
   <div class="callout">
-    HPV vaccination delivers <strong>exceptional returns</strong>: preventing expensive late-stage cancer care,
+    HPV vaccination delivers <strong>substantial returns</strong>: preventing expensive late-stage cancer care,
     reducing catastrophic health expenditures for families, and preserving women's economic contribution.
   </div>
 </div>
@@ -133,43 +136,44 @@
 
   .chart-title {
     font-family: Georgia, 'Times New Roman', serif;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
-    text-align: center;
-    color: #333;
-    margin-bottom: 4px;
+    text-align: left;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+    letter-spacing: -0.01em;
   }
 
   .chart-subtitle {
-    font-family: system-ui, sans-serif;
-    font-size: 0.85rem;
-    color: #666;
-    text-align: center;
-    margin-bottom: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.8rem;
+    color: #777;
+    text-align: left;
+    margin-bottom: 12px;
   }
 
   .tick-label {
-    font-size: 11px;
-    fill: #666;
-    font-family: system-ui, sans-serif;
+    font-size: 10px;
+    fill: #888;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
   .value-label {
-    font-size: 16px;
-    fill: #666;
+    font-size: 14px;
+    fill: #777;
     font-family: Georgia, 'Times New Roman', serif;
     font-weight: 600;
   }
 
   .value-label.highlight {
-    fill: #16a34a;
-    font-size: 18px;
+    fill: #1a7f4b;
+    font-size: 16px;
   }
 
   .x-label {
-    font-size: 12px;
+    font-size: 10px;
     fill: #666;
-    font-family: system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
   rect {
@@ -177,22 +181,24 @@
   }
 
   rect:hover {
-    opacity: 0.85;
+    opacity: 0.8;
   }
 
+  /* Refined callout */
   .callout {
-    margin-top: 15px;
-    padding: 12px 16px;
-    background: #f0fdf4;
-    border-left: 4px solid #16a34a;
-    border-radius: 4px;
-    font-family: system-ui, sans-serif;
-    font-size: 14px;
-    color: #333;
+    margin-top: 16px;
+    padding: 10px 14px;
+    background: #f4faf7;
+    border-left: 3px solid #1a7f4b;
+    border-radius: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px;
+    color: #555;
     line-height: 1.5;
   }
 
   .callout strong {
-    color: #16a34a;
+    color: #1a7f4b;
+    font-weight: 600;
   }
 </style>
