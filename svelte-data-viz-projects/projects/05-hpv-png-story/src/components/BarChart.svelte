@@ -10,7 +10,7 @@
   export let showAll = true;
   export let animateIn = false;
 
-  const margin = { top: 30, right: 20, bottom: 60, left: 50 };
+  const margin = { top: 30, right: 20, bottom: 110, left: 50 };
 
   $: innerWidth = width - margin.left - margin.right;
   $: innerHeight = height - margin.top - margin.bottom;
@@ -67,6 +67,8 @@
         <g
           class="bar-group"
           transform="translate({xScale(d.country)}, 0)"
+          role="img"
+          aria-label="{d.country}: {d.rate} deaths per 100,000"
           on:mouseenter={() => hoveredData = d}
           on:mouseleave={() => hoveredData = null}
         >

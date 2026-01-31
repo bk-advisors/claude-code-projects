@@ -69,6 +69,8 @@
             height={yScale.bandwidth() / 2 - 2}
             fill={d.country === "Papua New Guinea" ? "#fca5a5" : "#93c5fd"}
             rx="2"
+            role="img"
+            aria-label="{d.country} incidence: {d.incidence} per 100,000"
             on:mouseenter={() => { hoveredData = d; hoveredType = 'incidence'; }}
             on:mouseleave={() => { hoveredData = null; hoveredType = null; }}
           />
@@ -81,6 +83,8 @@
             height={yScale.bandwidth() / 2 - 2}
             fill={d.country === "Papua New Guinea" ? "#dc2626" : "#3b82f6"}
             rx="2"
+            role="img"
+            aria-label="{d.country} mortality: {d.mortality} per 100,000"
             on:mouseenter={() => { hoveredData = d; hoveredType = 'mortality'; }}
             on:mouseleave={() => { hoveredData = null; hoveredType = null; }}
           />

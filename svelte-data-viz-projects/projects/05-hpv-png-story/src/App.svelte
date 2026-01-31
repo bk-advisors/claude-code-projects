@@ -131,19 +131,35 @@
         Cervical cancer is devastating women across Papua New Guinea. A proven vaccine could save nearly 100,000 lives by 2070.
       </p>
       <p class="byline">An interactive data story</p>
-      <div class="scroll-indicator">
-        <span>Scroll to explore</span>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 5v14M19 12l-7 7-7-7"/>
-        </svg>
-      </div>
+    </div>
+    <div class="scroll-indicator">
+      <span>Scroll to explore</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M19 12l-7 7-7-7"/>
+      </svg>
     </div>
   </header>
 
   <!-- Main Scrollytelling Section -->
   <section class="scrolly-section">
-    <div class="sticky">
-      <div class="visualization-container" bind:clientWidth={width}>
+    <div class="section-container">
+      <!-- Left side: scrolling text -->
+      <div class="steps-column">
+        <Scrolly bind:value={currentStep}>
+          {#each steps as step, i}
+            <div class="step" class:active={currentStep === i}>
+              <div class="step-content">
+                <h2 class="step-title">{step.title}</h2>
+                <p class="step-text">{step.text}</p>
+              </div>
+            </div>
+          {/each}
+        </Scrolly>
+      </div>
+
+      <!-- Right side: sticky visualization -->
+      <div class="sticky">
+        <div class="visualization-container" bind:clientWidth={width}>
         {#if currentConfig.visualization === "global-stats"}
           <div class="stats-grid" in:fade={{ duration: 300 }}>
             <BigNumber
@@ -173,7 +189,7 @@
             <BarChart
               data={mortalityRates}
               {width}
-              height={Math.min(height, 450)}
+              height={500}
               highlightCountry={currentConfig.highlightCountry}
               showAll={true}
               animateIn={currentStep === 2}
@@ -335,20 +351,8 @@
             </div>
           </div>
         {/if}
+        </div>
       </div>
-    </div>
-
-    <div class="steps">
-      <Scrolly bind:value={currentStep}>
-        {#each steps as step, i}
-          <div class="step" class:active={currentStep === i}>
-            <div class="step-content">
-              <h2 class="step-title">{step.title}</h2>
-              <p class="step-text">{step.text}</p>
-            </div>
-          </div>
-        {/each}
-      </Scrolly>
     </div>
   </section>
 
@@ -453,53 +457,41 @@
     60% { transform: translateX(-50%) translateY(-5px); }
   }
 
-  /* Scrollytelling Section */
+  /* Scrollytelling Section - Two Column Layout */
   .scrolly-section {
     position: relative;
   }
 
-  .sticky {
-    position: sticky;
-    top: 0;
-    width: 100%;
-    height: 100vh;
+  .section-container {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fafafa;
-    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
   }
 
-  .visualization-container {
-    max-width: 700px;
-    width: 100%;
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .steps {
+  /* Left column - scrolling text */
+  .steps-column {
+    flex: 0 0 380px;
+    width: 380px;
     position: relative;
-    z-index: 2;
-    pointer-events: none;
+    z-index: 10;
   }
 
   .step {
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
-    justify-content: center;
     align-items: center;
     padding: 2rem;
+    padding-left: 2rem;
+    padding-right: 1rem;
   }
 
   .step-content {
     pointer-events: auto;
-    padding: 2rem 2.5rem;
+    padding: 1.75rem 2rem;
     background: white;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    max-width: 400px;
+    max-width: 340px;
     opacity: 0.3;
     transition: opacity 400ms ease, transform 400ms ease;
   }
@@ -510,17 +502,40 @@
   }
 
   .step-title {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: 700;
     margin-bottom: 0.75rem;
     color: #1e3a5f;
   }
 
   .step-text {
-    font-size: 1.05rem;
-    line-height: 1.7;
+    font-size: 1rem;
+    line-height: 1.65;
     color: #444;
     margin: 0;
+  }
+
+  /* Right column - sticky visualization */
+  .sticky {
+    flex: 1;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fafafa;
+    z-index: 1;
+    padding: 1rem;
+  }
+
+  .visualization-container {
+    width: 100%;
+    max-width: 900px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   /* Chart containers */
@@ -609,7 +624,8 @@
 
   /* Inequity visual */
   .inequity-visual {
-    max-width: 500px;
+    max-width: 650px;
+    width: 100%;
     text-align: center;
   }
 
@@ -668,7 +684,8 @@
   /* Solution visual */
   .solution-visual {
     text-align: center;
-    max-width: 500px;
+    max-width: 600px;
+    width: 100%;
   }
 
   .solution-stat {
@@ -717,7 +734,8 @@
 
   /* Ready visual */
   .ready-visual {
-    max-width: 500px;
+    max-width: 600px;
+    width: 100%;
   }
 
   .ready-content h3 {
@@ -793,7 +811,8 @@
 
   /* CTA visual */
   .cta-visual {
-    max-width: 500px;
+    max-width: 600px;
+    width: 100%;
   }
 
   .cta-content {
@@ -912,7 +931,41 @@
     margin: 0;
   }
 
-  /* Responsive */
+  /* Responsive - Tablet */
+  @media (max-width: 1024px) {
+    .section-container {
+      flex-direction: column;
+    }
+
+    .steps-column {
+      flex: none;
+      width: 100%;
+      position: relative;
+      z-index: 2;
+    }
+
+    .step {
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .step-content {
+      max-width: 400px;
+    }
+
+    .sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100%;
+    }
+
+    .visualization-container {
+      max-width: 700px;
+    }
+  }
+
+  /* Responsive - Mobile */
   @media (max-width: 768px) {
     .hero h1 {
       font-size: 2rem;
@@ -939,6 +992,10 @@
 
     .ready-stats {
       flex-direction: column;
+    }
+
+    .visualization-container {
+      padding: 1rem;
     }
   }
 </style>

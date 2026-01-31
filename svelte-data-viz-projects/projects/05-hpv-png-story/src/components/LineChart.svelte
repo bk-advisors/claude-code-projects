@@ -10,9 +10,8 @@
   export let height = 400;
   export let showArea = true;
   export let highlightYear = null;
-  export let animateIn = false;
 
-  const margin = { top: 30, right: 30, bottom: 50, left: 70 };
+  const margin = { top: 30, right: 100, bottom: 50, left: 70 };
 
   $: innerWidth = width - margin.left - margin.right;
   $: innerHeight = height - margin.top - margin.bottom;
@@ -157,6 +156,7 @@
         width={innerWidth}
         height={innerHeight}
         fill="transparent"
+        role="presentation"
         on:mousemove={handleMouseMove}
         on:mouseleave={() => hoveredData = null}
       />
