@@ -11,7 +11,8 @@
   export let showArea = true;
   export let highlightYear = null;
 
-  const margin = { top: 30, right: 100, bottom: 50, left: 70 };
+  // Clean margins for better visual balance
+  const margin = { top: 25, right: 90, bottom: 45, left: 60 };
 
   $: innerWidth = width - margin.left - margin.right;
   $: innerHeight = height - margin.top - margin.bottom;
@@ -53,18 +54,19 @@
 <div class="chart-wrapper">
   <svg {width} {height}>
     <defs>
+      <!-- Subtle gradient - not distracting (Tufte: let data speak) -->
       <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" style="stop-color:#22c55e;stop-opacity:0.4" />
-        <stop offset="100%" style="stop-color:#22c55e;stop-opacity:0.05" />
+        <stop offset="0%" style="stop-color:#1a7f4b;stop-opacity:0.2" />
+        <stop offset="100%" style="stop-color:#1a7f4b;stop-opacity:0.03" />
       </linearGradient>
     </defs>
 
     <g transform="translate({margin.left}, {margin.top})">
-      <!-- Y-axis grid lines -->
+      <!-- Y-axis grid lines - very subtle -->
       {#each yTicks as tick}
         <g class="tick" transform="translate(0, {yScale(tick)})">
-          <line x1={0} x2={innerWidth} stroke="#e5e7eb" />
-          <text x={-10} y={4} text-anchor="end" class="tick-label">
+          <line x1={0} x2={innerWidth} stroke="#f0f0f0" stroke-width="1" />
+          <text x={-8} y={4} text-anchor="end" class="tick-label">
             {formatNumber(tick)}
           </text>
         </g>
@@ -75,10 +77,10 @@
         class="axis-label"
         transform="rotate(-90)"
         x={-innerHeight / 2}
-        y={-55}
+        y={-45}
         text-anchor="middle"
       >
-        Cumulative Lives Saved
+        Cumulative lives saved
       </text>
 
       <!-- Area fill -->
@@ -90,61 +92,52 @@
         />
       {/if}
 
-      <!-- Line -->
+      <!-- Line - clean stroke -->
       <path
         d={linePath(data)}
         fill="none"
-        stroke="#16a34a"
-        stroke-width="3"
+        stroke="#1a7f4b"
+        stroke-width="2.5"
         class="line"
       />
 
-      <!-- Data points -->
-      {#each data as d, i}
+      <!-- Data points - minimal, only show on hover -->
+      {#each data as d}
         <circle
           cx={xScale(d.year)}
           cy={yScale(d.cumulativeLivesSaved)}
-          r={hoveredData === d || d.year === highlightYear ? 7 : 4}
-          fill={d.year === highlightYear ? "#16a34a" : "white"}
-          stroke="#16a34a"
+          r={hoveredData === d || d.year === highlightYear ? 5 : 0}
+          fill="white"
+          stroke="#1a7f4b"
           stroke-width="2"
           class="data-point"
         />
       {/each}
 
-      <!-- X-axis -->
+      <!-- X-axis - minimal ticks -->
       <g transform="translate(0, {innerHeight})">
         {#each xTicks as d}
           <g transform="translate({xScale(d.year)}, 0)">
-            <line y1={0} y2={6} stroke="#999" />
-            <text y={20} text-anchor="middle" class="tick-label">
+            <line y1={0} y2={4} stroke="#ccc" />
+            <text y={18} text-anchor="middle" class="tick-label">
               {d.year}
             </text>
           </g>
         {/each}
-
-        <!-- X-axis label -->
-        <text
-          class="axis-label"
-          x={innerWidth / 2}
-          y={45}
-          text-anchor="middle"
-        >
-          Year
-        </text>
       </g>
 
-      <!-- Final value annotation -->
+      <!-- Final value annotation - direct labeling (Tufte principle) -->
       {#if data.length > 0}
         {@const lastPoint = data[data.length - 1]}
         <g transform="translate({xScale(lastPoint.year)}, {yScale(lastPoint.cumulativeLivesSaved)})">
+          <circle r="4" fill="#1a7f4b" />
           <text
-            x={-10}
-            y={-15}
-            text-anchor="end"
+            x={8}
+            y={4}
+            text-anchor="start"
             class="annotation"
           >
-            {formatNumber(lastPoint.cumulativeLivesSaved)} lives
+            {formatNumber(lastPoint.cumulativeLivesSaved)} lives saved
           </text>
         </g>
       {/if}
@@ -161,15 +154,15 @@
         on:mouseleave={() => hoveredData = null}
       />
 
-      <!-- Hover indicator -->
+      <!-- Hover indicator - subtle -->
       {#if hoveredData}
         <g transform="translate({xScale(hoveredData.year)}, 0)">
           <line
             y1={0}
             y2={innerHeight}
-            stroke="#16a34a"
-            stroke-dasharray="4,4"
-            opacity="0.5"
+            stroke="#1a7f4b"
+            stroke-dasharray="3,3"
+            opacity="0.35"
           />
         </g>
       {/if}
@@ -177,10 +170,15 @@
   </svg>
 
   {#if hoveredData}
-    <div class="tooltip" transition:fade={{ duration: 150 }}>
-      <strong>{hoveredData.year}</strong><br/>
-      Lives saved: <span class="highlight">{formatNumber(hoveredData.cumulativeLivesSaved)}</span><br/>
-      Girls vaccinated: {formatNumber(hoveredData.girlsVaccinated)}
+    <div class="tooltip" transition:fade={{ duration: 100 }}>
+      <div class="tooltip-year">{hoveredData.year}</div>
+      <div class="tooltip-stat">
+        <span class="tooltip-value">{formatNumber(hoveredData.cumulativeLivesSaved)}</span>
+        <span class="tooltip-label">lives saved</span>
+      </div>
+      <div class="tooltip-secondary">
+        {formatNumber(hoveredData.girlsVaccinated)} girls vaccinated
+      </div>
     </div>
   {/if}
 </div>
@@ -191,53 +189,79 @@
   }
 
   .line {
-    transition: all 300ms ease;
+    transition: opacity 200ms ease;
   }
 
   .area {
-    transition: all 300ms ease;
+    transition: opacity 200ms ease;
   }
 
   .data-point {
-    transition: r 200ms ease;
+    transition: r 150ms ease;
     cursor: pointer;
   }
 
   .tick-label {
-    font-size: 11px;
-    fill: #666;
-    font-family: system-ui, sans-serif;
+    font-size: 10px;
+    fill: #888;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
   .axis-label {
-    font-size: 12px;
-    fill: #666;
-    font-family: system-ui, sans-serif;
+    font-size: 10px;
+    fill: #777;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .annotation {
-    font-size: 13px;
-    fill: #16a34a;
+    font-size: 12px;
+    fill: #1a7f4b;
     font-weight: 600;
-    font-family: system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
+  /* NYT-style tooltip */
   .tooltip {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 8px;
+    right: 8px;
     background: white;
-    padding: 12px 16px;
-    border-radius: 6px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-    font-size: 14px;
+    padding: 10px 14px;
+    border-radius: 2px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
     pointer-events: none;
-    font-family: system-ui, sans-serif;
-    line-height: 1.5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    border: 1px solid #eee;
   }
 
-  .tooltip .highlight {
-    color: #16a34a;
+  .tooltip-year {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+
+  .tooltip-stat {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+
+  .tooltip-value {
+    font-size: 16px;
     font-weight: 600;
+    color: #1a7f4b;
+  }
+
+  .tooltip-label {
+    font-size: 12px;
+    color: #666;
+  }
+
+  .tooltip-secondary {
+    font-size: 11px;
+    color: #888;
+    margin-top: 4px;
   }
 </style>

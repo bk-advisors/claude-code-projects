@@ -10,7 +10,8 @@
     { country: "Australia", incidence: 6.4, mortality: 1.7 }
   ];
 
-  const margin = { top: 40, right: 30, bottom: 50, left: 140 };
+  // Clean margins
+  const margin = { top: 35, right: 30, bottom: 40, left: 130 };
 
   $: innerWidth = width - margin.left - margin.right;
   $: innerHeight = height - margin.top - margin.bottom;
@@ -32,15 +33,15 @@
 
 <div class="chart-wrapper">
   <div class="chart-title">PNG vs Australia: Cervical Cancer Rates</div>
-  <div class="chart-subtitle">Per 100,000 women</div>
+  <div class="chart-subtitle">Per 100,000 women, 2022</div>
 
   <svg {width} {height}>
     <g transform="translate({margin.left}, {margin.top})">
-      <!-- X-axis grid lines -->
+      <!-- X-axis grid lines - subtle -->
       {#each xTicks as tick}
         <g transform="translate({xScale(tick)}, 0)">
-          <line y1={0} y2={innerHeight} stroke="#e5e7eb" />
-          <text y={innerHeight + 15} text-anchor="middle" class="tick-label">
+          <line y1={0} y2={innerHeight} stroke="#f0f0f0" />
+          <text y={innerHeight + 14} text-anchor="middle" class="tick-label">
             {tick}
           </text>
         </g>
@@ -61,28 +62,28 @@
             {d.country}
           </text>
 
-          <!-- Incidence bar -->
+          <!-- Incidence bar - muted colors -->
           <rect
             x={0}
             y={0}
             width={xScale(d.incidence)}
             height={yScale.bandwidth() / 2 - 2}
-            fill={d.country === "Papua New Guinea" ? "#fca5a5" : "#93c5fd"}
-            rx="2"
+            fill={d.country === "Papua New Guinea" ? "#e8a5a5" : "#a8c8e8"}
+            rx="1"
             role="img"
             aria-label="{d.country} incidence: {d.incidence} per 100,000"
             on:mouseenter={() => { hoveredData = d; hoveredType = 'incidence'; }}
             on:mouseleave={() => { hoveredData = null; hoveredType = null; }}
           />
 
-          <!-- Mortality bar -->
+          <!-- Mortality bar - stronger colors for emphasis -->
           <rect
             x={0}
             y={yScale.bandwidth() / 2 + 2}
             width={xScale(d.mortality)}
             height={yScale.bandwidth() / 2 - 2}
-            fill={d.country === "Papua New Guinea" ? "#dc2626" : "#3b82f6"}
-            rx="2"
+            fill={d.country === "Papua New Guinea" ? "#c41d3a" : "#4a7eb8"}
+            rx="1"
             role="img"
             aria-label="{d.country} mortality: {d.mortality} per 100,000"
             on:mouseenter={() => { hoveredData = d; hoveredType = 'mortality'; }}
@@ -137,42 +138,43 @@
 
   .chart-title {
     font-family: Georgia, 'Times New Roman', serif;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
-    text-align: center;
-    color: #333;
-    margin-bottom: 4px;
+    text-align: left;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+    letter-spacing: -0.01em;
   }
 
   .chart-subtitle {
-    font-family: system-ui, sans-serif;
-    font-size: 0.85rem;
-    color: #666;
-    text-align: center;
-    margin-bottom: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.8rem;
+    color: #777;
+    text-align: left;
+    margin-bottom: 12px;
   }
 
   .tick-label {
-    font-size: 11px;
-    fill: #666;
-    font-family: system-ui, sans-serif;
+    font-size: 10px;
+    fill: #888;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
   .country-label {
-    font-size: 13px;
+    font-size: 12px;
     fill: #666;
-    font-family: system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
   .country-label.png {
-    fill: #dc2626;
+    fill: #c41d3a;
     font-weight: 600;
   }
 
   .value-label {
-    font-size: 11px;
+    font-size: 10px;
     fill: #666;
-    font-family: system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
   rect {
@@ -181,52 +183,55 @@
   }
 
   rect:hover {
-    opacity: 0.8;
+    opacity: 0.75;
   }
 
+  /* Cleaner legend */
   .legend {
     display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 10px;
-    font-family: system-ui, sans-serif;
-    font-size: 12px;
-    color: #666;
+    justify-content: flex-start;
+    gap: 18px;
+    margin-top: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 11px;
+    color: #777;
   }
 
   .legend-item {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
   }
 
   .legend-color {
-    width: 14px;
-    height: 14px;
-    border-radius: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 1px;
   }
 
   .legend-color.incidence {
-    background: linear-gradient(to right, #fca5a5, #93c5fd);
+    background: linear-gradient(to right, #e8a5a5, #a8c8e8);
   }
 
   .legend-color.mortality {
-    background: linear-gradient(to right, #dc2626, #3b82f6);
+    background: linear-gradient(to right, #c41d3a, #4a7eb8);
   }
 
+  /* Refined callout */
   .callout {
-    margin-top: 15px;
-    padding: 12px 16px;
-    background: #fef2f2;
-    border-left: 4px solid #dc2626;
-    border-radius: 4px;
-    font-family: system-ui, sans-serif;
-    font-size: 14px;
-    color: #333;
+    margin-top: 16px;
+    padding: 10px 14px;
+    background: #fdf6f6;
+    border-left: 3px solid #c41d3a;
+    border-radius: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px;
+    color: #555;
     line-height: 1.5;
   }
 
   .callout strong {
-    color: #dc2626;
+    color: #c41d3a;
+    font-weight: 600;
   }
 </style>
