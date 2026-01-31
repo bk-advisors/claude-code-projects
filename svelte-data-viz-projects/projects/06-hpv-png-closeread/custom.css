@@ -1,0 +1,172 @@
+/* Custom CSS for HPV PNG Closeread Story
+   Inspired by Cairo, Tufte, and NYT design principles */
+
+/* Typography */
+:root {
+  --font-serif: "Georgia", "Times New Roman", Times, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Color palette - muted, editorial */
+  --color-primary: #121f2b;
+  --color-danger: #c41d3a;
+  --color-danger-light: #fdf6f6;
+  --color-success: #1a7f4b;
+  --color-success-light: #f4faf7;
+  --color-text: #1a1a1a;
+  --color-text-secondary: #555;
+  --color-text-light: #777;
+  --color-bg: #fcfcfc;
+  --color-accent: #6eb5d9;
+}
+
+body {
+  font-family: var(--font-serif);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  line-height: 1.65;
+}
+
+/* Title styling */
+.quarto-title-block {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: var(--color-primary);
+  color: white;
+  margin-bottom: 0;
+}
+
+.quarto-title-block .title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
+.quarto-title-block .subtitle {
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 560px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.55;
+}
+
+.quarto-title-block .quarto-title-author-name {
+  font-family: var(--font-sans);
+  color: var(--color-accent);
+  font-size: 0.9rem;
+}
+
+/* Closeread section styling */
+.cr-section {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Narrative text styling */
+.cr-section h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.cr-section p {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  max-width: 320px;
+}
+
+.cr-section strong {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+/* Sticky visualization containers */
+.sticky {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 2px;
+  padding: 1.5rem;
+}
+
+/* Step cards in the narrative column */
+.cr-narrative {
+  padding: 1.5rem 1.75rem;
+  background: white;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-left: 3px solid transparent;
+  transition: opacity 350ms ease, border-color 350ms ease;
+}
+
+.cr-narrative.active {
+  border-left-color: var(--color-danger);
+}
+
+/* Footer / Sources section */
+h2#sources {
+  font-size: 1rem;
+  color: var(--color-text);
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Lists in sources */
+ol {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+  padding-left: 1.25rem;
+}
+
+ol li {
+  margin-bottom: 0.35rem;
+}
+
+/* Horizontal rule */
+hr {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 2rem 0;
+}
+
+/* Final attribution */
+em {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .quarto-title-block {
+    padding: 2.5rem 1.5rem;
+  }
+
+  .cr-section p {
+    max-width: 100%;
+  }
+
+  .sticky {
+    padding: 1rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .quarto-title-block {
+    background: white;
+    color: var(--color-text);
+  }
+
+  .sticky {
+    position: relative !important;
+  }
+}

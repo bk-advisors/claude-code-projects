@@ -1,0 +1,409 @@
+---
+title: "The Case for HPV Vaccination in Papua New Guinea"
+subtitle: "Cervical cancer is devastating women across Papua New Guinea. A proven vaccine could save nearly 100,000 lives by 2070."
+author: "Matthew Kuch"
+date: today
+format: closeread-html
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(ggplot2)
+library(dplyr)
+library(scales)
+library(showtext)
+
+# Load data
+source("R/data.R")
+
+# Add system fonts
+font_add_google("Source Sans Pro", "source")
+showtext_auto()
+
+# Define color palette (matching NYT-inspired design)
+colors <- list(
+  primary = "#121f2b",
+  danger = "#c41d3a",
+  danger_light = "#fdf6f6",
+  success = "#1a7f4b",
+  success_light = "#f4faf7",
+  text = "#1a1a1a",
+  text_secondary = "#555",
+  text_light = "#777",
+  grid = "#f0f0f0",
+  bar_default = "#c4c9cf"
+)
+
+# Custom theme inspired by Cairo, Tufte, and NYT
+theme_story <- function() {
+
+  theme_minimal(base_family = "source", base_size = 12) +
+    theme(
+      plot.title = element_text(size = 14, face = "bold", color = colors$text,
+                                margin = margin(b = 5)),
+      plot.subtitle = element_text(size = 10, color = colors$text_light,
+                                   margin = margin(b = 15)),
+      plot.caption = element_text(size = 8, color = colors$text_light,
+                                  hjust = 0, margin = margin(t = 10)),
+      axis.title = element_text(size = 9, color = colors$text_light),
+      axis.text = element_text(size = 9, color = colors$text_light),
+      axis.line = element_blank(),
+      panel.grid.major.y = element_line(color = colors$grid, linewidth = 0.5),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      legend.position = "none",
+      plot.margin = margin(20, 20, 20, 20),
+      plot.background = element_rect(fill = "white", color = NA),
+      panel.background = element_rect(fill = "white", color = NA)
+    )
+}
+```
+
+::: {.cr-section}
+
+## A Silent Crisis {focus-on="global-stat"}
+
+In 2022, cervical cancer claimed the lives of **348,709 women** worldwide. More than half of these deaths occurred in the Asia-Pacific region.
+
+:::{#global-stat .sticky}
+```{r}
+#| label: global-deaths
+#| fig-width: 6
+#| fig-height: 4
+
+# Create a simple stat display
+ggplot() +
+
+  annotate("text", x = 0.5, y = 0.6, label = format(global_deaths$total, big.mark = ","),
+           size = 20, fontface = "bold", color = colors$danger, family = "source") +
+  annotate("text", x = 0.5, y = 0.35,
+           label = "women died from cervical cancer\nglobally in 2022",
+           size = 5, color = colors$text_secondary, family = "source",
+           lineheight = 1.2) +
+  xlim(0, 1) + ylim(0, 1) +
+  theme_void() +
+  theme(plot.background = element_rect(fill = "white", color = NA))
+```
+:::
+
+## The Asia-Pacific Burden {focus-on="regional-stat"}
+
+The Asia-Pacific region bears a disproportionate burden, accounting for **197,217 deaths** - 56.6% of the global total.
+
+:::{#regional-stat .sticky}
+```{r}
+#| label: regional-breakdown
+#| fig-width: 7
+#| fig-height: 4
+
+regional_df <- tibble(
+  region = c("Asia-Pacific", "Other Regions"),
+  deaths = c(global_deaths$asia_pacific, global_deaths$other_regions),
+  percent = c(global_deaths$asia_pacific_percent, global_deaths$other_regions_percent)
+)
+
+ggplot(regional_df, aes(x = reorder(region, -deaths), y = deaths,
+                         fill = region == "Asia-Pacific")) +
+  geom_col(width = 0.6) +
+  geom_text(aes(label = paste0(format(deaths, big.mark = ","), "\n(", percent, "%)")),
+            vjust = -0.3, size = 4, family = "source", color = colors$text_secondary) +
+  scale_fill_manual(values = c("TRUE" = colors$danger, "FALSE" = colors$bar_default)) +
+  scale_y_continuous(labels = comma, expand = expansion(mult = c(0, 0.15))) +
+  labs(
+    title = "Cervical Cancer Deaths by Region (2022)",
+    x = NULL,
+    y = "Number of deaths",
+    caption = "Source: Global Cancer Observatory (GCO, 2022)"
+  ) +
+  theme_story()
+```
+:::
+
+## Papua New Guinea's Challenge {focus-on="bar-chart"}
+
+Papua New Guinea has the **second-highest** cervical cancer mortality rate in the Western Pacific region, at **19.9 deaths per 100,000 women**.
+
+:::{#bar-chart .sticky}
+```{r}
+#| label: mortality-rates
+#| fig-width: 8
+#| fig-height: 6
+
+ggplot(mortality_rates, aes(x = reorder(country, rate), y = rate,
+                             fill = highlight)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = rate), hjust = -0.2, size = 3.5,
+            family = "source", color = colors$text_light) +
+  coord_flip() +
+  scale_fill_manual(values = c("TRUE" = colors$danger, "FALSE" = colors$bar_default)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
+  labs(
+    title = "Cervical Cancer Mortality in Asia-Pacific (2022)",
+    subtitle = "Age-standardized mortality rate per 100,000 women",
+    x = NULL,
+    y = "Deaths per 100,000",
+    caption = "Source: Ueda (2024), Journal of Obstetrics and Gynaecology Research"
+  ) +
+  theme_story() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.major.x = element_line(color = colors$grid, linewidth = 0.5)
+  )
+```
+:::
+
+## A Tale of Two Neighbors {focus-on="comparison-chart"}
+
+The disparity becomes stark when comparing PNG to Australia. PNG's incidence rate is **5.5 times higher**, and its mortality rate is nearly **12 times higher**.
+
+:::{#comparison-chart .sticky}
+```{r}
+#| label: comparison
+#| fig-width: 7
+#| fig-height: 5
+
+comparison_long <- comparison_data |>
+  tidyr::pivot_longer(cols = c(incidence, mortality),
+                      names_to = "metric", values_to = "rate") |>
+  mutate(metric = factor(metric, levels = c("incidence", "mortality"),
+                         labels = c("Incidence (new cases)", "Mortality (deaths)")))
+
+ggplot(comparison_long, aes(x = country, y = rate, fill = interaction(country, metric))) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  geom_text(aes(label = rate), position = position_dodge(width = 0.8),
+            vjust = -0.3, size = 3.5, family = "source") +
+  scale_fill_manual(values = c(
+    "Papua New Guinea.Incidence (new cases)" = "#e8a5a5",
+    "Papua New Guinea.Mortality (deaths)" = colors$danger,
+    "Australia.Incidence (new cases)" = "#a8c8e8",
+    "Australia.Mortality (deaths)" = "#4a7eb8"
+  )) +
+  facet_wrap(~metric, scales = "free_y") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
+  labs(
+    title = "PNG vs Australia: Cervical Cancer Rates",
+    subtitle = "Per 100,000 women, 2022",
+    x = NULL,
+    y = "Rate per 100,000",
+    caption = "Source: Globocan 2022"
+  ) +
+  theme_story() +
+  theme(strip.text = element_text(size = 10, face = "bold"))
+```
+:::
+
+## The Stakes {focus-on="stakes-stat"}
+
+Without significant intervention, an estimated **60,232 women** in PNG could die from cervical cancer by 2070. Each death represents a mother, daughter, sister - a life cut short.
+
+:::{#stakes-stat .sticky}
+```{r}
+#| label: stakes
+#| fig-width: 6
+#| fig-height: 4
+
+ggplot() +
+  annotate("text", x = 0.5, y = 0.6,
+           label = format(deaths_without_action$by_2070, big.mark = ","),
+           size = 20, fontface = "bold", color = colors$danger, family = "source") +
+  annotate("text", x = 0.5, y = 0.35,
+           label = "women in PNG could die from\ncervical cancer by 2070\nwithout intervention",
+           size = 5, color = colors$text_secondary, family = "source",
+           lineheight = 1.2) +
+  xlim(0, 1) + ylim(0, 1) +
+  theme_void() +
+  theme(plot.background = element_rect(fill = "white", color = NA))
+```
+:::
+
+## A Proven Solution {focus-on="solution-stat"}
+
+The HPV vaccine is among the most effective cancer prevention tools available. Gavi estimates that vaccination prevents **17.4 deaths** for every 1,000 girls vaccinated.
+
+:::{#solution-stat .sticky}
+```{r}
+#| label: solution
+#| fig-width: 6
+#| fig-height: 5
+
+ggplot() +
+  annotate("text", x = 0.5, y = 0.65, label = "17.4",
+           size = 25, fontface = "bold", color = colors$success, family = "source") +
+  annotate("text", x = 0.5, y = 0.45,
+           label = "deaths averted for every\n1,000 girls vaccinated",
+           size = 5, color = colors$text_secondary, family = "source",
+           lineheight = 1.2) +
+  annotate("rect", xmin = 0.1, xmax = 0.9, ymin = 0.05, ymax = 0.3,
+           fill = colors$success_light, color = NA) +
+  annotate("text", x = 0.5, y = 0.175,
+           label = "Single-dose schedule now\nrecommended by WHO",
+           size = 4, color = colors$success, family = "source",
+           lineheight = 1.3) +
+  xlim(0, 1) + ylim(0, 1) +
+  theme_void() +
+  theme(plot.background = element_rect(fill = "white", color = NA))
+```
+:::
+
+## Lives That Could Be Saved {focus-on="projection-chart"}
+
+If PNG introduces comprehensive HPV vaccination, projections show that nearly **97,000 lives** could be saved by 2070.
+
+:::{#projection-chart .sticky}
+```{r}
+#| label: lives-saved
+#| fig-width: 8
+#| fig-height: 5
+
+ggplot(projected_lives_saved, aes(x = year, y = cumulative_lives_saved)) +
+  geom_area(fill = colors$success, alpha = 0.15) +
+  geom_line(color = colors$success, linewidth = 1.5) +
+  geom_point(data = projected_lives_saved |> filter(year == 2070),
+             color = colors$success, size = 4) +
+  geom_text(data = projected_lives_saved |> filter(year == 2070),
+            aes(label = paste0(format(cumulative_lives_saved, big.mark = ","), " lives saved")),
+            hjust = -0.1, vjust = 0.5, size = 4, family = "source",
+            fontface = "bold", color = colors$success) +
+  scale_x_continuous(breaks = c(2026, 2030, 2040, 2050, 2060, 2070),
+                     limits = c(2026, 2080)) +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Projected Lives Saved Through HPV Vaccination",
+    subtitle = "Papua New Guinea, 2026-2070",
+    x = "Year",
+    y = "Cumulative lives saved",
+    caption = "Based on Gavi estimate of 17.4 deaths averted per 1,000 vaccinated.\nAssumes 80% initial coverage expanding to 90%."
+  ) +
+  theme_story()
+```
+:::
+
+## A Sound Investment {focus-on="roi-chart"}
+
+HPV vaccination isn't just good health policy - it's smart economics. UNFPA modeling shows **$19 return** for every $1 invested over 30 years, growing to **$61** over 50 years.
+
+:::{#roi-chart .sticky}
+```{r}
+#| label: roi
+#| fig-width: 7
+#| fig-height: 5
+
+ggplot(roi_data, aes(x = period, y = value, fill = !is_investment)) +
+  geom_col(width = 0.6) +
+  geom_text(aes(label = label), vjust = -0.3, size = 5, family = "source",
+            fontface = "bold", color = ifelse(roi_data$is_investment,
+                                               colors$text_light, colors$success)) +
+  scale_fill_manual(values = c("TRUE" = colors$success, "FALSE" = colors$bar_default)) +
+  scale_x_discrete(limits = roi_data$period) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
+  labs(
+    title = "Return on Investment",
+    subtitle = "For every $1 invested in HPV vaccination",
+    x = NULL,
+    y = "Dollars",
+    caption = "Source: UNFPA PNG cervical cancer elimination modeling"
+  ) +
+  theme_story()
+```
+:::
+
+## PNG Is Ready {focus-on="ready-stat"}
+
+PNG has already piloted HPV vaccination in the National Capital District and Western Highlands, demonstrating its capacity to deliver adolescent vaccination programs.
+
+:::{#ready-stat .sticky}
+```{r}
+#| label: ready
+#| fig-width: 6
+#| fig-height: 5
+
+ready_stats <- tibble(
+  stat = c("5.5M+", "~97,000"),
+  label = c("girls could be vaccinated by 2070", "lives saved")
+)
+
+ggplot() +
+  annotate("text", x = 0.5, y = 0.85, label = "Building on Experience",
+           size = 6, fontface = "bold", color = colors$primary, family = "source") +
+  annotate("rect", xmin = 0.15, xmax = 0.45, ymin = 0.6, ymax = 0.72,
+           fill = "#f0f7fc", color = NA) +
+  annotate("text", x = 0.3, y = 0.66, label = "National Capital District",
+           size = 3.5, color = colors$primary, family = "source") +
+  annotate("rect", xmin = 0.55, xmax = 0.85, ymin = 0.6, ymax = 0.72,
+           fill = "#f0f7fc", color = NA) +
+  annotate("text", x = 0.7, y = 0.66, label = "Western Highlands",
+           size = 3.5, color = colors$primary, family = "source") +
+  annotate("rect", xmin = 0.2, xmax = 0.45, ymin = 0.25, ymax = 0.45,
+           fill = colors$success_light, color = NA) +
+  annotate("text", x = 0.325, y = 0.38, label = "5.5M+",
+           size = 8, fontface = "bold", color = colors$success, family = "source") +
+  annotate("text", x = 0.325, y = 0.29, label = "girls vaccinated\nby 2070",
+           size = 3, color = colors$text_light, family = "source", lineheight = 1.1) +
+  annotate("rect", xmin = 0.55, xmax = 0.8, ymin = 0.25, ymax = 0.45,
+           fill = colors$success_light, color = NA) +
+  annotate("text", x = 0.675, y = 0.38, label = "~97,000",
+           size = 8, fontface = "bold", color = colors$success, family = "source") +
+  annotate("text", x = 0.675, y = 0.29, label = "lives saved",
+           size = 3, color = colors$text_light, family = "source") +
+  xlim(0, 1) + ylim(0, 1) +
+  theme_void() +
+  theme(plot.background = element_rect(fill = "white", color = NA))
+```
+:::
+
+## The Time Is Now {focus-on="cta"}
+
+In March 2024, PNG's Senior Executive Management officially recommended HPV vaccine introduction. PNG has signed the WHO's Western Pacific 2023-2030 framework for cervical cancer elimination.
+
+:::{#cta .sticky}
+```{r}
+#| label: cta
+#| fig-width: 6
+#| fig-height: 6
+
+checkmarks <- tibble(
+  y = c(0.85, 0.72, 0.59, 0.46),
+  label = c("SEM recommendation (March 2024)",
+            "WHO Western Pacific Framework signatory",
+            "Gavi support eligible",
+            "Pilot program experience")
+)
+
+ggplot() +
+  geom_point(data = checkmarks, aes(x = 0.12, y = y),
+             shape = 21, fill = colors$success, color = "white", size = 5) +
+  geom_text(data = checkmarks, aes(x = 0.15, y = y, label = label),
+            hjust = 0, size = 3.5, family = "source", color = colors$text_secondary) +
+  annotate("rect", xmin = 0.05, xmax = 0.95, ymin = 0.1, ymax = 0.32,
+           fill = colors$primary, color = NA) +
+  annotate("text", x = 0.5, y = 0.25,
+           label = "Introducing HPV vaccination is not just\na technical immunization decision.",
+           size = 3.5, color = "white", alpha = 0.85, family = "source",
+           lineheight = 1.3) +
+  annotate("text", x = 0.5, y = 0.15,
+           label = "It is a gender, equity, and social justice decision.",
+           size = 4, fontface = "bold", color = "white", family = "source") +
+  xlim(0, 1) + ylim(0, 1) +
+  theme_void() +
+  theme(plot.background = element_rect(fill = "white", color = NA))
+```
+:::
+
+:::
+
+---
+
+## Sources
+
+1. Global Cancer Observatory (GCO, 2022)
+2. Ueda (2024), Journal of Obstetrics and Gynaecology Research
+3. Globocan PNG Factsheet, 2022
+4. UNFPA PNG Cervical Cancer Elimination Brief
+5. Gavi HPV Impact Report, 2022
+6. WHO Western Pacific Region Framework 2023-2030
+
+---
+
+*Built with R and Quarto Closeread*
