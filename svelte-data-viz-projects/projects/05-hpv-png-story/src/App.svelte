@@ -11,7 +11,6 @@
     globalDeaths,
     pngStats,
     projectedLivesSaved,
-    deathsWithoutAction,
     vaccinationImpact,
     economicData
   } from "$data/data.js";
@@ -67,12 +66,6 @@
       title: "A Matter of Equity",
       text: "This burden falls heaviest on rural women, poorer women, and those outside major centers. Most cases are diagnosed at late stages when treatment is less effective or unavailable.",
       visualization: "inequity"
-    },
-    {
-      id: "stakes",
-      title: "The Stakes",
-      text: "Without significant intervention, an estimated 60,232 women in PNG could die from cervical cancer by 2070. Each death represents a mother, daughter, sister - a life cut short.",
-      visualization: "stakes"
     },
     {
       id: "solution",
@@ -234,20 +227,6 @@
             <p class="inequity-quote">
               "Failing to act means rural women, poorer women, and women outside major centers continue to bear a disproportionate share of an entirely preventable disease."
             </p>
-          </div>
-
-        {:else if currentConfig.visualization === "stakes"}
-          <div class="stakes-visual" in:fade={{ duration: 300 }}>
-            <BigNumber
-              number={formatNumber(deathsWithoutAction.by2070)}
-              label="women in PNG could die from cervical cancer by 2070 without intervention"
-              color="#dc2626"
-              size="large"
-            />
-            <div class="stakes-context">
-              <p>That's equivalent to the entire population of a provincial town - gone.</p>
-              <p>Each statistic represents a family changed forever.</p>
-            </div>
           </div>
 
         {:else if currentConfig.visualization === "solution-stats"}
@@ -684,23 +663,6 @@
     line-height: 1.55;
     text-align: left;
     font-size: 0.95rem;
-  }
-
-  /* Stakes visual */
-  .stakes-visual {
-    text-align: center;
-  }
-
-  .stakes-context {
-    margin-top: 2rem;
-    color: var(--color-text-secondary);
-    font-size: 0.95rem;
-    line-height: 1.55;
-    font-family: var(--font-sans);
-  }
-
-  .stakes-context p {
-    margin: 0.4rem 0;
   }
 
   /* Solution visual - refined */
