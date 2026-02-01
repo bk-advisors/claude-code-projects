@@ -82,7 +82,7 @@
     {
       id: "projection-detail",
       title: "Growing Impact Over Time",
-      text: "Starting with 200,000 girls in 2026 and expanding coverage annually, the cumulative impact grows substantially over the decades.",
+      text: "Starting with 750,000 girls in 2026 and expanding coverage annually, the cumulative impact grows substantially over the decades.",
       visualization: "line-chart"
     },
     {
@@ -127,7 +127,7 @@
     </div>
     <div class="scroll-indicator">
       <span>Scroll to explore</span>
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg width="24" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M12 5v14M19 12l-7 7-7-7"/>
       </svg>
     </div>
