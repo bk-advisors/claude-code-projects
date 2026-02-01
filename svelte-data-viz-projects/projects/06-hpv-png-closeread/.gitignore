@@ -1,0 +1,17 @@
+# R
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj.user/
+
+# Quarto
+/.quarto/
+/_site/
+/docs/
+/_freeze/
+
+# OS
+.DS_Store
+Thumbs.db
+
+**/*.quarto_ipynb

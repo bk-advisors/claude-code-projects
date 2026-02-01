@@ -1,0 +1,18 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "The Case for HPV Vaccination in Papua New Guinea"
+
+format:
+  closeread-html:
+    css: custom.css
+    theme:
+      light: cosmo
+    toc: false
+
+execute:
+  echo: false
+  warning: false
+  message: false
