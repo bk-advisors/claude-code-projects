@@ -18,6 +18,7 @@ This approach simplifies D3's learning curve while leveraging its powerful data 
 | [02-Beeswarm](./02-beeswarm-skills.md) | Force simulation, color scales, legends, physics |
 | [03-Globe](./03-globe-skills.md) | Geographic projections, rotation, drag interaction, springs |
 | [04-Scrollytelling](./04-scrollytelling-skills.md) | Intersection Observer, sticky positioning, narrative |
+| [05-HPV PNG Story](./05-hpv-png-story-skills.md) | Multi-chart narratives, Tufte/Cairo design principles, data advocacy |
 
 ## Core Technologies
 
