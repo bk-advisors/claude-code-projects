@@ -1,0 +1,366 @@
+---
+title: "The Anatomy of a Good Point"
+subtitle: "A Framework for Making Clear, Compelling Arguments"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+---
+
+## Why Does This Matter?
+
+Have you ever...
+
+::: {.incremental}
+- Made a point in a meeting that fell flat?
+- Known you were right, but couldn't convince others?
+- Watched someone less informed win the room?
+:::
+
+. . .
+
+::: {.callout-box}
+The difference isn't **what** you know --- it's **how you deliver** what you know.
+:::
+
+## The 4-Part Framework {background-color="#005CB9"}
+
+<table style="width:100%; border-collapse:separate; border-spacing:12px; margin-top:0.3em;">
+<tr>
+<td></td>
+<td style="text-align:center;">
+<div style="background:white; border-radius:10px; padding:14px 18px; border-left:4px solid #3E9B6E; box-shadow:0 2px 10px rgba(0,0,0,0.15); font-size:0.6em;">
+<strong style="color:#3E9B6E; font-size:1.15em;">3b. Zoom Out</strong><br>Induction / Patterns you've seen
+</div>
+<div style="color:rgba(255,255,255,0.5); font-size:1.6em;">&#9650;</div>
+</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-align:right;">
+<div style="background:white; border-radius:10px; padding:14px 18px; border-left:4px solid #83BD00; box-shadow:0 2px 10px rgba(0,0,0,0.15); font-size:0.6em;">
+<strong style="color:#83BD00; font-size:1.15em;">2. Why It's True</strong><br>The Reasoning
+</div>
+</td>
+<td style="text-align:center;">
+<div style="background:#005CB9; border:3px solid rgba(255,255,255,0.6); color:white; border-radius:50%; width:150px; height:150px; display:flex; align-items:center; justify-content:center; text-align:center; font-weight:700; font-size:0.65em; margin:0 auto; box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+<span><strong style="font-size:1.5em;">1.</strong><br>What's<br>the Point?</span>
+</div>
+</td>
+<td style="text-align:left;">
+<div style="background:white; border-radius:10px; padding:14px 18px; border-left:4px solid #FA7650; box-shadow:0 2px 10px rgba(0,0,0,0.15); font-size:0.6em;">
+<strong style="color:#FA7650; font-size:1.15em;">4. Who Cares?</strong><br>The Impact
+</div>
+</td>
+</tr>
+<tr>
+<td></td>
+<td style="text-align:center;">
+<div style="color:rgba(255,255,255,0.5); font-size:1.6em;">&#9660;</div>
+<div style="background:white; border-radius:10px; padding:14px 18px; border-left:4px solid #E24A3F; box-shadow:0 2px 10px rgba(0,0,0,0.15); font-size:0.6em;">
+<strong style="color:#E24A3F; font-size:1.15em;">3a. Zoom In</strong><br>Deduction / Specific example
+</div>
+</td>
+<td></td>
+</tr>
+</table>
+
+
+# Step 1 {background-color="#005CB9"}
+
+[What's the Point?]{style="font-size:1.3em; font-weight:300;"}
+
+
+## [<span class="step-number">1</span> What's the Point?]{style="font-size:0.95em;"}
+
+State your claim **clearly and upfront**.
+
+::: {.incremental}
+- Lead with the conclusion, not the backstory
+- One sentence. Crisp. Direct.
+- Your audience should immediately know what you're arguing
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.example-block}
+[Bad]{.example-label .bad-example}
+
+"So I was looking at the neonatal mortality data, and there are some interesting patterns in Malawi, and if we compare the staffing ratios with other countries..."
+:::
+:::
+
+::: {.col}
+::: {.example-block}
+[Good]{.example-label .good-example}
+
+"We need to recruit 200 additional nurse-midwives in Malawi's high-burden facilities by year-end."
+:::
+:::
+:::
+
+
+## The "Headline Test"
+
+Ask yourself: if your point were a **newspaper headline**, would it make sense on its own?
+
+. . .
+
+| Fails the test | Passes the test |
+|---|---|
+| "There are some staffing challenges" | "Malawi has a 65% vacancy rate for nurse-midwife technicians" |
+| "We should think about the product rollout" | "We need to deploy the PPH bundle across all 120 target facilities this quarter" |
+| "Neonatal outcomes could be better" | "80% of neonatal deaths are caused by three preventable conditions" |
+
+
+# Step 2 {background-color="#005CB9"}
+
+[Why It's True]{style="font-size:1.3em; font-weight:300;"}
+
+## [<span class="step-number green">2</span> Why It's True]{style="font-size:0.95em;"}
+
+Give the **reasoning** behind your point.
+
+::: {.incremental}
+- This is your logical backbone --- the "because"
+- Connect cause to effect
+- Use data, logic, or first principles
+- Keep it tight: 1--3 supporting reasons max
+:::
+
+. . .
+
+::: {.example-block}
+[Example]{.example-label}
+
+**Point:** "We need to recruit 200 additional nurse-midwives in Malawi's high-burden facilities."
+
+**Why it's true:** "Malawi has only 22 obstetricians and 1 neonatologist for 679,000 annual births. The vacancy rate for nurse-midwife technicians is 65%. You simply cannot deliver quality emergency obstetric care with these numbers."
+:::
+
+
+## Strong vs. Weak Reasoning
+
+:::: {.columns-equal}
+::: {.col}
+### Weak
+
+- "I feel like we need more staff"
+- "Other organizations are doing it"
+- "It's the standard recommendation"
+- Relies on **opinion or convention**
+
+:::
+
+::: {.col}
+### Strong
+
+- "The vacancy rate is 65%"
+- "A 10% coverage increase averts 22% of maternal deaths"
+- "WHO and Lancet data both confirm this"
+- Relies on **evidence and logic**
+
+:::
+::::
+
+
+# Step 3 {background-color="#005CB9"}
+
+[The Evidence --- Zoom In & Zoom Out]{style="font-size:1.3em; font-weight:300;"}
+
+
+## [<span class="step-number red">3a</span> Zoom In (Deduction)]{style="font-size:0.95em;"}
+
+Go **deeper** into a specific case.
+
+::: {.incremental}
+- Pick a concrete example that proves your point
+- Tell a short story: *"When this happened before..."*
+- Make the abstract **tangible**
+- Deductive reasoning: general rule &rarr; specific case
+:::
+
+. . .
+
+::: {.example-block}
+[Example]{.example-label}
+
+"In one district hospital in Malawi, there were zero trained neonatal nurses covering a unit with 30 admissions per day. When a partner program placed just 4 mentored nurse-midwives there last year, the facility's neonatal mortality dropped by 35% in six months. That's what even a modest staffing increase looks like in practice."
+:::
+
+
+## [<span class="step-number teal">3b</span> Zoom Out (Induction)]{style="font-size:0.95em;"}
+
+Pan out to see the **bigger picture**.
+
+::: {.incremental}
+- Show that this isn't a one-off --- it's a **pattern**
+- Reference trends, comparisons, or analogies
+- "We've seen this across multiple cases..."
+- Inductive reasoning: multiple observations &rarr; general conclusion
+:::
+
+. . .
+
+::: {.example-block}
+[Example]{.example-label}
+
+"This isn't just one hospital. The Lancet's modelling shows that a modest 10% increase in midwifery coverage every five years could avert 22% of maternal deaths, 23% of newborn deaths, and 14% of stillbirths globally --- saving 1.35 million lives by 2035. With quality midwifery care, mothers are 24% less likely to experience preterm birth."
+:::
+
+
+## Why You Need Both
+
+::: {.columns-equal style="margin-top:0.3em;"}
+::: {.col}
+::: {.callout-box .orange}
+**Zoom In only**
+
+"One hospital saw a 35% drop..."
+
+Audience thinks: *"Is that a fluke?"*
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**Zoom Out only**
+
+"The Lancet model projects..."
+
+Audience thinks: *"But does that apply to our context?"*
+:::
+:::
+::::
+
+. . .
+
+::: {.key-takeaway}
+**Zoom In** makes it real. **Zoom Out** makes it credible.
+
+Use both to build an airtight case.
+:::
+
+
+# Step 4 {background-color="#005CB9"}
+
+[Who Cares? (The Impact)]{style="font-size:1.3em; font-weight:300;"}
+
+
+## [<span class="step-number orange">4</span> Who Cares? The Impact]{style="font-size:0.95em;"}
+
+Answer the question your audience is always silently asking:
+
+### *"So what?"*
+
+::: {.incremental}
+- Connect your point to **what matters to them**
+- Quantify the upside --- or the cost of inaction
+- Make it feel **urgent** and **relevant**
+- This is what turns a good argument into a call to action
+:::
+
+
+## Making Them Care
+
+::: {.example-block}
+[Example]{.example-label}
+
+"If we fill these 200 nurse-midwife positions, our models estimate we can prevent over 3,000 maternal and newborn deaths per year in Malawi alone. If we don't act, those positions stay vacant and those deaths remain preventable but unprevented. Every month of delay costs lives we have the tools to save."
+:::
+
+. . .
+
+::: {.callout-box}
+**Pro tip:** Frame impact in terms your audience cares about.
+
+A government minister cares about national health indicators. A donor cares about lives saved per dollar. A facility director cares about staff workload and patient outcomes. Tailor the *"who cares"* to **who's in the room**.
+:::
+
+
+# Putting It All Together {background-color="#005CB9"}
+
+
+## Full Example
+
+::: {style="font-size:0.68em; line-height:1.5;"}
+
+[<span class="step-number" style="width:36px;height:36px;font-size:0.55em;">1</span> **The Point:**]{style="color:#005CB9; font-weight:600;"} "We need to recruit 200 additional nurse-midwives in Malawi's high-burden facilities by year-end."
+
+[<span class="step-number green" style="width:36px;height:36px;font-size:0.55em;">2</span> **Why it's true:**]{style="color:#3E9B6E; font-weight:600;"} "Malawi has 1 neonatologist and a 65% nurse-midwife vacancy rate for 679,000 annual births. Quality care is impossible at these levels."
+
+[<span class="step-number red" style="width:36px;height:36px;font-size:0.55em;">3a</span> **Zoom in:**]{style="color:#E24A3F; font-weight:600;"} "One district hospital placed 4 mentored nurse-midwives and saw neonatal mortality drop 35% in six months."
+
+[<span class="step-number teal" style="width:36px;height:36px;font-size:0.55em;">3b</span> **Zoom out:**]{style="color:#3E9B6E; font-weight:600;"} "The Lancet shows a 10% increase in midwifery coverage averts 22% of maternal deaths and 23% of newborn deaths --- 1.35M lives saved by 2035."
+
+[<span class="step-number orange" style="width:36px;height:36px;font-size:0.55em;">4</span> **Who cares:**]{style="color:#FA7650; font-weight:600;"} "Filling these positions prevents over 3,000 deaths per year in Malawi. Every month of delay costs lives we have the tools to save."
+
+:::
+
+
+## Common Mistakes
+
+::: {.incremental style="font-size:0.85em;"}
+- **Burying the point** --- Save the big reveal for movies, not meetings
+- **Skipping the "why"** --- Assertions without reasoning don't persuade
+- **Only one type of evidence** --- One anecdote or one stat isn't enough
+- **Forgetting the "so what"** --- If you don't spell out the impact, your audience won't either
+- **Going in the wrong order** --- Lead with the point, not the evidence
+:::
+
+
+## Adapt the Framework
+
+You don't always need all 4 steps at full depth.
+
+| Context | What to emphasize |
+|---|---|
+| Quick meeting comment | Steps 1 + 2 (point + why) |
+| Formal presentation | All 4 steps, in order |
+| Email or Slack message | Steps 1 + 4 (point + impact) |
+| Persuading a skeptic | Steps 2 + 3a + 3b (heavy on evidence) |
+| Executive summary | Steps 1 + 4 (lead with conclusion + stakes) |
+
+
+## Key Takeaways
+
+::: {.incremental}
+1. **Lead with the point** --- don't make people guess
+2. **Back it up with reasoning** --- the "because"
+3. **Zoom In and Zoom Out** --- make it real *and* credible
+4. **Land the impact** --- answer "who cares?"
+:::
+
+. . .
+
+::: {.key-takeaway}
+**A good point isn't just correct --- it's complete.**
+
+Point &rarr; Reasoning &rarr; Evidence &rarr; Impact
+:::
+
+
+##  {background-color="white"}
+
+::: {style="text-align:center; margin-top:1.5em;"}
+
+![](bka-logo.png){width="250px"}
+
+[Now go make better points.]{style="font-size:1.4em; color:#005CB9; font-weight:300; display:block; margin-top:0.6em;"}
+
+[*Connecting Dots, Delivering Results.*]{style="color:#00A1DF; font-size:0.7em;"}
+
+:::
