@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git ls-tree:*)",
+      "Bash(done)",
+      "Bash(where:*)",
+      "Bash(python3:*)",
+      "Bash(node -e:*)",
+      "Bash(powershell:*)",
+      "Bash(copy \"BKA Slides Template_vFinal.pptx\" \"template.zip\")"
+    ]
+  }
+}
