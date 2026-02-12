@@ -1,6 +1,6 @@
-# Skills: Inference and Intervention Slide Decks
+# Skills: Inference and Intervention
 
-This file documents the patterns, conventions, and decisions made while building and revising the 10-chapter Quarto reveal.js lecture series based on *Inference and Intervention: Causal Models for Business Analysis* (Ryall & Bramson, 2014), adapted for a Maternal & Newborn Health (MNH) audience.
+This file documents the patterns, conventions, and decisions made while building and revising the 10-chapter Quarto reveal.js lecture series and the companion course website, based on *Inference and Intervention: Causal Models for Business Analysis* (Ryall & Bramson, 2014), adapted for a Maternal & Newborn Health (MNH) audience.
 
 ---
 
@@ -10,6 +10,7 @@ This file documents the patterns, conventions, and decisions made while building
 - **Audience:** Future program managers in MNH and Public Health programs in developing countries.
 - **Privacy requirement:** All identifying details from the real organization behind the examples have been removed. See Section 7 (Anonymization) below.
 - **10 chapters**, each a standalone deck in its own folder under `inference-and-intervention/`.
+- **Course website** — a Quarto multi-page website tying all 10 chapters together with navigation, companion pages, and supplementary resources.
 
 ---
 
@@ -17,23 +18,40 @@ This file documents the patterns, conventions, and decisions made while building
 
 ```
 inference-and-intervention/
-  ch01-intro/               # Introduction to Causal Analysis
-  ch02-qualitative-models/  # Qualitative Causal Models
-  ch03-interview-case/      # The MNH Diagnostic Case Study
-  ch04-quantitative-models/ # Quantitative Causal Models (CPTs, Bayes)
-  ch05-situational-analysis/# Situational Analysis (belief updating)
-  ch06-business-financials/ # Simpson's Paradox & Cost-Effectiveness
-  ch07-single-agent/        # Decision Analysis & Value of Information
-  ch08-resource-allocation/ # Multi-Country Resource Allocation
-  ch09-multi-agent/         # Game Theory & Strategic Interactions
-  ch10-data-driven/         # Structure Learning from Observational Data
+  _quarto.yml               # Website project configuration
+  index.qmd                 # Website home/landing page
+  schedule.qmd              # Course schedule/syllabus
+  r-setup.qmd               # R environment setup guide
+  references.qmd            # Bibliography and references
+  styles.scss               # Website-specific SCSS theme
+  chapters/                 # Chapter companion pages (website)
+    ch01.qmd                #   Ch 1 companion page
+    ch02.qmd                #   Ch 2 companion page
+    ...                     #   (ch03–ch09)
+    ch10.qmd                #   Ch 10 companion page
+  ch01-intro/               # Ch 1 slide deck (standalone)
+  ch02-qualitative-models/  # Ch 2 slide deck (standalone)
+  ch03-interview-case/      # Ch 3 slide deck (standalone)
+  ch04-quantitative-models/ # Ch 4 slide deck (standalone)
+  ch05-situational-analysis/# Ch 5 slide deck (standalone)
+  ch06-business-financials/ # Ch 6 slide deck (standalone)
+  ch07-single-agent/        # Ch 7 slide deck (standalone)
+  ch08-resource-allocation/ # Ch 8 slide deck (standalone)
+  ch09-multi-agent/         # Ch 9 slide deck (standalone)
+  ch10-data-driven/         # Ch 10 slide deck (standalone)
   context/                  # Reference PDFs (do not modify)
+  skills.md                 # This file
+  _site/                    # Rendered website output (generated)
 ```
 
-Each chapter folder contains:
-- `index.qmd` — Slide source
+Each **chapter slide folder** (e.g., `ch01-intro/`) contains:
+- `index.qmd` — Slide source (revealjs format)
 - `custom.scss` — Identical SCSS theme (same file across all 10)
 - `bka-logo.png` — Logo (copied from `slide-master/`)
+- `index.html` + `index_files/` — Rendered slide output (generated)
+
+Each **chapter companion page** (e.g., `chapters/ch01.qmd`) contains:
+- Learning objectives, key concepts, embedded slide iframe, R code workshop, key takeaways, looking ahead
 
 ---
 
@@ -356,19 +374,144 @@ When revising content across all 10 decks (e.g., anonymization, terminology chan
 
 ---
 
-## 12. Rendering and Testing
+## 12. Course Website
+
+### Architecture
+
+The course website is a Quarto `type: website` project rooted at `inference-and-intervention/`. The `_quarto.yml` file configures the project with:
+
+- **`render:` list** — explicitly includes only website `.qmd` files; the `ch*/index.qmd` slide decks are excluded from the website build and remain standalone
+- **Top navbar** — Home, Schedule, R Setup, References
+- **Sidebar** — chapters grouped into 4 parts: Foundations (Ch1–3), Quantitative Analysis (Ch4–6), Decision & Strategy (Ch7–9), Data-Driven Methods (Ch10)
+- **Theme** — `cosmo` base + `styles.scss` overlay with BK Advisors brand colors
+- **`eval: false`** globally — R code displayed but not executed (matches slide decks)
+
+### Website Pages
+
+| Page | File | Content |
+|---|---|---|
+| Home | `index.qmd` | Course overview, chapter table, MNH analyst workflow, prerequisites |
+| Schedule | `schedule.qmd` | 10-session syllabus, part groupings, dependency chain |
+| R Setup | `r-setup.qmd` | Software requirements, package installation, verification script, troubleshooting |
+| References | `references.qmd` | Textbook, causal inference literature, R package citations, MNH references |
+| Chapter 1–10 | `chapters/ch01.qmd`–`ch10.qmd` | Learning objectives, key concepts, embedded slides, R code workshop, takeaways |
+
+### Chapter Companion Page Template
+
+Every chapter companion page follows this structure:
+
+```markdown
+---
+title: "Chapter N: Title"
+subtitle: "One-line description"
+---
+
+## Learning Objectives
+::: {.learning-objectives}
+- Bullet points (no ::: {.incremental} — that's slides-only)
+:::
+
+## Key Concepts
+::: {.key-concept}
+#### Concept Name
+Prose explanation.
+:::
+(3–5 concept blocks with color variants: .green, .teal, .orange, .red)
+
+## Lecture Slides
+::: {.slide-embed}
+<iframe src="../chXX-folder/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../chXX-folder/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+(R code blocks from slides with explanatory prose between them)
+
+## Key Takeaways
+::: {.key-takeaway}
+Summary content.
+:::
+
+## Looking Ahead
+Preview of next chapter (or "Course Summary" for Ch 10).
+```
+
+### Website CSS Component Classes
+
+Defined in `styles.scss` (website-specific, separate from slide `custom.scss`):
+
+| Class | Purpose | Variants |
+|---|---|---|
+| `.learning-objectives` | Teal-bordered box for learning objectives | — |
+| `.key-concept` | White card with colored left border | `.green`, `.teal`, `.orange`, `.red` |
+| `.slide-embed` | Iframe container with border, shadow, footer link | — |
+| `.key-takeaway` | Blue background summary box (white text) | — |
+| `.callout-box` | Info/insight box (same as slides, adapted for web) | `.green`, `.orange`, `.red` |
+| `.definition-box` | Teal-bordered definition box | — |
+| `.chapter-grid` / `.chapter-card` | Card grid layout for home page | — |
+| `.r-code-section` | Light background container for R code areas | — |
+| `.step-number` | Circular numbered badge | `.green`, `.teal`, `.orange`, `.red` |
+
+### Relationship Between Slides and Website
+
+- **Slide decks are standalone.** Each `ch*/index.qmd` renders independently as a reveal.js deck with its own `custom.scss`. The website build does NOT touch them.
+- **Website companion pages embed slides.** Each `chapters/chXX.qmd` uses an `<iframe>` pointing to `../chXX-folder/index.html` to display the pre-rendered slides.
+- **Content is extracted, not duplicated.** Companion pages extract learning objectives, key concepts, R code, and takeaways from the slide sources, adapted from slide-format fragments to full web prose (removing `. . .`, `::: {.incremental}`, `{background-color=...}`, and inline HTML table diagrams).
+- **Render independently.** `quarto render ch01-intro/index.qmd` renders a slide deck; `quarto render` (from the project root) renders the website. Neither affects the other.
+
+---
+
+## 13. Rendering and Testing
+
+### Slide Decks (standalone)
 
 ```bash
-# Render a single chapter
+# Render a single chapter's slide deck
 quarto render inference-and-intervention/ch01-intro/index.qmd
 
-# Live preview
+# Live preview a slide deck
 quarto preview inference-and-intervention/ch01-intro/index.qmd
 ```
 
-Since `eval: false`, rendering requires only Quarto (no R installation). Check:
+### Course Website
+
+```bash
+# Render the full website (from the project root)
+quarto render inference-and-intervention/
+
+# Live preview the website
+quarto preview inference-and-intervention/
+
+# Output goes to inference-and-intervention/_site/
+```
+
+### Checks
+
+**Slide decks:**
 - Slide transitions and fragment reveals (`. . .`)
 - SCSS styling applied correctly (callout boxes, DAG nodes, tables)
 - Section divider backgrounds (should be brand blue)
 - Code blocks render with syntax highlighting
 - Closing slide has centered logo on white background
+
+**Course website:**
+- All 14 pages render without errors (4 top-level + 10 chapters)
+- Navbar and sidebar navigation work correctly
+- Chapter groupings in sidebar match the 4-part structure
+- Iframe slide embeds display correctly on each chapter page
+- "Open slides full-screen" link opens in a new tab
+- R code blocks have syntax highlighting and copy button
+- No anonymization violations in any new content
+- Existing `ch*/index.html` files are unmodified after website render
+
+Since `eval: false`, rendering requires only Quarto 1.8+ (no R installation).
+
+### Anonymization Verification (covers both slides and website)
+
+```bash
+rg -i "Meridian|Alliance|Beginnings|Investment Committee|CIFF|Delta Philanthrop|ELMA|Gates Foundation|Mohamed|HaHCo|Fund Two|76 months|\$525|322,000|322,847|Ethiopia|Tanzania|Kenya|Uganda|Ghana|Malawi|Zimbabwe|Rwanda|Lesotho|Nigeria|Phase [12]" inference-and-intervention/**/*.qmd
+```
+
+This should return zero matches.
