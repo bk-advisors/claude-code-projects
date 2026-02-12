@@ -1,112 +1,258 @@
 # Speaker Notes — Chapter 9: Multi-Agent Interventions
 
 ## Overview
-This is where the course confronts reality: the world pushes back. Chapters 7–8 treated the environment as passive — nature rolls the dice and we optimize against it. But governments, other donors, and implementing partners aren't dice. They're strategic actors who observe our choices and adjust their behavior accordingly. Game theory gives us the formal tools to model these interactions, find stable outcomes (Nash equilibria), and design contracts that align incentives. The MNH workforce absorption game at the end shows how contract design can transform outcomes from 500 lives saved to 4,500 — a 9× improvement — without spending an extra dollar.
+Alright, this is the chapter where we confront something we've been quietly ignoring. Up to now, we've treated the world as passive — nature rolls the dice, and we optimize against it. But governments aren't dice. Other donors aren't dice. Implementing partners aren't dice. They're all watching what we do, and they're adjusting their behavior based on our choices. Today, game theory gives us the formal tools to deal with that reality — and by the end, you'll see how the right contract design can take you from 500 lives saved to 4,500 without spending a single extra dollar.
 
 ## Slide: Learning Objectives
-Five objectives that build from foundations to application. Defining games with players, strategies, and payoffs is the vocabulary. Finding Nash equilibria is the core analytical skill. Sequential games and backward induction add timing. Causal-form games connect game theory back to the DAGs from earlier chapters. The MNH donor-government interaction is the capstone — showing that getting the contract design right matters as much as getting the allocation right.
+So here are our five objectives for today, and they build on each other in a very deliberate sequence. First, we need the vocabulary — defining games with players, strategies, and payoffs. Then the core analytical skill: finding Nash equilibria. From there we add timing with sequential games and backward induction. We connect it all back to the DAGs you already know through causal-form games. And the capstone is the MNH donor-government interaction, where we'll see that getting the contract design right matters just as much as getting the allocation right.
 
 ## Slide: Chapter Overview
-The five-step flow mirrors the chapter's progression. We start with game theory foundations (players, strategies, payoffs), move to the central solution concept (Nash equilibrium), add sequential structure (extensive form and backward induction), connect it all back to causal models (the book's causal-form innovation), and culminate with the workforce absorption game that ties everything together. The callout makes the key shift explicit: Chapter 7 was one decision-maker against nature, Chapter 8 optimized allocation. Now other agents act strategically.
+Here's our roadmap. *(pause)* Five stops today. We start with game theory foundations — players, strategies, payoffs. Then we move to Nash equilibrium, which is really the central idea of this whole chapter. From there, extensive form games add timing and sequence. The causal form connects everything back to the influence diagrams you already know. And we finish with the workforce absorption game, which ties it all together in one complete application.
+
+Now look at that callout at the bottom. *(pause)* This is the key shift. In Chapter 7, it was one decision-maker against nature. In Chapter 8, we optimized how to allocate resources. Now? Other agents are acting strategically. They're watching us, and they're making their own moves. That's why we need game theory.
 
 ## Slide: The Single-Agent Assumption Breaks Down
-The two-column comparison shows why we need game theory. In Chapters 7–8, other actors were part of the environment — chance nodes with fixed probability distributions. In reality, when the donor commits high funding, the government *observes* this and reduces co-financing. Implementing partners adjust effort based on monitoring intensity. The red callout drives the point home with a concrete example: when a donor organization increases salary support, governments may decrease their own budget for the same line item. Ignoring this strategic response means overestimating program impact.
+Look at these two columns. On the left, that's the world we've been living in for the last two chapters. The donor chooses an intervention, nature rolls the dice, we compute expected value and optimize. Nice and tidy. The implicit assumption? Other actors are just part of the environment — they don't respond to what we do.
+
+Now look at the right column. *(pause)* This is reality. The donor commits high funding, and the government *observes* that and thinks, "Great, they're paying for it — I can redirect my budget elsewhere." Implementing partners see how intensely we're monitoring and adjust their effort accordingly. The environment is not passive. Other agents are optimizing their own payoffs in response to our choices.
+
+And that red callout drives the point home with a specific example. When a donor increases salary support for health workers, what do some governments do? They *decrease* their own budget allocation for the same line item. If you ignore that strategic response, you're going to overestimate your program's impact — potentially by a lot.
 
 ## Slide: Strategic Actors in MNH
-Four strategic agents interact in a typical MNH program. The donor organization maximizes lives saved per dollar. The national government balances health outcomes against fiscal constraints. Implementing partners balance results delivery against operational sustainability. Other donors maximize their own impact metrics. Each makes decisions considering what the others will do. The green callout is the promise of the chapter: game theory gives us tools to predict behavior and design incentive-compatible contracts.
+So who are these strategic actors? In a typical MNH program, you've got at least four. *(pause)* Look at this table. The donor organization wants to maximize lives saved per dollar. The national government is trying to balance health outcomes against fiscal constraints — they've got a whole budget to manage, not just the health line. Implementing partners need to deliver results but also sustain their own operations. And other donors? They're maximizing their own impact metrics, which may or may not align with yours.
+
+Each of these agents is making decisions while thinking about what the others will do. That's what makes this a game, not just an optimization problem. And the green callout at the bottom is the promise of this chapter: game theory gives us formal tools to predict what everyone will do and to design contracts that make everyone's incentives line up.
 
 ## Slide: The Three Elements of a Game
-Every game has players, strategies, and payoffs. In the MNH context: the donor and government are players, their strategies are funding and co-financing levels, and payoffs blend lives saved with cost burdens and political capital. The key assumption — rationality — doesn't mean selfish. It means each player chooses what maximizes *their* payoff, and those payoffs can incorporate altruistic goals. A government that genuinely cares about health outcomes is still rational; it just has different payoffs than one focused purely on fiscal savings.
+Every game — and I mean every game, from poker to international diplomacy to MNH funding — has exactly three elements. Players, strategies, and payoffs.
+
+In our MNH context: the players are the donor and the government. Their strategies are the funding and co-financing levels they can choose. And the payoffs blend lives saved with cost burdens and political capital.
+
+Now, look at that callout about rationality. *(pause)* This is important. Rational doesn't mean selfish. It means each player chooses what maximizes *their own* payoff — but those payoffs can absolutely include altruistic goals. A government that genuinely cares about health outcomes is still rational; it just has different payoffs than a government focused purely on fiscal savings. Rationality is about consistency of choice, not about what you care about.
 
 ## Slide: Normal Form: The Payoff Matrix
-The payoff matrix is the simplest representation of a game. Each cell contains both players' payoffs for a given strategy combination. The Co-financing Game shows the basic tension: the best collective outcome is (High Funding, High Co-financing) with 2,400 lives, but each player's incentives may pull them elsewhere. Reading the matrix — understanding that each cell shows *(Donor's payoff, Government's payoff)* — is a skill students need to practice.
+Okay, the payoff matrix. This is the simplest way to represent a game. Rows are one player's strategies, columns are the other's, and each cell shows both players' payoffs.
+
+Here's our co-financing game. *(pause)* Look at the top-left cell: when the donor funds high and the government co-finances high, we get 2,400 lives saved but at high cost to the government. Bottom-right: both go low, only 800 lives, moderate cost. The tension is already visible — the best collective outcome is top-left, but each player might be tempted to go elsewhere.
+
+One thing to practice: reading each cell as a pair. The first number is always the donor's payoff, the second is the government's. Get comfortable with that convention — you'll be reading a lot of these today.
 
 ## Slide: Payoffs Capture Competing Priorities
-Now we assign utility scores that reflect each player's actual priorities. The donor values lives saved. The government values lives saved minus a fiscal cost penalty. The orange callout flags that in this simplified version, the Government gets the same utility under different scenarios — which signals we need a more realistic model. The point is that payoff design matters: small changes in how we model costs completely change the game's equilibrium.
+Now let's get more precise about these payoffs by assigning actual utility scores. The donor's utility is straightforward — lives saved. The government's utility is lives saved minus a fiscal cost penalty. They care about outcomes, but they also feel the pain of spending.
+
+Work through the math with me. Top-left cell: the donor gets 2,400 from lives saved. The government gets 2,400 lives minus 50 times 30 million in costs, which gives 900. *(pause)*
+
+But here's the thing — look at the orange callout. Notice that the government gets the same utility, 900, whether it co-finances high or low when the donor funds high. And 550 either way when the donor funds low. That can't be right in the real world. The numbers depend entirely on our cost-sharing assumptions, and these simplified ones are too crude. We need to refine this.
 
 ## Slide: Refined Payoff Matrix
-With more realistic cost assumptions, the game becomes interesting. The best collective outcome (High, High) gives 3,600 total utility. The government prefers high co-financing when the donor funds high (1,200 > 1,100). The donor always prefers high funding. The green callout walks through the interpretation, and the key question at the end sets up the tension: what happens when the government suspects the donor will fund regardless?
+Here's a more realistic version where the government actually bears different costs depending on what it chooses. *(pause)*
+
+Now this is getting interesting. Look at the green callout — it walks you through the interpretation. The best collective outcome is still top-left: high funding plus high co-financing gives us 2,400 plus 1,200 equals 3,600 total utility. The government actually prefers high co-financing when the donor funds high — 1,200 beats 1,100. And the donor always prefers high funding.
+
+But here's the question that sets up everything that follows: what happens when the government starts to suspect the donor will fund high no matter what? *(pause)* Keep that question in mind.
 
 ## Slide: Dominant Strategies
-A dominant strategy is one that's best regardless of what the other player does. Checking systematically: the donor prefers High Funding whether the government co-finances or not (2,400 > 1,800 and 1,400 > 800). The government prefers High Co-financing whether the donor funds high or low (1,200 > 1,100 and 800 > 600). Both have dominant strategies, and they align — (High, High) is a dominant-strategy equilibrium. This is the best-case scenario where incentives happen to point in the same direction.
+A dominant strategy is one that's best for you regardless of what the other player does. That's a powerful concept — it means you don't even need to know what the other side is thinking.
 
-## Slide: Definition of Nash Equilibrium
-Nash Equilibrium is the central solution concept: no player can improve by changing their strategy alone. The underline method — for each column, underline the row player's best response; for each row, underline the column player's best response; cells with both underlined are NE — is the practical procedure students should master. In our refined game, (High Funding, High Co-financing) is the unique NE.
+Let's check systematically. The donor: if the government plays high, the donor prefers high funding — 2,400 beats 1,800. If the government plays low, the donor still prefers high — 1,400 beats 800. So high funding dominates for the donor no matter what.
+
+Now the government: if the donor funds high, the government prefers high co-financing — 1,200 beats 1,100. If the donor funds low, the government still prefers high — 800 beats 600. High co-financing dominates for the government.
+
+*(pause)* So both players have dominant strategies, and they point in the same direction. The outcome — high funding, high co-financing — is what we call a dominant-strategy equilibrium. This is the best-case scenario, where everyone's individual incentives happen to align with the collective good. Enjoy this moment, because it's about to get more complicated.
+
+## Slide: Nash Equilibrium
+Alright, Nash Equilibrium — this is the central concept of game theory. *(pause)* A strategy profile is a Nash equilibrium when no player can improve their payoff by unilaterally changing their strategy. Everyone is doing the best they can, given what everyone else is doing.
+
+Here's the practical procedure for finding it — the underline method. For each column, underline the row player's best response. For each row, underline the column player's best response. Any cell where both payoffs are underlined? That's your Nash equilibrium.
+
+Look at the matrix. The donor's 2,400 is underlined in the first column, and 1,400 in the second — those are best responses. The government's 1,200 is underlined in the first row, and 800 in the second. The top-left cell has both underlined, so high funding, high co-financing is our unique Nash equilibrium. Practice this method — you'll use it again and again.
 
 ## Slide: When Incentives Misalign: A Harder Game
-Now the government faces high political costs for co-financing. With the new payoffs, Low Co-financing dominates for the government (1,100 > 700 when donor plays High; 600 > 500 when donor plays Low). The NE shifts to (High Funding, Low Co-financing) — the donor funds generously, the government free-rides. Total utility drops from 3,100 to 2,500. This is the realistic scenario that makes game theory essential.
+Now here's where it gets real. *(pause)* Suppose the government faces high political costs for co-financing. Maybe they're diverting funds from visible infrastructure projects that voters care about. The payoffs shift.
+
+Look at the new matrix. Check the government's best responses now. If the donor funds high: low co-financing gives 1,100, high gives only 700. Low wins. If the donor funds low: low co-financing gives 600, high gives 500. Low wins again.
+
+Low co-financing now dominates for the government. The Nash equilibrium shifts to high funding, low co-financing — the donor pours in money, the government free-rides. Total utility drops from 3,100 to 2,500. *(pause)* This is the realistic scenario. This is why we need game theory — because when political costs are high, good intentions alone don't produce good outcomes.
 
 ## Slide: The Prisoner's Dilemma in Health Funding
-The side-by-side comparison with the classic Prisoner's Dilemma makes the structure clear. Both players would prefer mutual cooperation, but individual incentives push toward a suboptimal equilibrium. In the MNH version, it's slightly different — the donor's dominant strategy keeps funding flowing regardless, so the equilibrium is (Fund, Free-ride) rather than (Defect, Defect). The green callout identifies the solution: commitment devices — contracts, conditionalities, or repeated interaction — are needed to sustain cooperation.
+Let me show you why this pattern looks familiar. On the left, the classic Prisoner's Dilemma — you've probably seen this before. Both players would prefer to cooperate, but each has an individual incentive to defect. They end up at defect-defect, worse off than if they'd both cooperated.
+
+Now look at the right — our MNH version. *(pause)* The structure is similar but not identical. Both would prefer mutual cooperation, but the government's incentive pushes toward free-riding. The difference here is that the donor's dominant strategy keeps funding flowing regardless, so we end up at fund-and-free-ride rather than mutual defection.
+
+The green callout identifies the way out: commitment devices. Contracts, conditionalities, repeated interaction over time. Without those mechanisms, you're stuck in the bad equilibrium. The structure of the game is working against you.
 
 ## Slide: Multiple Equilibria and Coordination
-Some games have multiple Nash equilibria. The workforce cadre game has two: (Midwives, Midwives) and (CHWs, CHWs). Both are stable, but (Midwives, Midwives) is Pareto superior. The risk is miscoordination — the donor invests in midwife training while the government hires CHWs, wasting both investments. The key takeaway is that coordination games explain why joint planning between donors and governments is essential. The problem isn't conflicting interests — it's ensuring both sides invest in the *same* thing.
+Here's a different kind of problem. Some games don't have one equilibrium — they have two, and that creates its own headache.
+
+Look at this workforce cadre game. If both the donor and government invest in midwives, that's a Nash equilibrium — neither wants to deviate. If both invest in community health workers, that's also an equilibrium. But look at the off-diagonal cells: if one invests in midwives and the other in CHWs, the payoffs are terrible for both — 400 and 300, or 300 and 400. Total waste.
+
+*(pause)* Here's the thing — both players actually prefer the midwives equilibrium. It's Pareto superior. But without communication, without coordination, they might end up miscoordinated. The donor trains midwives while the government hires community health workers, and both investments are largely wasted.
+
+The takeaway is that coordination games explain why joint planning between donors and governments is essential. The problem isn't conflicting interests — they actually agree on what's best. The problem is making sure both sides invest in the *same* thing.
 
 ## Slide: Escaping Bad Equilibria
-Four mechanism design approaches for moving from free-riding to cooperation. Conditional funding ("we fund high only if you co-finance ≥30%") directly changes payoffs. Repeated interaction builds reputation over funding cycles. Binding contracts with milestone-triggered disbursements create accountability. Third-party enforcement via World Bank or Global Fund conditionalities adds external pressure. The MNH example — a co-financing escalator with consequences for missing milestones — is exactly how real program agreements work.
+So how do you actually escape a free-riding equilibrium? Four approaches from mechanism design.
 
-## Slide: Game Trees
-Extensive-form games add timing. The tree shows the donor choosing High or Low first, then the government responding. Payoffs at terminal nodes show all four outcomes. The sequential structure matters because the government can *observe* the donor's choice before responding — which is exactly what happens in practice when funding commitments are announced before government budget cycles.
+First, conditional funding. "We fund high only if you co-finance at least 30%." That directly changes the payoffs. Second, repeated interaction — when you're funding over multiple cycles, there's a reputation to build and maintain. Third, binding contracts with milestone-triggered disbursements. And fourth, third-party enforcement — bringing in the World Bank or Global Fund with their own conditionalities.
+
+Look at the MNH example on the right. *(pause)* A co-financing escalator: the government's contribution must increase by five percentage points per year. Miss a milestone, and the next tranche gets cut by 50%. That changes the whole game — free-riding now costs you future funding. This is exactly how real program agreements are structured.
+
+## Slide: Extensive Form Games
+Okay, let's move to a different way of representing games. *(pause)* So far we've been using matrices — everything happens simultaneously. But in reality, moves happen in sequence. The donor announces its funding commitment, and *then* the government decides on co-financing.
+
+Look at this game tree. The donor moves first — high or low. The government observes that choice and then responds. At the end of each branch, we see the payoffs for both players.
+
+Why does this matter? Because the sequential structure changes the strategic logic. When the government can *see* what the donor has done before it responds, that gives the government information — and strategic leverage. This is exactly what happens in practice when funding commitments are announced before government budget cycles.
 
 ## Slide: Backward Induction
-This is the algorithm for solving sequential games. Start at the end: the government chooses Low Co-financing regardless of the donor's move (1,100 > 700 after High Funding; 600 > 500 after Low Funding). Working backward: the donor anticipates this and chooses High Funding (1,400 > 800). The outcome is (High Funding, Low Co-financing) with payoffs (1,400, 1,100) — the government free-rides, and the donor funds generously knowing this will happen.
+This is the algorithm for solving sequential games, and it's beautifully simple. You start at the end and work backward.
+
+Step 1: What does the government do? If the donor chose high funding, the government picks low co-financing — 1,100 beats 700. If the donor chose low funding, the government still picks low — 600 beats 500. So no matter what the donor does, the government free-rides.
+
+Step 2: The donor *knows* this. So it anticipates the government's response and asks, "Given that the government will free-ride either way, am I better off funding high or low?" High gives 1,400, low gives 800. The donor funds high.
+
+*(pause)* The outcome: high funding, low co-financing, payoffs 1,400 and 1,100. The donor funds generously *knowing* the government will free-ride — because even with free-riding, high funding is better than the alternative. That's a depressing but realistic result.
 
 ## Slide: First-Mover Advantage in Donor Commitments
-The order of moves changes the outcome. When the donor commits first without conditions, the government can observe and free-ride. But if the donor can commit *conditionally* — "High funding if and only if you co-finance ≥30%" — the game changes. The government now faces a real choice: co-finance and get high funding (payoff 700), or don't co-finance and get low funding (payoff 600). It chooses cooperation. Conditionality restores the good equilibrium.
+But here's where it gets interesting. The order of moves doesn't just describe the game — it changes what's possible. *(pause)*
+
+When the donor commits first without conditions, the government observes and free-rides. We just saw that. But what if the donor can commit *conditionally*? "I'll fund high if and only if you co-finance at least 30%."
+
+Look at the flow diagram. The donor announces the condition, then the government chooses. Now the government faces a real choice: co-finance high and get high donor funding, payoff 700. Or don't co-finance and get low donor funding, payoff 600. Seven hundred beats 600, so the government cooperates.
+
+*(pause)* Conditionality restores cooperation. By credibly restricting its own future choices — "I'm tying my own hands here" — the donor can induce better behavior. This is the logic behind every milestone-based disbursement you'll ever see.
 
 ## Slide: Subgame Perfect Equilibrium
-SPE refines Nash equilibrium for sequential games by requiring equilibrium in every subgame. Without conditionality, the SPE is (High Funding, Always Low) — the government's strategy of always free-riding is credible because it's optimal at every decision point. With conditionality, the SPE shifts to (Conditional High, High Co-finance). The orange callout is crucial: non-credible threats don't work. If the donor would never actually withdraw funding, the conditionality has no bite. Credibility is everything.
+Subgame perfect equilibrium refines Nash equilibrium for sequential games. The idea is that the strategies have to be optimal not just overall, but in *every subgame* — every possible branch of the tree.
+
+Look at the two columns. Without conditionality, the subgame perfect equilibrium is high funding, always low co-financing. The government's strategy of always free-riding is credible because it's genuinely optimal at every decision point.
+
+With conditionality, the equilibrium shifts to conditional high funding, high co-financing. Now cooperating is the government's best response in the relevant subgame because low co-financing triggers reduced funding.
+
+*(pause)* But look at that orange callout — this is crucial. Non-credible threats don't work. If everyone knows the donor would never actually withdraw funding — maybe there's political pressure, maybe there's a sunk-cost mentality — then the conditionality has no bite. The government calls the bluff and free-rides anyway. Credibility is everything in this game.
 
 ## Slide: Games as Causal Models
-The causal-form game is the book's innovation — representing games as multi-agent influence diagrams. Each player has their own decision node and objective node, and the causal structure shows how decisions interact through shared outcomes. This connects game theory directly to the DAGs from Chapters 1–6. The advantage: it makes the causal *pathways* explicit. We can see *why* payoffs have their values, not just what the values are.
+Now let's connect game theory back to everything you've learned in this course. *(pause)* The causal-form game represents a game as a multi-agent influence diagram. Each player has their own decision node and their own objective node, and the causal structure shows how those decisions interact through shared outcomes.
+
+Look at this diagram. Donor funding and government co-financing both flow into health outcomes. But each player evaluates those outcomes through their own utility function — the donor cares about lives saved, the government weighs lives against fiscal cost.
+
+The advantage of this representation? It makes the causal *pathways* explicit. We can see *why* the payoffs have the values they do, not just what the values are. And we can add chance nodes — disease burden, political stability — just like we did in Chapters 7 and 8.
 
 ## Slide: Converting Between Game Representations
-Three representations, each with a purpose. Normal form (matrix) is best for finding Nash equilibria in small games. Extensive form (tree) is best for analyzing timing and commitment. Causal form (DAG) is best for understanding *why* payoffs have their values and connecting to the causal reasoning toolkit. The MNH example illustrates: the causal form reveals that (High Funding, Low Co-finance) gives 1,400 lives because high funding increases equipment and training, but low co-financing means inadequate staffing for sustainability.
+So now we have three ways to represent the same game, and each one is good for something different.
+
+The normal form — that's our matrix — is best for finding Nash equilibria in small games. You can see all the strategy combinations at once and use the underline method. The extensive form — the tree — is best when timing matters. Who moves first? Can they observe the other player's choice? Can they commit? The causal form — the DAG — is best for understanding *why* payoffs have their values.
+
+Look at the MNH example at the bottom. *(pause)* In the matrix, we see that high funding plus low co-financing gives a payoff of 1,400 for the donor. The causal form tells us *why*: high funding increases equipment and training, but low co-financing means inadequate staffing for sustainability. The 1,400 lives reflects a short-term gain that will erode without government support. Same number, but now you understand the mechanism.
 
 ## Slide: Adding Chance Nodes
-The causal form naturally incorporates uncertainty alongside strategic interaction. Political stability enters as a chance node that neither player controls. If instability is high, even mutual cooperation may yield poor outcomes. This is where game theory meets the decision analysis from Chapters 7–8 — we compute expected payoffs conditional on uncertainty, exactly as before, but now with multiple strategic decision-makers.
+The causal form also naturally incorporates uncertainty — and this is where game theory meets the decision analysis from Chapters 7 and 8.
 
-## Slide: Representing Contingent Strategies
-A strategy in extensive form is a *complete* plan specifying what to do at every decision point. With 2 information sets and 2 actions each, the government has 4 possible strategies: Always High, Always Low, Match (cooperate if and only if the donor does), and Oppose. The "Match" strategy — tit-for-tat — is particularly interesting because it makes the government's cooperation contingent on the donor's. The strategy table enumerates all possible plans, making the strategic landscape explicit.
+Look at this expanded diagram. We've got the donor's funding decision, the government's co-financing decision, and now a chance node in the middle: political stability. Neither player controls it, but it affects everything downstream. If instability is high, even mutual cooperation may yield poor outcomes.
+
+*(pause)* This is the bridge. In Chapter 7, we computed expected payoffs under uncertainty with a single decision-maker. Now we do exactly the same thing, but with multiple strategic decision-makers. Same math, richer framework.
+
+## Slide: Strategy Tables
+Now here's where we need to be very precise about what we mean by a "strategy." *(pause)*
+
+In extensive form, a strategy isn't just a single action — it's a *complete plan* specifying what you'll do at every decision point you might reach. The government has two information sets: what to do if the donor funds high, and what to do if the donor funds low. With two choices at each, that's two-to-the-two equals four possible strategies.
+
+Look at the table. Always High — cooperate no matter what. Always Low — free-ride no matter what. Match — cooperate if and only if the donor cooperates. And Oppose — do the opposite of whatever the donor does.
+
+The "Match" strategy is particularly interesting. It's basically tit-for-tat: "I'll cooperate if you do." That contingent behavior is what makes conditional agreements possible. The strategy table makes the full landscape of possible plans explicit.
 
 ## Slide: Conditional Funding Agreements
-The donor's conditional strategy is operationalized as: "I fund high IF government co-finances ≥30% of recurrent costs AND absorbs ≥80% of trained workers by year 3." This is a contingent strategy — the donor's action depends on observable government behavior. The green callout identifies "Conditional High" as the dominant strategy when the donor can credibly commit. This is exactly the logic behind milestone-based payment agreements used in real MNH programs.
+Here's how contingent strategies look in practice. *(pause)* The donor's conditional strategy: "I fund high IF the government co-finances at least 30% of recurrent costs AND absorbs at least 80% of trained workers by year 3."
+
+Look at the donor's strategy table. Unconditional high — fund no matter what. Conditional high — fund if the government cooperates, pull back if not. Conditional low — the opposite, which doesn't make much sense. And unconditional low — never fund.
+
+The green callout identifies the winner: conditional high is the dominant strategy when the donor can credibly commit. It rewards government cooperation and punishes free-riding. This is exactly the structure of milestone-based payment agreements. And it works — but only if the commitment is credible.
 
 ## Slide: Milestone-Based Payments as Commitment
-The milestone table shows how conditional strategies become real contracts: 25% at budget line creation, 25% at 200 workers on payroll, 25% at 400 absorbed, final 25% at full absorption. The orange callout raises the fundamental question: milestones only work if the donor *actually* withholds funding when missed. If the government believes the donor will disburse regardless — due to political pressure or sunk-cost fallacy — the conditionality is empty. Credibility is the foundation of commitment power.
+Here's what conditional strategies look like when they become actual contracts. *(pause)*
+
+Look at this milestone table. 25% of the tranche is released when the government creates a budget line for health workers — that's verified by an audited budget document. Another 25% when 200 workers are on the government payroll by year one. Another 25% when 400 are absorbed by year two. And the final 25% when full absorption hits 500 by year three.
+
+Each milestone is observable, verifiable, and tied to a specific funding release. That's the operationalization of a contingent strategy.
+
+But the orange callout raises the fundamental question. *(pause)* Milestones only work if the donor *actually* withholds funding when they're missed. If the government believes the donor will disburse regardless — because of political pressure, or sunk-cost thinking, or just because cutting off funding feels cruel — then the conditionality is empty words. Credibility is the foundation of all of this.
 
 ## Slide: The Setting
-The Workforce Absorption Game is the chapter's capstone. The donor organization trains 500 community health workers with a substantial multi-year investment. The government must absorb these workers onto its payroll within 3 years. If it doesn't, workers leave and the investment is wasted. Both players know the stakes, both act strategically. The setup captures a challenge that every large-scale health workforce program faces.
+Alright, now we bring everything together in one complete game-theoretic analysis. *(pause)* This is the workforce absorption game, and it's the capstone of the chapter.
+
+Here's the setup. A large MNH program trains 500 community health workers with a substantial multi-year investment. The government has to absorb these workers onto its own payroll within three years. If it doesn't, workers leave for the private sector or emigrate, and the entire investment is wasted.
+
+Both players know the stakes. Both act strategically. The donor chooses its funding level — full or reduced. The government chooses its absorption level — full, partial, or none. This captures a challenge that every large-scale health workforce program faces. Let's see how it plays out.
 
 ## Slide: The Payoff Matrix
-The 2×3 matrix shows six possible outcomes. The donor values lives saved (4,500 at best, 300 at worst). The government values lives saved minus fiscal cost — and crucially, gets its *highest* utility from No Absorb (1,000) because it avoids the recurring expense of putting hundreds of workers on payroll. This misalignment of incentives is the root of the problem.
+Here's the payoff matrix — a 2-by-3 game this time, six possible outcomes. *(pause)*
+
+The donor's payoffs reflect lives saved over ten years. At the best outcome — full funding, full absorption — that's 4,500 lives. At the worst — full funding, no absorption — just 500. An enormous investment essentially wasted.
+
+Now look at the government's side. And this is where the problem lives. The government's *highest* utility comes from no absorption — 1,000 when the donor funds fully. Why? Because no absorption means avoiding the recurring expense of putting hundreds of workers on the government payroll. The government still gets the benefit of trained workers during the donor-funded period, but it doesn't have to pick up the tab afterward.
+
+*(pause)* That misalignment right there — the government's best outcome is the donor's worst — is the root of the entire problem.
 
 ## Slide: Finding the Nash Equilibrium
-The underline method reveals the tragedy. No Absorb is dominant for the government (1,000 > 900 > 600 after Full Funding; 800 > 700 > 400 after Reduced). Full Funding is dominant for the donor. The NE is (Full Funding, No Absorb) with payoffs (500, 1,000) — a substantial investment in training followed by zero absorption. This is a classic free-rider outcome, and it happens in real MNH programs when contracts aren't structured properly.
+Let's use the underline method and see what happens. *(pause)*
+
+Government's best responses: if the donor funds fully, no absorption gives 1,000, which beats partial at 900 and full absorption at 600. If the donor reduces, no absorption gives 800, which beats partial at 700 and full at 400. No absorption dominates for the government.
+
+Donor's best responses: regardless of what the government does — full absorb, partial, or none — full funding always beats reduced. 4,500 beats 2,200. 2,800 beats 1,500. 500 beats 300.
+
+*(pause)* So the Nash equilibrium is full funding, no absorption. Payoffs: 500 for the donor, 1,000 for the government. The donor makes a substantial investment in training 500 workers, deploys them, and then the government doesn't absorb a single one. A classic free-rider tragedy. And this isn't a theoretical curiosity — this happens in real programs when contracts aren't structured properly.
 
 ## Slide: Redesigning the Game: Commitment Devices
-The donor can change the equilibrium through contract design. Device 1 (milestone payments) restructures disbursement so non-absorption means the government gets only initial-phase training, dropping its payoff from 1,000 to 350. Device 2 (bonding agreement) requires the government to deposit funds in escrow, forfeited if targets are missed. Device 3 combines both, making Full Absorb the dominant strategy. This is mechanism design — changing the rules so that the rational choice aligns with the socially optimal outcome.
+But here's the good news. The donor can change this outcome through contract design. *(pause)*
+
+Device 1: milestone payments. Restructure the disbursement so that the government only gets the full package if it hits absorption targets. 20% upfront, then 25% at each milestone. If the government doesn't absorb, it gets only the initial-phase training — payoff drops from 1,000 to 350. That's a massive hit.
+
+Device 2: a bonding agreement. The government puts funds in escrow, forfeited if targets are missed. That directly penalizes non-absorption.
+
+Device 3: combine both. With milestone payments and a bonding agreement together, full absorption becomes the dominant strategy for the government. *(pause)* This is mechanism design in action — you're not changing what anyone wants; you're changing the rules of the game so that the rational choice aligns with the socially optimal outcome.
 
 ## Slide: The Transformed Game
-The revised payoff matrix with milestone payments changes everything. Under Conditional funding, the government now prefers Full Absorb (600) over Partial (500) over No Absorb (350). The new NE is (Conditional Funding, Full Absorb) with payoffs (4,500, 600). The key takeaway is stunning: the donor achieved a 9× improvement in expected impact — from 500 to 4,500 lives — by restructuring incentives rather than increasing funding. Same budget, radically different outcomes.
+Look at the new payoff matrix with milestone payments in place. *(pause)*
+
+Under conditional funding, the government now prefers full absorption at 600, over partial at 500, over no absorption at 350. The ranking has flipped. Full absorption is now the government's best response to conditional funding.
+
+The new Nash equilibrium: conditional funding, full absorption. Donor payoff: 4,500. Government payoff: 600.
+
+*(pause)* Let that number sink in. The donor went from 500 lives saved to 4,500 lives saved. A nine-times improvement. Not by spending more money — same budget. Just by restructuring the incentives. Same resources, radically different outcomes. That is the power of game theory applied to program design.
 
 ## Slide: Lessons from the Absorption Game
-Five principles for multi-agent program design. Map the game first — identify players, strategies, and payoffs before committing funds. Check for dominant strategies — if free-riding dominates, unconditional funding will fail. Design for subgame perfection — conditionalities must be credible. Use milestones not lump sums — phased disbursement turns a one-shot game into a sequential game with accountability. Align payoffs don't just add conditions — make cooperation genuinely attractive for both sides.
+Five principles to take away from this analysis. *(pause)*
+
+One: map the game first. Before you commit a single dollar, identify the players, their strategies, and their payoffs. Two: check for dominant strategies. If free-riding dominates, unconditional funding will fail — guaranteed. Three: design for subgame perfection. Your conditionalities have to be credible. If you'd never actually withhold funding, everyone knows it, and the game doesn't change. Four: use milestones, not lump sums. Phased disbursement turns a one-shot game into a sequential game with built-in accountability. Five: align payoffs, don't just add conditions. The best mechanism makes cooperation *genuinely attractive* for both sides, not just punitive for defection.
 
 ## Slide: R: Representing and Solving a 2x2 Game
-Live coding walkthrough. Students implement the payoff matrices and a Nash equilibrium finder that checks best responses for both players, confirming the (Full Funding, No Absorb) equilibrium.
+Alright, let's get our hands dirty with some code. *(pause)* Here we're implementing the payoff matrices in R and writing a function that checks best responses for both players to find Nash equilibria. You'll define the donor payoff matrix and the government payoff matrix separately, then loop through every cell asking: is this a best response for the donor given the government's column? Is this a best response for the government given the donor's row? Where both answers are yes, that's your Nash equilibrium. Run this and confirm you get full funding, no absorption — exactly what we found by hand.
 
 ## Slide: R: Payoff Matrix Heatmap
-Live coding walkthrough. Students create a heatmap visualization of the full 2×3 payoff matrix, with color encoding the donor's payoff and text labels showing both players' values.
+Now let's visualize the full 2-by-3 payoff matrix. *(pause)* This heatmap uses color to encode the donor's payoff — green for high, red for low — with both players' values printed as text labels in each cell. You can immediately see the pattern: the donor's payoff is highest in the top-left and lowest in the top-right. The government's payoff increases as you move right. That visual tension — the donor wants to go left, the government wants to go right — is the whole game captured in one image.
 
 ## Slide: R: Extensive Form — Backward Induction
-Live coding walkthrough. Students implement backward induction by finding the government's best response at each information set, then the donor's optimal choice anticipating those responses.
+Here we implement backward induction in code. *(pause)* You define all the terminal payoffs, then use R to find the government's best response at each information set — after full funding and after reduced funding. Then you work backward: what does the donor get at each branch, given the government's anticipated response? The code confirms what we solved by hand: the subgame perfect equilibrium is full funding, no absorption. And seeing it confirmed computationally — that the government's dominant strategy is always no absorption — really drives home why conditionality isn't optional.
 
 ## Slide: R: Simulating a Repeated Game
-Live coding walkthrough. Students simulate 20 rounds of the funding game comparing unconditional funding (always High) with tit-for-tat (conditional on government's last action), showing how tit-for-tat induces cooperation and dominates over time.
+This last exercise is one of my favorites. *(pause)* We simulate 20 rounds of the funding game, comparing two donor strategies: unconditional funding — always fund high regardless — versus tit-for-tat, where the donor conditions this round's funding on the government's behavior last round.
+
+The government starts by free-riding for the first few rounds, testing the donor. Under unconditional funding, the government keeps free-riding forever — why wouldn't it? Under tit-for-tat, the donor punishes free-riding by reducing funding, the government feels the pain, and eventually switches to cooperation.
+
+Watch the cumulative payoff lines diverge. *(pause)* Tit-for-tat starts behind because of those early punishment rounds, but it dominates over time as cooperation takes hold. That's the power of repeated interaction — it creates the shadow of the future that makes cooperation rational.
 
 ## Slide: Key Takeaways
-Four essential lessons. Game theory models the strategic interactions that dominate real-world MNH programs. Nash equilibrium reveals the stable outcome — often a free-riding equilibrium when incentives are misaligned. Backward induction shows how the sequence of moves matters and why conditional commitments transform outcomes. Strategy tables and the causal form connect game theory to the influence diagrams from Chapters 7–8, providing a unified multi-agent decision framework.
+Four essential lessons from today. *(pause)*
+
+First, game theory models the strategic interactions that dominate real-world MNH programs. Ignoring other agents' strategic behavior is no longer an option.
+
+Second, Nash equilibrium reveals the stable outcome when everyone optimizes individually. And in MNH, that often means a free-riding equilibrium — unless you've designed your contracts carefully.
+
+Third, backward induction shows that the sequence of moves matters enormously. Conditional commitments, milestone payments — these tools transform the game's equilibrium by changing what's credible.
+
+And fourth, strategy tables and the causal form connect game theory back to the influence diagrams from Chapters 7 and 8, giving us a unified framework for multi-agent decision problems. It's all one toolkit.
 
 ## Slide: Looking Ahead
-Chapter 10 returns from theory to practice. We've spent Chapters 1–9 building causal models from expert knowledge and using them for inference and intervention. Chapter 10 asks: can we discover causal structure from data? Structure learning, instrumental variables, and the limits of observational data close the loop between theory and evidence — grounding everything we've built in real-world DHIS2 datasets.
+Next time, we make a big shift. *(pause)* We've spent nine chapters building causal models from expert knowledge and using them for inference and intervention. Chapter 10 asks a fundamentally different question: can we discover causal structure from data itself?
+
+Structure learning, instrumental variables, the limits of observational data — these tools close the loop between theory and evidence. We'll ground everything we've built in real-world health information system datasets. It's where the rubber meets the road.

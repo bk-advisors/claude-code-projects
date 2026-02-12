@@ -146,7 +146,7 @@ Use `. . .` (three dots with spaces) for fragment reveals within a slide. Use `:
 
 ## 5. Speaker Notes
 
-Each chapter folder contains a `speaker-notes.md` file with presenter-facing commentary for every slide. These are not embedded in the `.qmd` files — they live as standalone Markdown files intended for the instructor to reference during lecture preparation and delivery.
+Each chapter folder contains a `speaker-notes.md` file — a conversational script the presenter can follow slide by slide. These are not embedded in the `.qmd` files; they live as standalone Markdown files intended for the instructor to read during lecture preparation and delivery.
 
 ### Format
 
@@ -154,22 +154,25 @@ Each chapter folder contains a `speaker-notes.md` file with presenter-facing com
 # Speaker Notes — Chapter N: Title
 
 ## Overview
-High-level summary of the chapter's purpose, arc, and key pedagogical goals.
+Brief spoken intro to the session (2-4 sentences, first person).
 
 ## Slide: Slide Title
-Paragraph(s) of commentary for that slide — explaining the "why" behind the content,
-delivery tips, connections to other chapters, and emphasis cues.
+The actual words the presenter would say for this slide — conversational,
+first-person, as if talking to the room.
 ```
 
 ### Conventions
 
 - **One `## Slide:` heading per slide**, matching the slide title from `index.qmd`
-- **`## Overview` section** at the top provides the chapter's narrative arc and teaching goals
-- **Conversational, instructor-facing tone** — written as if coaching the presenter ("This is the 'scare them straight' slide", "Let that sink in", "Worth emphasizing")
-- **Substantive commentary, not transcripts** — notes explain *why* the slide matters, what to emphasize, common student misconceptions, and connections to other chapters rather than simply restating slide content
-- **Cross-chapter references** are called out explicitly ("This builds on the d-separation criteria from Chapter 2")
-- **R workshop slides** get brief notes ("Live coding walkthrough. Students install and load…") since the code is self-explanatory
-- **MNH context** is reinforced — notes connect abstract concepts back to the public health application
+- **`## Overview` section** at the top — a brief spoken intro to the session, not meta-commentary
+- **Conversational script, not meta-commentary** — written as the words the presenter would actually say out loud, in first person ("Here's the key insight...", "Look at the two boxes...", "Now I want to scare you a little...")
+- **Natural and at times informal tone** — the script reads like a person talking, not a textbook ("That's a swing of over 1,600 impact units. Let that sink in.", "Same data, opposite conclusions.")
+- **`*(pause)*` cues** for timing between key points or before reveals
+- **References to slide content** — the script points to specific visual elements ("Look at the diagram...", "See the arrow from A to B?", "Notice the red box at the bottom...")
+- **Rhetorical questions** engage the audience ("Which version would you rather hear at minute 45 of a long meeting?", "Does deploying health workers cause deaths?")
+- **R workshop slides** get brief walkthrough narration guiding students through the code
+- **Cross-chapter connections** are woven into the script naturally ("Remember the d-separation criteria from Chapter 2?")
+- **MNH context** is reinforced throughout — abstract concepts are grounded in public health examples
 - **Anonymization rules still apply** — speaker notes must not contain any banned terms from Section 8
 
 ### All 10 Chapters
