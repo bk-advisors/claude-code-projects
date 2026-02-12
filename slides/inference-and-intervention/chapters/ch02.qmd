@@ -1,0 +1,237 @@
+---
+title: "Chapter 2: Qualitative Causal Models"
+subtitle: "Nodes, directed links, triplet structures, and d-separation"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Identify the **four types of nodes** in a causal model and when each is used
+- Assign **signed directed links** ([+]/[-]) to represent qualitative causal relationships
+- Construct **conditional certainty tables** for non-monotonic relationships
+- Recognize the three fundamental **triplet structures**: serial (chain), diverging (fork), converging (collider)
+- Apply **d-separation** criteria to determine when information flows between variables
+- Build a complete **qualitative DAG** for an MNH program's investment model
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### The Four Node Types
+
+A qualitative causal model uses four types of nodes: **Probabilistic nodes** (ovals) represent variables with uncertain states determined by nature. **Objective nodes** (hexagons) represent goals or performance metrics the decision-maker wants to optimize -- they are always leaf nodes. **Strategic option nodes** (rectangles) represent deliberate choices made by a decision-maker -- they are root nodes. **Function nodes** (chevrons) represent variables whose state is deterministically determined by their parents with no residual uncertainty.
+:::
+
+::: {.key-concept .green}
+#### Signed Directed Links
+
+An arrow from node A to node B means that A is a direct cause of B -- changing A can change B while holding all other parents of B fixed. The sign **[+]** indicates that increasing A increases B, while **[-]** indicates that increasing A decreases B. The overall sign of a directed path is the product of the individual link signs, where [+] x [+] = [+], [-] x [-] = [+], and [+] x [-] = [-].
+:::
+
+::: {.key-concept .orange}
+#### The Three Triplet Structures
+
+The three fundamental triplet structures govern all information flow in a DAG. In a **serial triplet** (chain, A -> B -> C), B is a mediator and conditioning on B blocks the path. In a **diverging triplet** (fork, A <- B -> C), B is a common cause and conditioning on B removes the spurious correlation. In a **converging triplet** (collider, A -> B <- C), the path is naturally blocked but conditioning on B *opens* it, creating collider bias through the "explaining away" effect.
+:::
+
+::: {.key-concept .red}
+#### d-Separation
+
+Two nodes X and Y are **d-separated** given a conditioning set Z if every path between them is blocked. A path is blocked if it contains a chain or fork whose middle node is in Z, or a collider whose middle node (and all descendants) is not in Z. d-Separation implies conditional independence -- these are testable predictions of the model. If data violates an implied independence, the model must be revised.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch02-qualitative-models/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch02-qualitative-models/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This chapter builds and analyzes the full MNH qualitative DAG in R, using `dagitty` for DAG specification and d-separation testing, and `ggdag` for visualization.
+
+### Define the Full MNH DAG
+
+We specify the comprehensive 10-node qualitative DAG with positional coordinates for layout, representing the MNH program's theory of change from budget allocation through mediating variables to mortality outcomes.
+
+```{r}
+#| label: mnh-dag-define
+#| echo: true
+
+library(dagitty)
+library(ggdag)
+library(ggplot2)
+
+# Define the comprehensive MNH qualitative DAG
+mnh_dag <- dagitty('dag {
+  Budget          [pos="0,1"]
+  Workforce       [pos="1.5,0"]
+  Training        [pos="1.5,1"]
+  Equipment       [pos="1.5,2"]
+  Referral_System [pos="1.5,3"]
+  Coverage        [pos="3,3"]
+  Quality         [pos="3,1"]
+  Baseline_Burden [pos="4,3"]
+  NMR             [pos="4.5,0.5"]
+  MMR             [pos="4.5,1.5"]
+
+  Budget -> Workforce
+  Budget -> Training
+  Budget -> Equipment
+  Budget -> Referral_System
+  Training -> Quality
+  Workforce -> Quality
+  Equipment -> Quality
+  Referral_System -> Coverage
+  Coverage -> Quality
+  Quality -> NMR
+  Quality -> MMR
+  Baseline_Burden -> NMR
+  Baseline_Burden -> MMR
+}')
+
+# Verify it is a valid DAG (acyclic)
+isAcyclic(mnh_dag)
+```
+
+### Visualize the DAG Color-Coded by Role
+
+We merge node role metadata into the tidy DAG data to enable color-coding by function: decision nodes, mediators, contextual variables, and outcome objectives.
+
+```{r}
+#| label: mnh-dag-visualize
+#| echo: true
+#| fig-width: 11
+#| fig-height: 6
+
+# Create a tidy dag object with exposure and outcome
+tidy_dag <- tidy_dagitty(mnh_dag)
+
+# Define node roles for coloring
+node_roles <- data.frame(
+  name = c("Budget", "Workforce", "Training", "Equipment",
+           "Referral_System", "Coverage", "Quality",
+           "Baseline_Burden", "NMR", "MMR"),
+  role = c("Decision", "Mediator", "Mediator", "Mediator",
+           "Mediator", "Mediator", "Mediator",
+           "Context", "Outcome", "Outcome")
+)
+
+# Merge roles into the dag data
+dag_data <- left_join(as.data.frame(tidy_dag), node_roles,
+                      by = "name")
+
+ggdag(mnh_dag) +
+  theme_dag() +
+  labs(title = "MNH Program: Qualitative Causal Model",
+       subtitle = "10-node DAG for MNH investment decisions") +
+  theme(plot.title = element_text(color = "#005CB9", size = 16),
+        plot.subtitle = element_text(color = "#666", size = 12))
+```
+
+### Test d-Separation
+
+The `dseparated()` function lets us verify the conditional independence predictions implied by our DAG. Each test checks whether information flows between two variables given a conditioning set.
+
+```{r}
+#| label: mnh-dsep-tests
+#| echo: true
+
+# Test 1: Is Training d-separated from NMR given Quality?
+dseparated(mnh_dag, "Training", "NMR", "Quality")
+# Expected: TRUE (chain is blocked)
+
+# Test 2: Is Workforce d-separated from Equipment? (unconditional)
+dseparated(mnh_dag, "Workforce", "Equipment", c())
+# Expected: FALSE (common parent Budget creates fork)
+
+# Test 3: Is Workforce d-separated from Equipment given Budget?
+dseparated(mnh_dag, "Workforce", "Equipment", "Budget")
+# Expected: TRUE (conditioning on common cause blocks fork)
+
+# Test 4: Is Workforce d-separated from Equipment given Quality?
+dseparated(mnh_dag, "Workforce", "Equipment", "Quality")
+# Expected: FALSE (conditioning on collider opens path!)
+
+# Test 5: Is Training d-separated from Baseline_Burden?
+dseparated(mnh_dag, "Training", "Baseline_Burden", c())
+# Expected: TRUE (no connecting path)
+```
+
+### Enumerate All Paths
+
+The `paths()` function lists every path between two nodes in the DAG, showing both directed (causal) and non-directed (non-causal) paths. This is useful for understanding the full set of channels through which one variable can influence another.
+
+```{r}
+#| label: mnh-paths
+#| echo: true
+
+# Find all paths from Budget to NMR
+budget_nmr_paths <- paths(mnh_dag,
+                          from = "Budget",
+                          to = "NMR")
+print(budget_nmr_paths)
+
+# Find all paths from Budget to MMR
+budget_mmr_paths <- paths(mnh_dag,
+                          from = "Budget",
+                          to = "MMR")
+print(budget_mmr_paths)
+
+# Find paths between Workforce and Equipment (through collider)
+workforce_equip_paths <- paths(mnh_dag,
+                               from = "Workforce",
+                               to = "Equipment")
+print(workforce_equip_paths)
+```
+
+### Implied Conditional Independencies
+
+The `impliedConditionalIndependencies()` function extracts every testable prediction from the DAG. These are the conditional independencies that must hold in the data if the model is correctly specified.
+
+```{r}
+#| label: mnh-implied-ci
+#| echo: true
+
+# List all conditional independencies implied by the DAG
+implied_cis <- impliedConditionalIndependencies(mnh_dag)
+print(implied_cis)
+
+# This tells us every testable prediction of our model.
+# For example, if our model is correct, we should observe:
+#   - Training _||_ Equipment | Budget
+#   - Workforce _||_ Referral_System | Budget
+#   - Training _||_ Baseline_Burden
+#   - NMR _||_ MMR | Quality, Baseline_Burden
+#
+# If DHIS2 data violates any of these, we need to revise the DAG.
+
+# Count total number of implied independencies
+cat("Total implied conditional independencies:", length(implied_cis), "\n")
+```
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Qualitative causal models are the foundation of rigorous analysis.** A DAG encodes your causal beliefs explicitly using four node types and signed directed links.
+
+The three triplet structures -- **chain**, **fork**, and **collider** -- govern all information flow. Chains and forks are blocked by conditioning; colliders are *opened* by conditioning.
+
+**d-Separation** translates graph structure into testable conditional independence predictions.
+
+For MNH programs: the qualitative DAG reveals that People, Products, and Systems investments are **complements** flowing through Quality of Care -- and that conditioning on Quality creates collider bias between investment pillars.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 3 -- The MNH Diagnostic Case Study**, we put qualitative models to work in a structured case study:
+
+- Building a DAG from stakeholder interviews through an iterative process
+- Translating qualitative beliefs into a causal diagram round by round
+- Identifying key assumptions, disagreements, and transmission failures
+- Preparing the model for quantification in later chapters

@@ -1,0 +1,92 @@
+---
+title: "References"
+subtitle: "Textbook, R packages, and supplementary reading"
+---
+
+## Primary Textbook
+
+Ryall, M. D., & Bramson, A. (2014). *Inference and Intervention: Causal Models for Business Analysis*. Routledge.
+
+::: {.callout-box}
+This course adapts all examples from the textbook's business context (advertising, market share, consulting) to maternal and newborn health (MNH) program analysis. The book's original examples (Slimtree Publishing, Hubris Health, The Rideshare Case) are preserved in "Book Context" sections for reference.
+:::
+
+## Causal Inference Literature
+
+Pearl, J. (2009). *Causality: Models, Reasoning, and Inference* (2nd ed.). Cambridge University Press.
+
+Pearl, J., Glymour, M., & Jewell, N. P. (2016). *Causal Inference in Statistics: A Primer*. Wiley.
+
+Spirtes, P., Glymour, C., & Scheines, R. (2000). *Causation, Prediction, and Search* (2nd ed.). MIT Press.
+
+Imbens, G. W., & Rubin, D. B. (2015). *Causal Inference for Statistics, Social, and Biomedical Sciences: An Introduction*. Cambridge University Press.
+
+Morgan, S. L., & Winship, C. (2015). *Counterfactuals and Causal Inference: Methods and Principles for Social Research* (2nd ed.). Cambridge University Press.
+
+Hernán, M. A., & Robins, J. M. (2020). *Causal Inference: What If*. Chapman & Hall/CRC. Available free at [miguelhernan.org](https://www.hsph.harvard.edu/miguel-hernan/causal-inference-book/).
+
+## Decision Analysis & Game Theory
+
+Raiffa, H. (1968). *Decision Analysis: Introductory Lectures on Choices Under Uncertainty*. Addison-Wesley.
+
+Dixit, A. K., & Nalebuff, B. J. (2008). *The Art of Strategy: A Game Theorist's Guide to Success in Business and Life*. W.W. Norton.
+
+## R Package References
+
+### dagitty
+
+Textor, J., van der Zander, B., Gilthorpe, M. S., Liśkiewicz, M., & Ellison, G. T. H. (2016). Robust causal inference using directed acyclic graphs: The R package 'dagitty'. *International Journal of Epidemiology*, 45(6), 1887–1894.
+
+- CRAN: [cran.r-project.org/package=dagitty](https://cran.r-project.org/package=dagitty)
+- Documentation: [dagitty.net](http://www.dagitty.net/)
+
+### bnlearn
+
+Scutari, M. (2010). Learning Bayesian networks with the bnlearn R package. *Journal of Statistical Software*, 35(3), 1–22.
+
+- CRAN: [cran.r-project.org/package=bnlearn](https://cran.r-project.org/package=bnlearn)
+- Documentation: [bnlearn.com](https://www.bnlearn.com/)
+
+### ggdag
+
+Barrett, M. (2023). ggdag: Analyze and Create Elegant Directed Acyclic Graphs.
+
+- CRAN: [cran.r-project.org/package=ggdag](https://cran.r-project.org/package=ggdag)
+
+### ggplot2
+
+Wickham, H. (2016). *ggplot2: Elegant Graphics for Data Analysis* (2nd ed.). Springer.
+
+- CRAN: [cran.r-project.org/package=ggplot2](https://cran.r-project.org/package=ggplot2)
+
+### ivreg
+
+Fox, J., Kleiber, C., & Zeileis, A. (2023). ivreg: Instrumental-Variables Regression.
+
+- CRAN: [cran.r-project.org/package=ivreg](https://cran.r-project.org/package=ivreg)
+
+## MNH Domain References
+
+World Health Organization. (2023). *Trends in Maternal Mortality 2000 to 2020*. WHO.
+
+UNICEF. (2023). *Levels and Trends in Child Mortality: Report 2023*. UN Inter-agency Group for Child Mortality Estimation.
+
+Bhutta, Z. A., et al. (2014). Can available interventions end preventable deaths in mothers, newborn babies, and stillbirths, and at what cost? *The Lancet*, 384(9940), 347–370.
+
+DHIS2. (2024). *District Health Information Software 2*. [dhis2.org](https://dhis2.org/).
+
+## Business-to-Public-Health Terminology
+
+The textbook uses business language that has been systematically adapted for MNH contexts:
+
+| Business Term (Book) | Public Health Replacement |
+|----------------------|--------------------------|
+| Advertising | Mass media campaign / demand generation |
+| Firm / Company | Program / MNH initiative |
+| Client | Beneficiary / target population |
+| ROI | Cost-effectiveness / lives saved per dollar |
+| Revenue | Lives saved / mortality reduction |
+| Profit | Impact / net health benefit |
+| Market share | Coverage rate |
+| CEO / Board | Program Director / Leadership |
+| Product launch | Intervention rollout |

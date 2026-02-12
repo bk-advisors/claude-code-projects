@@ -1,0 +1,2116 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/tabby.min.js"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.8.27">
+
+  <meta name="author" content="BK Advisors">
+  <meta name="dcterms.date" content="2026-02-12">
+  <title>Chapter 9: Multi-Agent Interventions</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="index_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="index_files/libs/revealjs/dist/reveal.css">
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; font-weight: bold; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="index_files/libs/revealjs/dist/theme/quarto-afce544662d4c774d79a6cccbbed54ef.css">
+  <link href="index_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="index_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="index_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="index_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section data-background-color="#005CB9" class="quarto-title-block center">
+  <h1 class="title">Chapter 9: Multi-Agent Interventions</h1>
+  <p class="subtitle">Inference and Intervention | BK Advisors</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+BK Advisors 
+</div>
+</div>
+</div>
+
+  <p class="date">2026-02-12</p>
+</section>
+<section class="slide level2">
+<h2>Learning Objectives</h2>
+<p>After this chapter, you will be able to:</p>
+<ul>
+<li class="fragment">Define <strong>games</strong> with players, strategies, and payoffs in the context of global health</li>
+<li class="fragment">Find <strong>Nash equilibria</strong> in normal-form (matrix) games</li>
+<li class="fragment">Analyze <strong>sequential (extensive-form) games</strong> using backward induction</li>
+<li class="fragment">Represent multi-agent problems as <strong>causal-form games</strong> and strategy tables</li>
+<li class="fragment">Apply game theory to <strong>donor-government interactions</strong> in the Beginnings Fund’s MNH portfolio</li>
+</ul>
+</section>
+<section class="slide level2">
+<h2>Chapter Overview</h2>
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;">
+Game Theory<br>Foundations
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">
+Nash<br>Equilibrium
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item" style="border-left: 4px solid #F8A623;">
+Extensive<br>Form Games
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">
+Causal Form<br>&amp; Strategy
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">
+Workforce<br>Absorption Game
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>The shift:</strong> Chapter 7 assumed a single decision-maker (the Beginnings Fund) choosing against nature. Chapter 8 optimized resource allocation. Now <strong>other agents act strategically</strong> — governments, donors, and implementing partners each pursue their own objectives. We need game theory.</p>
+</div>
+</div>
+</section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Why Multiple Agents Matter</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">When the world pushes back</span></p>
+</section>
+<section class="slide level2">
+<h2>The Single-Agent Assumption Breaks Down</h2>
+<div class="columns-equal">
+<div class="col">
+<div class="callout-box">
+<p><strong>Chapters 7–8: Single-Agent View</strong></p>
+<ul>
+<li>The Beginnings Fund chooses an intervention</li>
+<li>Nature rolls the dice (chance nodes)</li>
+<li>We compute expected value and optimize</li>
+</ul>
+<p><em>Implicit assumption:</em> other actors are part of the “environment” — they don’t respond strategically to our choices.</p>
+</div>
+</div>
+<div class="col">
+<div class="callout-box orange">
+<p><strong>Reality: Multi-Agent World</strong></p>
+<ul>
+<li>The Beginnings Fund commits high funding</li>
+<li>The government <strong>observes</strong> this and reduces its own co-financing</li>
+<li>Implementing partners adjust effort based on monitoring intensity</li>
+</ul>
+<p><em>The environment is not passive.</em> Other agents optimize their own payoffs.</p>
+</div>
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box red">
+<p><strong>The free-rider problem:</strong> When the Beginnings Fund increases salary support for health workers, governments may <em>decrease</em> their own budget allocation for the same line item. Ignoring this strategic response leads to overestimating program impact.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Strategic Actors in MNH</h2>
+<p>In the Beginnings Fund’s MNH portfolio, at least <strong>four strategic agents</strong> interact:</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Agent</th>
+<th>Objective</th>
+<th>Key Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Beginnings Fund</strong></td>
+<td>Maximize lives saved per dollar</td>
+<td>Funding level, duration, conditions</td>
+</tr>
+<tr class="even">
+<td><strong>National Government</strong></td>
+<td>Balance health outcomes with fiscal constraints</td>
+<td>Co-financing, staff absorption, policy reform</td>
+</tr>
+<tr class="odd">
+<td><strong>Implementing Partners</strong></td>
+<td>Deliver results, sustain organization</td>
+<td>Effort allocation, reporting accuracy</td>
+</tr>
+<tr class="even">
+<td><strong>Other Donors</strong></td>
+<td>Maximize own impact metrics</td>
+<td>Complementary vs.&nbsp;duplicative funding</td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<div class="callout-box green">
+<p><strong>Game theory</strong> gives us the formal tools to model these interactions — predicting what each agent will do and designing incentive-compatible contracts and commitments.</p>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Game Theory Foundations</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Players, strategies, and payoffs</span></p>
+</section>
+<section class="slide level2">
+<h2>The Three Elements of a Game</h2>
+<div class="definition-box">
+<p><strong>Game:</strong> A formal model of strategic interaction among rational decision-makers. Every game has three elements: <strong>players</strong>, <strong>strategies</strong>, and <strong>payoffs</strong>.</p>
+</div>
+<div class="fragment">
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Definition</th>
+<th>MNH Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Players</strong></td>
+<td>The agents making decisions</td>
+<td>Beginnings Fund (Donor), Government</td>
+</tr>
+<tr class="even">
+<td><strong>Strategies</strong></td>
+<td>The set of actions available to each player</td>
+<td>{High Funding, Low Funding}, {High Co-financing, Low Co-financing}</td>
+</tr>
+<tr class="odd">
+<td><strong>Payoffs</strong></td>
+<td>The outcome value for each player under each strategy combination</td>
+<td>Lives saved, cost burden, political capital</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>Key assumption:</strong> Each player is <em>rational</em> — choosing the strategy that maximizes their own payoff, given beliefs about what others will do. This doesn’t mean selfish; payoffs can include altruistic goals.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Normal Form: The Payoff Matrix</h2>
+<div class="definition-box">
+<p><strong>Normal-form game:</strong> A game represented as a matrix where rows are one player’s strategies, columns are the other’s, and each cell contains the payoffs for both players.</p>
+</div>
+<div class="fragment">
+<p><strong>The Co-financing Game (payoffs: Donor, Government)</strong></p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Gov: High Co-financing</th>
+<th>Gov: Low Co-financing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Donor: High Funding</strong></td>
+<td>(2400 lives, -$30M cost)</td>
+<td>(1400 lives, -$45M cost)</td>
+</tr>
+<tr class="even">
+<td><strong>Donor: Low Funding</strong></td>
+<td>(1800 lives, -$15M cost)</td>
+<td>(800 lives, -$20M cost)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>Reading the matrix:</strong> Each cell shows <em>(Donor’s payoff, Government’s payoff)</em>. The Donor cares about lives saved; the Government cares about lives saved too, but weighs them against fiscal cost. Negative cost = burden on that player.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Payoffs Capture Competing Priorities</h2>
+<p>Let us assign <strong>utility scores</strong> that blend lives saved and cost:</p>
+<div class="fragment">
+<p><strong>Donor utility</strong> = Lives saved (values impact)</p>
+<p><strong>Government utility</strong> = Lives saved <span class="math inline">\(-\)</span> 50 <span class="math inline">\(\times\)</span> Cost in $M (fiscal pressure)</p>
+</div>
+<div class="fragment">
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Gov: High Co-finance</th>
+<th>Gov: Low Co-finance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Donor: High Funding</strong></td>
+<td>D: <strong>2400</strong>, G: 2400 - 50(30) = <strong>900</strong></td>
+<td>D: <strong>1400</strong>, G: 1400 - 50(10) = <strong>900</strong></td>
+</tr>
+<tr class="even">
+<td><strong>Donor: Low Funding</strong></td>
+<td>D: <strong>1800</strong>, G: 1800 - 50(25) = <strong>550</strong></td>
+<td>D: <strong>800</strong>, G: 800 - 50(5) = <strong>550</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="fragment">
+<div class="callout-box orange">
+<p><strong>Notice:</strong> The Government gets the <em>same</em> utility from (High Fund, High Co-fin) and (High Fund, Low Co-fin) = 900 in this stylized example. The exact numbers depend on cost-sharing assumptions. Let’s refine this.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Refined Payoff Matrix</h2>
+<p>A more realistic model where the Government bears <strong>different costs</strong> depending on its co-financing choice:</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Gov: High Co-finance</th>
+<th>Gov: Low Co-finance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Donor: High Funding</strong></td>
+<td>D: <strong>2400</strong>, G: <strong>1200</strong></td>
+<td>D: <strong>1400</strong>, G: <strong>1100</strong></td>
+</tr>
+<tr class="even">
+<td><strong>Donor: Low Funding</strong></td>
+<td>D: <strong>1800</strong>, G: <strong>800</strong></td>
+<td>D: <strong>800</strong>, G: <strong>600</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<div class="callout-box green">
+<p><strong>Interpretation:</strong></p>
+<ul>
+<li><strong>Best collective outcome:</strong> (High, High) = 2400 + 1200 = <strong>3600</strong> total utility</li>
+<li><strong>Government prefers:</strong> High Co-finance when Donor funds are High (1200 &gt; 1100)</li>
+<li><strong>Donor always prefers:</strong> High Funding (2400 &gt; 1800, 1400 &gt; 800)</li>
+<li>But what happens when the Government suspects the Donor will fund regardless?</li>
+</ul>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Dominant Strategies</h2>
+<div class="definition-box">
+<p><strong>Dominant Strategy:</strong> A strategy that gives a player a higher payoff than any alternative, <em>regardless</em> of what the other player does.</p>
+</div>
+<div class="fragment">
+<p>Check for the <strong>Donor:</strong></p>
+<ul>
+<li>If Gov plays High: High Funding (2400) &gt; Low Funding (1800)</li>
+<li>If Gov plays Low: High Funding (1400) &gt; Low Funding (800)</li>
+</ul>
+<p><strong>High Funding is dominant for the Donor.</strong></p>
+</div>
+<div class="fragment">
+<p>Check for the <strong>Government:</strong></p>
+<ul>
+<li>If Donor plays High: High Co-finance (1200) &gt; Low Co-finance (1100)</li>
+<li>If Donor plays Low: High Co-finance (800) &gt; Low Co-finance (600)</li>
+</ul>
+<p><strong>High Co-financing is dominant for the Government.</strong></p>
+</div>
+<div class="fragment">
+<div class="key-takeaway">
+<p>Both players have dominant strategies. The outcome <strong>(High, High)</strong> is a <strong>dominant-strategy equilibrium</strong> — the best-case scenario where incentives are aligned.</p>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Nash Equilibrium</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">When no player can improve by changing alone</span></p>
+</section>
+<section class="slide level2">
+<h2>Definition of Nash Equilibrium</h2>
+<div class="definition-box">
+<p><strong>Nash Equilibrium (NE):</strong> A strategy profile where <strong>no player can improve their payoff</strong> by unilaterally changing their strategy, holding all other players’ strategies fixed.</p>
+</div>
+<div class="fragment">
+<p><strong>Finding NE in a 2x2 game — the underline method:</strong></p>
+<ol type="1">
+<li>For each column (Government’s strategy), underline the Donor’s best response</li>
+<li>For each row (Donor’s strategy), underline the Government’s best response</li>
+<li>Any cell where <strong>both</strong> payoffs are underlined is a Nash Equilibrium</li>
+</ol>
+</div>
+<div class="fragment">
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Gov: High Co-finance</th>
+<th>Gov: Low Co-finance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Donor: High Funding</strong></td>
+<td>D: <span style="text-decoration: underline;"><strong>2400</strong></span>, G: <span style="text-decoration: underline;"><strong>1200</strong></span></td>
+<td>D: <span style="text-decoration: underline;"><strong>1400</strong></span>, G: 1100</td>
+</tr>
+<tr class="even">
+<td><strong>Donor: Low Funding</strong></td>
+<td>D: 1800, G: <span style="text-decoration: underline;"><strong>800</strong></span></td>
+<td>D: 800, G: 600</td>
+</tr>
+</tbody>
+</table>
+<p><strong>(High Funding, High Co-financing)</strong> is the unique Nash Equilibrium.</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>When Incentives Misalign: A Harder Game</h2>
+<p>Now suppose the Government faces <strong>high political costs</strong> for co-financing (diverting funds from visible infrastructure projects):</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Gov: High Co-finance</th>
+<th>Gov: Low Co-finance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Donor: High Funding</strong></td>
+<td>D: <strong>2400</strong>, G: <strong>700</strong></td>
+<td>D: <strong>1400</strong>, G: <strong>1100</strong></td>
+</tr>
+<tr class="even">
+<td><strong>Donor: Low Funding</strong></td>
+<td>D: <strong>1800</strong>, G: <strong>500</strong></td>
+<td>D: <strong>800</strong>, G: <strong>600</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<p>Check Government’s best responses:</p>
+<ul>
+<li>If Donor plays High: Low Co-finance (1100) &gt; High Co-finance (700)</li>
+<li>If Donor plays Low: Low Co-finance (600) &gt; High Co-finance (500)</li>
+</ul>
+</div>
+<div class="fragment">
+<div class="callout-box red">
+<p><strong>Low Co-financing is now dominant for the Government.</strong> The Nash Equilibrium shifts to <strong>(High Funding, Low Co-financing)</strong> — the Donor funds generously, the Government free-rides. Total utility drops from 3100 to 2500.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>The Prisoner’s Dilemma in Health Funding</h2>
+<div class="columns-equal">
+<div class="col">
+<div class="callout-box">
+<p><strong>Classic Prisoner’s Dilemma</strong></p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th></th>
+<th>Cooperate</th>
+<th>Defect</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Cooperate</strong></td>
+<td>3, 3</td>
+<td>1, 4</td>
+</tr>
+<tr class="even">
+<td><strong>Defect</strong></td>
+<td>4, 1</td>
+<td><strong>2, 2</strong></td>
+</tr>
+</tbody>
+</table>
+<p>NE: (Defect, Defect) — both worse off than (Cooperate, Cooperate).</p>
+</div>
+</div>
+<div class="col">
+<div class="callout-box orange">
+<p><strong>MNH Funding Dilemma</strong></p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th></th>
+<th>Gov: Co-finance</th>
+<th>Gov: Free-ride</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Donor: Fund</strong></td>
+<td>2400, 700</td>
+<td>1400, 1100</td>
+</tr>
+<tr class="even">
+<td><strong>Donor: Withdraw</strong></td>
+<td>1800, 500</td>
+<td><strong>800, 600</strong></td>
+</tr>
+</tbody>
+</table>
+<p>NE: (Fund, Free-ride) — Donor’s dominant strategy keeps funding flowing, Government free-rides.</p>
+</div>
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box green">
+<p><strong>The structural similarity:</strong> Both players would prefer mutual cooperation (High, High) but individual incentives push toward a suboptimal equilibrium. The solution requires <strong>commitment devices</strong> — contracts, conditionalities, or repeated interaction.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Multiple Equilibria and Coordination</h2>
+<p>Some games have <strong>multiple Nash equilibria</strong>, creating a coordination problem:</p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th></th>
+<th>Gov: Midwives</th>
+<th>Gov: CHWs</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Donor: Midwives</strong></td>
+<td>D: <strong>2000</strong>, G: <strong>1500</strong></td>
+<td>D: 400, G: 300</td>
+</tr>
+<tr class="even">
+<td><strong>Donor: CHWs</strong></td>
+<td>D: 300, G: 400</td>
+<td>D: <strong>1200</strong>, G: <strong>1000</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<ul>
+<li class="fragment"><strong>(Midwives, Midwives)</strong> is a NE — neither player wants to deviate</li>
+<li class="fragment"><strong>(CHWs, CHWs)</strong> is also a NE — neither player wants to deviate alone</li>
+<li class="fragment"><strong>(Midwives, CHWs)</strong> and <strong>(CHWs, Midwives)</strong> are NOT equilibria — miscoordination wastes resources</li>
+<li class="fragment">Both players prefer (Midwives, Midwives) but without communication, they might end up miscoordinated</li>
+</ul>
+</div>
+<div class="fragment">
+<div class="key-takeaway">
+<p><strong>Coordination games</strong> explain why joint planning between donors and governments is essential. The issue is not conflicting interests — it’s ensuring both sides invest in the <strong>same</strong> cadre.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Escaping Bad Equilibria</h2>
+<p>How can the Beginnings Fund move from a free-riding equilibrium to cooperation?</p>
+<div class="fragment">
+<div class="columns-equal">
+<div class="col">
+<p><strong>Mechanism Design Approaches:</strong></p>
+<ol type="1">
+<li class="fragment"><strong>Conditional funding:</strong> “We fund high <em>only if</em> you co-finance <span class="math inline">\(\geq\)</span> 30%”</li>
+<li class="fragment"><strong>Repeated interaction:</strong> Build reputation over multiple funding cycles</li>
+<li class="fragment"><strong>Binding contracts:</strong> MoU with milestone-triggered disbursements</li>
+<li class="fragment"><strong>Third-party enforcement:</strong> World Bank or Global Fund conditionalities</li>
+</ol>
+</div>
+<div class="col">
+<div class="example-block">
+<p><span class="example-label">MNH Example</span></p>
+<p>The Beginnings Fund structures its Phase 2 agreements with a <strong>co-financing escalator</strong>: government contribution must increase by 5 percentage points per year. If the government misses a milestone, the next tranche is reduced by 50%.</p>
+<p>This changes the payoff matrix: free-riding now costs the government future funding.</p>
+</div>
+</div>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Extensive Form Games</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Sequential moves and backward induction</span></p>
+</section>
+<section class="slide level2">
+<h2>Game Trees</h2>
+<div class="definition-box">
+<p><strong>Extensive-form game:</strong> A game represented as a <strong>tree</strong> showing the sequence of moves, information available at each decision point, and payoffs at terminal nodes.</p>
+</div>
+<div class="fragment">
+<p><strong>MNH Sequential Game: Donor Commits First</strong></p>
+<table style="width: 90%; margin: 0.4em auto; font-size: 0.5em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="padding: 0.4em 0.6em;">
+Donor:<br>High or Low?
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→ High →</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="border-color: #F8A623; color: #F8A623; padding: 0.4em 0.6em;">
+Gov:<br>High or Low?
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center; padding: 0.5em; font-size: 0.9em;">
+(High, High): <strong>2400, 700</strong><br> (High, Low): <strong>1400, 1100</strong>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→ Low →</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="border-color: #F8A623; color: #F8A623; padding: 0.4em 0.6em;">
+Gov:<br>High or Low?
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center; padding: 0.5em; font-size: 0.9em;">
+(Low, High): <strong>1800, 500</strong><br> (Low, Low): <strong>800, 600</strong>
+</td>
+</tr>
+</tbody></table>
+</div>
+</section>
+<section class="slide level2">
+<h2>Backward Induction</h2>
+<div class="definition-box">
+<p><strong>Backward Induction:</strong> Solve the game by starting at the <strong>terminal nodes</strong> and working backward. At each decision node, the player chooses their best response.</p>
+</div>
+<div class="fragment">
+<p><strong>Step 1:</strong> Government’s optimal response (last mover):</p>
+<ul>
+<li>If Donor chose <strong>High</strong>: Gov picks Low Co-finance (1100 &gt; 700)</li>
+<li>If Donor chose <strong>Low</strong>: Gov picks Low Co-finance (600 &gt; 500)</li>
+</ul>
+</div>
+<div class="fragment">
+<p><strong>Step 2:</strong> Donor anticipates Government’s response (first mover):</p>
+<ul>
+<li>If Donor chooses High → Gov plays Low → Donor gets <strong>1400</strong></li>
+<li>If Donor chooses Low → Gov plays Low → Donor gets <strong>800</strong></li>
+</ul>
+</div>
+<div class="fragment">
+<div class="key-takeaway">
+<p><strong>Backward induction outcome:</strong> (High Funding, Low Co-financing) with payoffs (1400, 1100). The Donor funds generously knowing the Government will free-ride — but still prefers this to the alternative.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>First-Mover Advantage in Donor Commitments</h2>
+<div class="callout-box">
+<p><strong>Key insight:</strong> The <em>order of moves</em> changes the outcome. When the Donor commits first without conditions, the Government can observe and free-ride. But if the Donor can <strong>commit conditionally</strong>, the game changes.</p>
+</div>
+<div class="fragment">
+<p><strong>Modified game: Donor commits to conditional funding</strong></p>
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;">
+<strong>Donor</strong><br>Announces:<br>“High if Gov ≥ 30%”
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item" style="border-left: 4px solid #F8A623;">
+<strong>Government</strong><br>Chooses:<br>High or Low?
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">
+<strong>Outcome</strong><br>Funding level<br>determined
+</div>
+</div>
+</div>
+<div class="fragment">
+<p>Now the Government faces:</p>
+<ul>
+<li>High Co-finance → triggers High Donor Funding → Gov payoff: <strong>700</strong></li>
+<li>Low Co-finance → triggers Low Donor Funding → Gov payoff: <strong>600</strong></li>
+</ul>
+<p>Government chooses <strong>High Co-financing</strong>. Conditionality restores cooperation.</p>
+</div>
+<div class="fragment">
+<div class="callout-box green">
+<p><strong>Commitment power transforms the game.</strong> By credibly restricting its own future choices, the Donor can induce better behavior from the Government. This is the logic behind milestone-based disbursements.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Subgame Perfect Equilibrium</h2>
+<div class="definition-box">
+<p><strong>Subgame Perfect Equilibrium (SPE):</strong> A Nash equilibrium where the players’ strategies constitute a Nash equilibrium in <strong>every subgame</strong> of the extensive-form game. Found by backward induction.</p>
+</div>
+<div class="fragment">
+<div class="columns-equal">
+<div class="col">
+<div class="callout-box">
+<p><strong>Without conditionality:</strong></p>
+<p>SPE: (High Funding, Always Low Co-finance)</p>
+<p>Government’s strategy “Always Low” is credible — it is optimal at every decision node.</p>
+</div>
+</div>
+<div class="col">
+<div class="callout-box green">
+<p><strong>With conditionality:</strong></p>
+<p>SPE: (Conditional High, High Co-finance)</p>
+<p>Now “High Co-finance” is the Government’s best response at the relevant subgame because Low triggers reduced funding.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box orange">
+<p><strong>Non-credible threats:</strong> “We’ll withdraw all funding if you don’t co-finance” is not subgame perfect if the Donor would never actually withdraw (e.g., due to political commitments). Only <strong>credible</strong> conditionalities work.</p>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Causal Form Games</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">The book’s innovation: games as influence diagrams</span></p>
+</section>
+<section class="slide level2">
+<h2>Games as Causal Models</h2>
+<div class="definition-box">
+<p><strong>Causal-form game:</strong> A multi-agent influence diagram where each player has their own <strong>decision node</strong> and <strong>objective node</strong>, and the causal structure shows how decisions interact to produce outcomes.</p>
+</div>
+<div class="fragment">
+<table style="width: 90%; margin: 0.5em auto; font-size: 0.5em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="padding: 0.4em 0.6em;">
+Donor<br>Funding
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td rowspan="3" style="text-align: center; padding: 0.5em;">
+<div class="dag-node" style="padding: 0.4em 0.6em;">
+Health<br>Outcomes
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon" style="border-color: #3E9B6E; color: #3E9B6E; padding: 0.4em 0.6em;">
+Donor<br>Utility
+</div>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="border-color: #F8A623; color: #F8A623; padding: 0.4em 0.6em;">
+Gov<br>Co-finance
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon" style="border-color: #F8A623; color: #F8A623; padding: 0.4em 0.6em;">
+Gov<br>Utility
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>Advantage of causal form:</strong> It makes the <strong>causal pathways</strong> explicit. Both decisions flow through Health Outcomes, but each player evaluates the result with their own utility function. We can also add chance nodes (e.g., disease burden, political stability).</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Converting Between Game Representations</h2>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Representation</th>
+<th>Shows</th>
+<th>Best for</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Normal form</strong> (matrix)</td>
+<td>All strategy combinations and payoffs simultaneously</td>
+<td>Finding Nash equilibria in small games</td>
+</tr>
+<tr class="even">
+<td><strong>Extensive form</strong> (tree)</td>
+<td>Sequential structure, information sets</td>
+<td>Analyzing timing, commitment, credibility</td>
+</tr>
+<tr class="odd">
+<td><strong>Causal form</strong> (DAG)</td>
+<td>Causal mechanisms connecting decisions to outcomes</td>
+<td>Understanding <em>why</em> payoffs have their values</td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<div class="example-block">
+<p><span class="example-label">MNH Example</span></p>
+<p>The payoff of (High Funding, Low Co-finance) = (1400, 1100) in the matrix. The causal form reveals <strong>why</strong>: High Funding increases equipment and training, but Low Co-finance means inadequate staffing for sustainability. The 1400 lives saved reflects the short-term gain that erodes without government support.</p>
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box green">
+<p><strong>The causal form connects game theory to Chapters 1–6.</strong> The DAG structure behind the payoff matrix is the same kind of causal model we built for inference. Now we layer strategic decisions on top.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Adding Chance Nodes</h2>
+<p>The causal form naturally incorporates <strong>uncertainty</strong> alongside strategic interaction:</p>
+<table style="width: 95%; margin: 0.4em auto; font-size: 0.45em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="padding: 0.4em 0.6em;">
+Donor<br>Funding
+</div>
+</td>
+<td rowspan="3" style="text-align: center;">
+<span class="dag-arrow" style="font-size: 2em;">→</span>
+</td>
+<td rowspan="3" style="text-align: center; padding: 0.5em;">
+<div class="dag-node" style="padding: 0.4em 0.6em;">
+Service<br>Delivery
+</div>
+</td>
+<td rowspan="3" style="text-align: center;">
+<span class="dag-arrow" style="font-size: 2em;">→</span>
+</td>
+<td rowspan="3" style="text-align: center; padding: 0.5em;">
+<div class="dag-node" style="padding: 0.4em 0.6em;">
+NMR<br>Reduction
+</div>
+</td>
+<td rowspan="3" style="text-align: center;">
+<span class="dag-arrow" style="font-size: 2em;">→</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon" style="border-color: #3E9B6E; color: #3E9B6E; padding: 0.3em 0.5em;">
+Donor<br>Obj.
+</div>
+</td>
+</tr>
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node confounder" style="padding: 0.4em 0.6em;">
+Political<br>Stability
+</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon" style="border-color: #F8A623; color: #F8A623; padding: 0.3em 0.5em;">
+Gov<br>Obj.
+</div>
+</td>
+</tr>
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="border-color: #F8A623; color: #F8A623; padding: 0.4em 0.6em;">
+Gov<br>Co-finance
+</div>
+</td>
+</tr>
+</tbody></table>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>Political Stability</strong> is a chance node — neither player controls it. If instability is high, even mutual cooperation may yield poor outcomes. The causal form lets us compute expected payoffs <em>conditional on</em> this uncertainty, exactly as in Chapter 7’s influence diagrams.</p>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Strategy Tables</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Contingent strategies and conditional commitments</span></p>
+</section>
+<section class="slide level2">
+<h2>Representing Contingent Strategies</h2>
+<div class="definition-box">
+<p><strong>Strategy (in extensive form):</strong> A complete plan of action specifying what a player will do at <em>every</em> decision point they might reach, contingent on what they observe.</p>
+</div>
+<div class="fragment">
+<p><strong>Government’s contingent strategies:</strong></p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Strategy</th>
+<th>If Donor Funds High</th>
+<th>If Donor Funds Low</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Always High</strong></td>
+<td>Co-finance High</td>
+<td>Co-finance High</td>
+</tr>
+<tr class="even">
+<td><strong>Always Low</strong></td>
+<td>Co-finance Low</td>
+<td>Co-finance Low</td>
+</tr>
+<tr class="odd">
+<td><strong>Match</strong></td>
+<td>Co-finance High</td>
+<td>Co-finance Low</td>
+</tr>
+<tr class="even">
+<td><strong>Oppose</strong></td>
+<td>Co-finance Low</td>
+<td>Co-finance High</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="fragment">
+<div class="callout-box">
+<p>A strategy table enumerates all possible contingent plans. With 2 information sets and 2 actions each, the Government has <span class="math inline">\(2^2 = 4\)</span> strategies. The “Match” strategy is particularly interesting — it says “I’ll cooperate if and only if you do.”</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Conditional Funding Agreements</h2>
+<div class="example-block">
+<p><span class="example-label">MNH Example</span></p>
+<p><strong>Beginnings Fund conditional strategy:</strong> “I fund high IF government co-finances <span class="math inline">\(\geq\)</span> 30% of recurrent costs, AND absorbs <span class="math inline">\(\geq\)</span> 80% of trained workers by year 3.”</p>
+<p>This is a <strong>contingent strategy</strong> — the Donor’s action depends on the Government’s observable behavior.</p>
+</div>
+<div class="fragment">
+<p><strong>Donor’s strategy table:</strong></p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Strategy</th>
+<th>If Gov Co-fin <span class="math inline">\(\geq\)</span> 30%</th>
+<th>If Gov Co-fin &lt; 30%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Unconditional High</strong></td>
+<td>High Funding</td>
+<td>High Funding</td>
+</tr>
+<tr class="even">
+<td><strong>Conditional High</strong></td>
+<td>High Funding</td>
+<td>Low Funding</td>
+</tr>
+<tr class="odd">
+<td><strong>Conditional Low</strong></td>
+<td>Low Funding</td>
+<td>High Funding</td>
+</tr>
+<tr class="even">
+<td><strong>Unconditional Low</strong></td>
+<td>Low Funding</td>
+<td>Low Funding</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="fragment">
+<div class="callout-box green">
+<p><strong>“Conditional High” is the dominant strategy</strong> when the Donor can credibly commit. It rewards government cooperation and punishes free-riding. This is exactly the structure of milestone-based payment agreements.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Milestone-Based Payments as Commitment</h2>
+<p>Real-world Beginnings Fund contracts operationalize conditional strategies:</p>
+<div class="fragment">
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Milestone</th>
+<th>Verification</th>
+<th>Funding Release</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Government budget line for health workers created</td>
+<td>Audited budget document</td>
+<td>25% of tranche</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\geq\)</span> 200 workers on government payroll by Year 1</td>
+<td>Payroll verification</td>
+<td>25% of tranche</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\geq\)</span> 400 workers absorbed by Year 2</td>
+<td>Payroll + facility verification</td>
+<td>25% of tranche</td>
+</tr>
+<tr class="even">
+<td>Full absorption (<span class="math inline">\(\geq\)</span> 500) by Year 3</td>
+<td>Independent audit</td>
+<td>Final 25%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="fragment">
+<div class="callout-box orange">
+<p><strong>The commitment problem:</strong> Milestones only work if the Donor <em>actually</em> withholds funding when milestones are missed. If the Government believes the Donor will disburse regardless (due to political pressure or sunk-cost fallacy), the conditionality has no bite. <strong>Credibility is everything.</strong></p>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>MNH Application: The Workforce Absorption Game</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">A complete game-theoretic analysis</span></p>
+</section>
+<section class="slide level2">
+<h2>The Setting</h2>
+<div class="callout-box">
+<p><strong>The Workforce Absorption Game</strong></p>
+<p>The Beginnings Fund trains <strong>500 community health workers</strong> in a Phase 2 country. Training and initial salary support cost <strong>$15M</strong> over 3 years.</p>
+<p>The Government must <strong>absorb these workers onto its payroll</strong> within 3 years. If it doesn’t, workers leave for the private sector or emigrate, and the investment is wasted.</p>
+<p><strong>Both players know the stakes. Both act strategically.</strong></p>
+</div>
+<div class="fragment">
+<p><strong>Players:</strong></p>
+<ul>
+<li><strong>Beginnings Fund (B):</strong> Decides funding level {Full $15M, Reduced $8M}</li>
+<li><strong>Government (G):</strong> Decides absorption level {Full Absorb, Partial Absorb, No Absorb}</li>
+</ul>
+</div>
+</section>
+<section class="slide level2">
+<h2>The Payoff Matrix</h2>
+<p>Payoffs incorporate lives saved over 10 years, cost burden, and political capital:</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Gov: Full Absorb</th>
+<th>Gov: Partial Absorb</th>
+<th>Gov: No Absorb</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>B: Full Funding</strong></td>
+<td>B: <strong>4500</strong>, G: <strong>600</strong></td>
+<td>B: <strong>2800</strong>, G: <strong>900</strong></td>
+<td>B: <strong>500</strong>, G: <strong>1000</strong></td>
+</tr>
+<tr class="even">
+<td><strong>B: Reduced</strong></td>
+<td>B: <strong>2200</strong>, G: <strong>400</strong></td>
+<td>B: <strong>1500</strong>, G: <strong>700</strong></td>
+<td>B: <strong>300</strong>, G: <strong>800</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>Reading the payoffs:</strong></p>
+<ul>
+<li><strong>Beginnings Fund</strong> values lives saved (higher is better)</li>
+<li><strong>Government</strong> values lives saved but heavily discounts fiscal cost of absorption (adding 500 workers to payroll is $5M/year indefinitely)</li>
+<li>Government gets highest utility from <strong>No Absorb</strong> (saves money, still benefits from trained workers during donor-funded period)</li>
+</ul>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Finding the Nash Equilibrium</h2>
+<p><strong>Government’s best responses</strong> (underline method):</p>
+<ul>
+<li>If B plays Full: No Absorb (<strong>1000</strong>) &gt; Partial (900) &gt; Full Absorb (600)</li>
+<li>If B plays Reduced: No Absorb (<strong>800</strong>) &gt; Partial (700) &gt; Full Absorb (400)</li>
+</ul>
+<div class="fragment">
+<p><strong>No Absorb is dominant for the Government.</strong></p>
+</div>
+<div class="fragment">
+<p><strong>Beginnings Fund’s best responses:</strong></p>
+<ul>
+<li>If Gov plays Full Absorb: Full Funding (<strong>4500</strong>) &gt; Reduced (2200)</li>
+<li>If Gov plays Partial: Full Funding (<strong>2800</strong>) &gt; Reduced (1500)</li>
+<li>If Gov plays No Absorb: Full Funding (<strong>500</strong>) &gt; Reduced (300)</li>
+</ul>
+</div>
+<div class="fragment">
+<p><strong>Full Funding is dominant for the Beginnings Fund.</strong></p>
+</div>
+<div class="fragment">
+<div class="callout-box red">
+<p><strong>Nash Equilibrium: (Full Funding, No Absorb)</strong> with payoffs (500, 1000). The worst outcome for the Beginnings Fund — $15M invested, workers trained, but no absorption. A classic free-rider tragedy.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Redesigning the Game: Commitment Devices</h2>
+<p>The Beginnings Fund can change the equilibrium through <strong>contract design:</strong></p>
+<div class="fragment">
+<div class="columns-equal">
+<div class="col">
+<p><strong>Device 1: Milestone Payments</strong></p>
+<p>Restructure disbursement: $3M upfront, $4M at Year 1 if <span class="math inline">\(\geq\)</span> 150 absorbed, $4M at Year 2 if <span class="math inline">\(\geq\)</span> 350 absorbed, $4M at Year 3 if <span class="math inline">\(\geq\)</span> 500 absorbed.</p>
+<p>New payoffs if Gov doesn’t absorb:</p>
+<ul>
+<li>Gov gets only $3M of training (not $15M)</li>
+<li>Payoff drops from 1000 to <strong>350</strong></li>
+</ul>
+</div>
+<div class="col">
+<p><strong>Device 2: Bonding Agreement</strong></p>
+<p>Government deposits $2M in escrow, forfeited if absorption targets are missed.</p>
+<p>New payoffs for No Absorb:</p>
+<ul>
+<li>Gov loses escrow: 1000 - 200 = <strong>800</strong> → <strong>600</strong></li>
+<li>Changes the ranking: Full Absorb (600) <span class="math inline">\(\approx\)</span> No Absorb (600)</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box green">
+<p><strong>Device 3: Combine both.</strong> With milestone payments AND a bonding agreement, the revised payoff matrix makes <strong>Full Absorb the dominant strategy</strong> for the Government. Contract design is mechanism design.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>The Transformed Game</h2>
+<p><strong>Revised payoff matrix with milestone payments:</strong></p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Gov: Full Absorb</th>
+<th>Gov: Partial Absorb</th>
+<th>Gov: No Absorb</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>B: Conditional</strong></td>
+<td>B: <strong>4500</strong>, G: <strong>600</strong></td>
+<td>B: <strong>2000</strong>, G: <strong>500</strong></td>
+<td>B: <strong>200</strong>, G: <strong>350</strong></td>
+</tr>
+<tr class="even">
+<td><strong>B: Reduced</strong></td>
+<td>B: <strong>2200</strong>, G: <strong>400</strong></td>
+<td>B: <strong>1500</strong>, G: <strong>700</strong></td>
+<td>B: <strong>300</strong>, G: <strong>800</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<p><strong>Government’s best responses with conditional funding:</strong></p>
+<ul>
+<li>If B plays Conditional: Full Absorb (<strong>600</strong>) &gt; Partial (500) &gt; No Absorb (350)</li>
+<li>If B plays Reduced: No Absorb (800) &gt; Partial (700) &gt; Full Absorb (400)</li>
+</ul>
+</div>
+<div class="fragment">
+<p><strong>New Nash Equilibrium: (Conditional Funding, Full Absorb)</strong> with payoffs (4500, 600).</p>
+</div>
+<div class="fragment">
+<div class="key-takeaway">
+<p><strong>Contract design shifted the equilibrium</strong> from (Full, No Absorb) = 500 lives to (Conditional, Full Absorb) = 4500 lives. The Beginnings Fund achieved a <strong>9x improvement</strong> in expected impact by restructuring incentives rather than increasing funding.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Lessons from the Absorption Game</h2>
+<div class="callout-box green">
+<p><strong>Five principles for multi-agent MNH program design:</strong></p>
+<ol type="1">
+<li><strong>Map the game first.</strong> Identify players, strategies, and payoffs <em>before</em> committing funds</li>
+<li><strong>Check for dominant strategies.</strong> If the Government has a dominant strategy to free-ride, unconditional funding will fail</li>
+<li><strong>Design for subgame perfection.</strong> Conditionalities must be credible — the Donor must be willing to actually withhold</li>
+<li><strong>Use milestones, not lump sums.</strong> Phased disbursement turns a one-shot game into a sequential game with accountability</li>
+<li><strong>Align payoffs, don’t just add conditions.</strong> The best mechanism makes cooperation <em>genuinely attractive</em> for both sides</li>
+</ol>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>R Workshop: Game Theory</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Finding equilibria and visualizing strategic interactions</span></p>
+</section>
+<section class="slide level2">
+<h2>R: Representing and Solving a 2x2 Game</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a><span class="co"># Define the Workforce Absorption Game (2-player, 2x3 reduced to 2x2)</span></span>
+<span id="cb1-2"><a href=""></a><span class="co"># Payoffs: list(Donor, Government)</span></span>
+<span id="cb1-3"><a href=""></a></span>
+<span id="cb1-4"><a href=""></a><span class="co"># Donor strategies: Full Funding, Reduced Funding (rows)</span></span>
+<span id="cb1-5"><a href=""></a><span class="co"># Gov strategies: Full Absorb, No Absorb (columns, simplified)</span></span>
+<span id="cb1-6"><a href=""></a></span>
+<span id="cb1-7"><a href=""></a>donor_payoffs <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">4500</span>, <span class="dv">2200</span>,   <span class="co"># Full Absorb column</span></span>
+<span id="cb1-8"><a href=""></a>                          <span class="dv">500</span>,  <span class="dv">300</span>),    <span class="co"># No Absorb column</span></span>
+<span id="cb1-9"><a href=""></a>                        <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">2</span>,</span>
+<span id="cb1-10"><a href=""></a>                        <span class="at">dimnames =</span> <span class="fu">list</span>(</span>
+<span id="cb1-11"><a href=""></a>                          <span class="at">Donor =</span> <span class="fu">c</span>(<span class="st">"Full Funding"</span>, <span class="st">"Reduced"</span>),</span>
+<span id="cb1-12"><a href=""></a>                          <span class="at">Gov =</span> <span class="fu">c</span>(<span class="st">"Full Absorb"</span>, <span class="st">"No Absorb"</span>)))</span>
+<span id="cb1-13"><a href=""></a></span>
+<span id="cb1-14"><a href=""></a>gov_payoffs <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">600</span>, <span class="dv">400</span>,     <span class="co"># Full Absorb column</span></span>
+<span id="cb1-15"><a href=""></a>                        <span class="dv">1000</span>, <span class="dv">800</span>),   <span class="co"># No Absorb column</span></span>
+<span id="cb1-16"><a href=""></a>                      <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">2</span>,</span>
+<span id="cb1-17"><a href=""></a>                      <span class="at">dimnames =</span> <span class="fu">list</span>(</span>
+<span id="cb1-18"><a href=""></a>                        <span class="at">Donor =</span> <span class="fu">c</span>(<span class="st">"Full Funding"</span>, <span class="st">"Reduced"</span>),</span>
+<span id="cb1-19"><a href=""></a>                        <span class="at">Gov =</span> <span class="fu">c</span>(<span class="st">"Full Absorb"</span>, <span class="st">"No Absorb"</span>)))</span>
+<span id="cb1-20"><a href=""></a></span>
+<span id="cb1-21"><a href=""></a><span class="co"># Find Nash Equilibria by checking best responses</span></span>
+<span id="cb1-22"><a href=""></a>find_nash <span class="ot">&lt;-</span> <span class="cf">function</span>(p1, p2) {</span>
+<span id="cb1-23"><a href=""></a>  nr <span class="ot">&lt;-</span> <span class="fu">nrow</span>(p1); nc <span class="ot">&lt;-</span> <span class="fu">ncol</span>(p1)</span>
+<span id="cb1-24"><a href=""></a>  nash <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb1-25"><a href=""></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nr) {</span>
+<span id="cb1-26"><a href=""></a>    <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nc) {</span>
+<span id="cb1-27"><a href=""></a>      <span class="co"># Is i a best response for Player 1 given Player 2 plays j?</span></span>
+<span id="cb1-28"><a href=""></a>      p1_br <span class="ot">&lt;-</span> p1[i, j] <span class="sc">==</span> <span class="fu">max</span>(p1[, j])</span>
+<span id="cb1-29"><a href=""></a>      <span class="co"># Is j a best response for Player 2 given Player 1 plays i?</span></span>
+<span id="cb1-30"><a href=""></a>      p2_br <span class="ot">&lt;-</span> p2[i, j] <span class="sc">==</span> <span class="fu">max</span>(p2[i, ])</span>
+<span id="cb1-31"><a href=""></a>      <span class="cf">if</span> (p1_br <span class="sc">&amp;</span> p2_br) {</span>
+<span id="cb1-32"><a href=""></a>        nash <span class="ot">&lt;-</span> <span class="fu">c</span>(nash, <span class="fu">list</span>(<span class="fu">c</span>(<span class="at">row =</span> i, <span class="at">col =</span> j)))</span>
+<span id="cb1-33"><a href=""></a>      }</span>
+<span id="cb1-34"><a href=""></a>    }</span>
+<span id="cb1-35"><a href=""></a>  }</span>
+<span id="cb1-36"><a href=""></a>  nash</span>
+<span id="cb1-37"><a href=""></a>}</span>
+<span id="cb1-38"><a href=""></a></span>
+<span id="cb1-39"><a href=""></a>ne <span class="ot">&lt;-</span> <span class="fu">find_nash</span>(donor_payoffs, gov_payoffs)</span>
+<span id="cb1-40"><a href=""></a><span class="fu">cat</span>(<span class="st">"Nash Equilibria:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb1-41"><a href=""></a><span class="cf">for</span> (eq <span class="cf">in</span> ne) {</span>
+<span id="cb1-42"><a href=""></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  (%s, %s) -&gt; Donor: %d, Gov: %d</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb1-43"><a href=""></a>              <span class="fu">rownames</span>(donor_payoffs)[eq[<span class="dv">1</span>]],</span>
+<span id="cb1-44"><a href=""></a>              <span class="fu">colnames</span>(donor_payoffs)[eq[<span class="dv">2</span>]],</span>
+<span id="cb1-45"><a href=""></a>              donor_payoffs[eq[<span class="dv">1</span>], eq[<span class="dv">2</span>]],</span>
+<span id="cb1-46"><a href=""></a>              gov_payoffs[eq[<span class="dv">1</span>], eq[<span class="dv">2</span>]]))</span>
+<span id="cb1-47"><a href=""></a>}</span>
+<span id="cb1-48"><a href=""></a><span class="co"># Expected output: (Full Funding, No Absorb) -&gt; Donor: 500, Gov: 1000</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section class="slide level2">
+<h2>R: Payoff Matrix Heatmap</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href=""></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb2-2"><a href=""></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb2-3"><a href=""></a></span>
+<span id="cb2-4"><a href=""></a><span class="co"># Build tidy data for both players</span></span>
+<span id="cb2-5"><a href=""></a>game_df <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(</span>
+<span id="cb2-6"><a href=""></a>  <span class="at">Donor =</span> <span class="fu">c</span>(<span class="st">"Full Funding"</span>, <span class="st">"Reduced"</span>),</span>
+<span id="cb2-7"><a href=""></a>  <span class="at">Gov =</span> <span class="fu">c</span>(<span class="st">"Full Absorb"</span>, <span class="st">"Partial Absorb"</span>, <span class="st">"No Absorb"</span>)</span>
+<span id="cb2-8"><a href=""></a>)</span>
+<span id="cb2-9"><a href=""></a>game_df<span class="sc">$</span>Donor_Payoff <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">4500</span>, <span class="dv">2200</span>, <span class="dv">2800</span>, <span class="dv">1500</span>, <span class="dv">500</span>, <span class="dv">300</span>)</span>
+<span id="cb2-10"><a href=""></a>game_df<span class="sc">$</span>Gov_Payoff   <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">600</span>,  <span class="dv">400</span>,  <span class="dv">900</span>,  <span class="dv">700</span>,  <span class="dv">1000</span>, <span class="dv">800</span>)</span>
+<span id="cb2-11"><a href=""></a>game_df<span class="sc">$</span>Total        <span class="ot">&lt;-</span> game_df<span class="sc">$</span>Donor_Payoff <span class="sc">+</span> game_df<span class="sc">$</span>Gov_Payoff</span>
+<span id="cb2-12"><a href=""></a>game_df<span class="sc">$</span>Label <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"D: "</span>, game_df<span class="sc">$</span>Donor_Payoff,</span>
+<span id="cb2-13"><a href=""></a>                        <span class="st">"</span><span class="sc">\n</span><span class="st">G: "</span>, game_df<span class="sc">$</span>Gov_Payoff)</span>
+<span id="cb2-14"><a href=""></a></span>
+<span id="cb2-15"><a href=""></a><span class="co"># Factor ordering</span></span>
+<span id="cb2-16"><a href=""></a>game_df<span class="sc">$</span>Donor <span class="ot">&lt;-</span> <span class="fu">factor</span>(game_df<span class="sc">$</span>Donor,</span>
+<span id="cb2-17"><a href=""></a>                        <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Full Funding"</span>, <span class="st">"Reduced"</span>))</span>
+<span id="cb2-18"><a href=""></a>game_df<span class="sc">$</span>Gov   <span class="ot">&lt;-</span> <span class="fu">factor</span>(game_df<span class="sc">$</span>Gov,</span>
+<span id="cb2-19"><a href=""></a>                        <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Full Absorb"</span>, <span class="st">"Partial Absorb"</span>,</span>
+<span id="cb2-20"><a href=""></a>                                   <span class="st">"No Absorb"</span>))</span>
+<span id="cb2-21"><a href=""></a></span>
+<span id="cb2-22"><a href=""></a><span class="fu">ggplot</span>(game_df, <span class="fu">aes</span>(<span class="at">x =</span> Gov, <span class="at">y =</span> Donor, <span class="at">fill =</span> Donor_Payoff)) <span class="sc">+</span></span>
+<span id="cb2-23"><a href=""></a>  <span class="fu">geom_tile</span>(<span class="at">color =</span> <span class="st">"white"</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb2-24"><a href=""></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> Label), <span class="at">size =</span> <span class="dv">5</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>) <span class="sc">+</span></span>
+<span id="cb2-25"><a href=""></a>  <span class="fu">scale_fill_gradient2</span>(<span class="at">low =</span> <span class="st">"#E24A3F"</span>, <span class="at">mid =</span> <span class="st">"#FED141"</span>,</span>
+<span id="cb2-26"><a href=""></a>                       <span class="at">high =</span> <span class="st">"#83BD00"</span>, <span class="at">midpoint =</span> <span class="dv">2000</span>,</span>
+<span id="cb2-27"><a href=""></a>                       <span class="at">name =</span> <span class="st">"Donor</span><span class="sc">\n</span><span class="st">Payoff"</span>) <span class="sc">+</span></span>
+<span id="cb2-28"><a href=""></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Workforce Absorption Game: Payoff Matrix"</span>,</span>
+<span id="cb2-29"><a href=""></a>       <span class="at">x =</span> <span class="st">"Government Strategy"</span>, <span class="at">y =</span> <span class="st">"Donor Strategy"</span>) <span class="sc">+</span></span>
+<span id="cb2-30"><a href=""></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">16</span>) <span class="sc">+</span></span>
+<span id="cb2-31"><a href=""></a>  <span class="fu">theme</span>(<span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb2-32"><a href=""></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">"#005CB9"</span>, <span class="at">face =</span> <span class="st">"bold"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section class="slide level2">
+<h2>R: Extensive Form — Backward Induction</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href=""></a><span class="co"># Extensive form: Donor moves first, Government observes and responds</span></span>
+<span id="cb3-2"><a href=""></a><span class="co"># Define terminal payoffs: (Donor, Gov)</span></span>
+<span id="cb3-3"><a href=""></a>terminal <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb3-4"><a href=""></a>  <span class="st">"Full-&gt;FullAbsorb"</span>    <span class="ot">=</span> <span class="fu">c</span>(<span class="at">D =</span> <span class="dv">4500</span>, <span class="at">G =</span> <span class="dv">600</span>),</span>
+<span id="cb3-5"><a href=""></a>  <span class="st">"Full-&gt;PartialAbsorb"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="at">D =</span> <span class="dv">2800</span>, <span class="at">G =</span> <span class="dv">900</span>),</span>
+<span id="cb3-6"><a href=""></a>  <span class="st">"Full-&gt;NoAbsorb"</span>      <span class="ot">=</span> <span class="fu">c</span>(<span class="at">D =</span> <span class="dv">500</span>,  <span class="at">G =</span> <span class="dv">1000</span>),</span>
+<span id="cb3-7"><a href=""></a>  <span class="st">"Reduced-&gt;FullAbsorb"</span>    <span class="ot">=</span> <span class="fu">c</span>(<span class="at">D =</span> <span class="dv">2200</span>, <span class="at">G =</span> <span class="dv">400</span>),</span>
+<span id="cb3-8"><a href=""></a>  <span class="st">"Reduced-&gt;PartialAbsorb"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="at">D =</span> <span class="dv">1500</span>, <span class="at">G =</span> <span class="dv">700</span>),</span>
+<span id="cb3-9"><a href=""></a>  <span class="st">"Reduced-&gt;NoAbsorb"</span>      <span class="ot">=</span> <span class="fu">c</span>(<span class="at">D =</span> <span class="dv">300</span>,  <span class="at">G =</span> <span class="dv">800</span>)</span>
+<span id="cb3-10"><a href=""></a>)</span>
+<span id="cb3-11"><a href=""></a></span>
+<span id="cb3-12"><a href=""></a><span class="co"># Step 1: Government's best response at each information set</span></span>
+<span id="cb3-13"><a href=""></a>gov_after_full <span class="ot">&lt;-</span> terminal[<span class="fu">grep</span>(<span class="st">"^Full-&gt;"</span>, <span class="fu">names</span>(terminal))]</span>
+<span id="cb3-14"><a href=""></a>gov_br_full <span class="ot">&lt;-</span> <span class="fu">names</span>(<span class="fu">which.max</span>(<span class="fu">sapply</span>(gov_after_full, <span class="st">`</span><span class="at">[</span><span class="st">`</span>, <span class="st">"G"</span>)))</span>
+<span id="cb3-15"><a href=""></a><span class="fu">cat</span>(<span class="st">"Gov best response after Full Funding:"</span>, gov_br_full, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb3-16"><a href=""></a><span class="fu">cat</span>(<span class="st">"  Payoffs:"</span>, gov_after_full[[gov_br_full]], <span class="st">"</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb3-17"><a href=""></a></span>
+<span id="cb3-18"><a href=""></a>gov_after_reduced <span class="ot">&lt;-</span> terminal[<span class="fu">grep</span>(<span class="st">"^Reduced-&gt;"</span>, <span class="fu">names</span>(terminal))]</span>
+<span id="cb3-19"><a href=""></a>gov_br_reduced <span class="ot">&lt;-</span> <span class="fu">names</span>(<span class="fu">which.max</span>(<span class="fu">sapply</span>(gov_after_reduced, <span class="st">`</span><span class="at">[</span><span class="st">`</span>, <span class="st">"G"</span>)))</span>
+<span id="cb3-20"><a href=""></a><span class="fu">cat</span>(<span class="st">"Gov best response after Reduced:"</span>, gov_br_reduced, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb3-21"><a href=""></a><span class="fu">cat</span>(<span class="st">"  Payoffs:"</span>, gov_after_reduced[[gov_br_reduced]], <span class="st">"</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb3-22"><a href=""></a></span>
+<span id="cb3-23"><a href=""></a><span class="co"># Step 2: Donor anticipates and chooses</span></span>
+<span id="cb3-24"><a href=""></a>donor_full    <span class="ot">&lt;-</span> gov_after_full[[gov_br_full]][<span class="st">"D"</span>]</span>
+<span id="cb3-25"><a href=""></a>donor_reduced <span class="ot">&lt;-</span> gov_after_reduced[[gov_br_reduced]][<span class="st">"D"</span>]</span>
+<span id="cb3-26"><a href=""></a><span class="fu">cat</span>(<span class="st">"Donor payoff if Full:"</span>, donor_full, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb3-27"><a href=""></a><span class="fu">cat</span>(<span class="st">"Donor payoff if Reduced:"</span>, donor_reduced, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb3-28"><a href=""></a><span class="fu">cat</span>(<span class="st">"Donor optimal choice:"</span>,</span>
+<span id="cb3-29"><a href=""></a>    <span class="fu">ifelse</span>(donor_full <span class="sc">&gt;=</span> donor_reduced, <span class="st">"Full Funding"</span>, <span class="st">"Reduced"</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb3-30"><a href=""></a></span>
+<span id="cb3-31"><a href=""></a><span class="co"># SPE: (Full Funding, Gov always plays No Absorb)</span></span>
+<span id="cb3-32"><a href=""></a><span class="co"># Donor gets 500 lives — motivating the need for conditionality</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section class="slide level2">
+<h2>R: Simulating a Repeated Game</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href=""></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb4-2"><a href=""></a></span>
+<span id="cb4-3"><a href=""></a><span class="co"># Simulate repeated interaction with tit-for-tat strategy</span></span>
+<span id="cb4-4"><a href=""></a><span class="co"># Donor uses conditional strategy: fund high if Gov cooperated last round</span></span>
+<span id="cb4-5"><a href=""></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb4-6"><a href=""></a>n_rounds <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb4-7"><a href=""></a></span>
+<span id="cb4-8"><a href=""></a><span class="co"># Strategy profiles</span></span>
+<span id="cb4-9"><a href=""></a>simulate_repeated <span class="ot">&lt;-</span> <span class="cf">function</span>(donor_strategy, <span class="at">n =</span> <span class="dv">20</span>) {</span>
+<span id="cb4-10"><a href=""></a>  donor_action <span class="ot">&lt;-</span> <span class="fu">character</span>(n)</span>
+<span id="cb4-11"><a href=""></a>  gov_action   <span class="ot">&lt;-</span> <span class="fu">character</span>(n)</span>
+<span id="cb4-12"><a href=""></a>  donor_payoff <span class="ot">&lt;-</span> <span class="fu">numeric</span>(n)</span>
+<span id="cb4-13"><a href=""></a>  gov_payoff   <span class="ot">&lt;-</span> <span class="fu">numeric</span>(n)</span>
+<span id="cb4-14"><a href=""></a></span>
+<span id="cb4-15"><a href=""></a>  <span class="co"># Payoffs per round (lives saved in hundreds)</span></span>
+<span id="cb4-16"><a href=""></a>  payoff_matrix <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb4-17"><a href=""></a>    <span class="st">"High_High"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="at">D =</span> <span class="dv">24</span>, <span class="at">G =</span> <span class="dv">7</span>),</span>
+<span id="cb4-18"><a href=""></a>    <span class="st">"High_Low"</span>  <span class="ot">=</span> <span class="fu">c</span>(<span class="at">D =</span> <span class="dv">5</span>,  <span class="at">G =</span> <span class="dv">10</span>),</span>
+<span id="cb4-19"><a href=""></a>    <span class="st">"Low_High"</span>  <span class="ot">=</span> <span class="fu">c</span>(<span class="at">D =</span> <span class="dv">18</span>, <span class="at">G =</span> <span class="dv">5</span>),</span>
+<span id="cb4-20"><a href=""></a>    <span class="st">"Low_Low"</span>   <span class="ot">=</span> <span class="fu">c</span>(<span class="at">D =</span> <span class="dv">8</span>,  <span class="at">G =</span> <span class="dv">6</span>)</span>
+<span id="cb4-21"><a href=""></a>  )</span>
+<span id="cb4-22"><a href=""></a></span>
+<span id="cb4-23"><a href=""></a>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n) {</span>
+<span id="cb4-24"><a href=""></a>    <span class="co"># Donor strategy</span></span>
+<span id="cb4-25"><a href=""></a>    <span class="cf">if</span> (donor_strategy <span class="sc">==</span> <span class="st">"unconditional"</span>) {</span>
+<span id="cb4-26"><a href=""></a>      donor_action[t] <span class="ot">&lt;-</span> <span class="st">"High"</span></span>
+<span id="cb4-27"><a href=""></a>    } <span class="cf">else</span> <span class="cf">if</span> (donor_strategy <span class="sc">==</span> <span class="st">"tit_for_tat"</span>) {</span>
+<span id="cb4-28"><a href=""></a>      donor_action[t] <span class="ot">&lt;-</span> <span class="cf">if</span> (t <span class="sc">==</span> <span class="dv">1</span>) <span class="st">"High"</span></span>
+<span id="cb4-29"><a href=""></a>                          <span class="cf">else</span> <span class="cf">if</span> (gov_action[t<span class="dv">-1</span>] <span class="sc">==</span> <span class="st">"High"</span>) <span class="st">"High"</span></span>
+<span id="cb4-30"><a href=""></a>                          <span class="cf">else</span> <span class="st">"Low"</span></span>
+<span id="cb4-31"><a href=""></a>    }</span>
+<span id="cb4-32"><a href=""></a>    <span class="co"># Government: rational, but learns from consequences</span></span>
+<span id="cb4-33"><a href=""></a>    <span class="co"># Starts by free-riding, switches to cooperate if punished</span></span>
+<span id="cb4-34"><a href=""></a>    <span class="cf">if</span> (t <span class="sc">&lt;=</span> <span class="dv">3</span>) {</span>
+<span id="cb4-35"><a href=""></a>      gov_action[t] <span class="ot">&lt;-</span> <span class="st">"Low"</span>  <span class="co"># Test the donor</span></span>
+<span id="cb4-36"><a href=""></a>    } <span class="cf">else</span> <span class="cf">if</span> (donor_strategy <span class="sc">==</span> <span class="st">"tit_for_tat"</span> <span class="sc">&amp;</span></span>
+<span id="cb4-37"><a href=""></a>               donor_action[t] <span class="sc">==</span> <span class="st">"Low"</span>) {</span>
+<span id="cb4-38"><a href=""></a>      gov_action[t] <span class="ot">&lt;-</span> <span class="st">"High"</span>  <span class="co"># Cooperate after punishment</span></span>
+<span id="cb4-39"><a href=""></a>    } <span class="cf">else</span> {</span>
+<span id="cb4-40"><a href=""></a>      gov_action[t] <span class="ot">&lt;-</span> <span class="st">"Low"</span>   <span class="co"># Free-ride if no punishment</span></span>
+<span id="cb4-41"><a href=""></a>    }</span>
+<span id="cb4-42"><a href=""></a></span>
+<span id="cb4-43"><a href=""></a>    key <span class="ot">&lt;-</span> <span class="fu">paste0</span>(donor_action[t], <span class="st">"_"</span>, gov_action[t])</span>
+<span id="cb4-44"><a href=""></a>    donor_payoff[t] <span class="ot">&lt;-</span> payoff_matrix[[key]][<span class="st">"D"</span>]</span>
+<span id="cb4-45"><a href=""></a>    gov_payoff[t]   <span class="ot">&lt;-</span> payoff_matrix[[key]][<span class="st">"G"</span>]</span>
+<span id="cb4-46"><a href=""></a>  }</span>
+<span id="cb4-47"><a href=""></a></span>
+<span id="cb4-48"><a href=""></a>  <span class="fu">data.frame</span>(<span class="at">round =</span> <span class="dv">1</span><span class="sc">:</span>n, donor_action, gov_action,</span>
+<span id="cb4-49"><a href=""></a>             donor_payoff, gov_payoff)</span>
+<span id="cb4-50"><a href=""></a>}</span>
+<span id="cb4-51"><a href=""></a></span>
+<span id="cb4-52"><a href=""></a><span class="co"># Compare unconditional vs tit-for-tat</span></span>
+<span id="cb4-53"><a href=""></a>uncond <span class="ot">&lt;-</span> <span class="fu">simulate_repeated</span>(<span class="st">"unconditional"</span>)</span>
+<span id="cb4-54"><a href=""></a>uncond<span class="sc">$</span>strategy <span class="ot">&lt;-</span> <span class="st">"Unconditional"</span></span>
+<span id="cb4-55"><a href=""></a>tft <span class="ot">&lt;-</span> <span class="fu">simulate_repeated</span>(<span class="st">"tit_for_tat"</span>)</span>
+<span id="cb4-56"><a href=""></a>tft<span class="sc">$</span>strategy <span class="ot">&lt;-</span> <span class="st">"Tit-for-Tat"</span></span>
+<span id="cb4-57"><a href=""></a>results <span class="ot">&lt;-</span> <span class="fu">rbind</span>(uncond, tft)</span>
+<span id="cb4-58"><a href=""></a></span>
+<span id="cb4-59"><a href=""></a><span class="fu">ggplot</span>(results, <span class="fu">aes</span>(<span class="at">x =</span> round, <span class="at">y =</span> <span class="fu">cumsum</span>(donor_payoff),</span>
+<span id="cb4-60"><a href=""></a>                    <span class="at">color =</span> strategy)) <span class="sc">+</span></span>
+<span id="cb4-61"><a href=""></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb4-62"><a href=""></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> gov_action), <span class="at">size =</span> <span class="fl">2.5</span>) <span class="sc">+</span></span>
+<span id="cb4-63"><a href=""></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"#E24A3F"</span>, <span class="st">"#83BD00"</span>)) <span class="sc">+</span></span>
+<span id="cb4-64"><a href=""></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="at">High =</span> <span class="dv">16</span>, <span class="at">Low =</span> <span class="dv">4</span>),</span>
+<span id="cb4-65"><a href=""></a>                     <span class="at">name =</span> <span class="st">"Gov Action"</span>) <span class="sc">+</span></span>
+<span id="cb4-66"><a href=""></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Repeated Game: Cumulative Donor Payoff"</span>,</span>
+<span id="cb4-67"><a href=""></a>       <span class="at">subtitle =</span> <span class="st">"Tit-for-tat induces Government cooperation over time"</span>,</span>
+<span id="cb4-68"><a href=""></a>       <span class="at">x =</span> <span class="st">"Funding Round"</span>, <span class="at">y =</span> <span class="st">"Cumulative Lives Saved (hundreds)"</span>,</span>
+<span id="cb4-69"><a href=""></a>       <span class="at">color =</span> <span class="st">"Donor Strategy"</span>) <span class="sc">+</span></span>
+<span id="cb4-70"><a href=""></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>) <span class="sc">+</span></span>
+<span id="cb4-71"><a href=""></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">"#005CB9"</span>, <span class="at">face =</span> <span class="st">"bold"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Key Takeaways</h2>
+<div class="key-takeaway">
+<p><strong>Game theory</strong> models strategic interaction among multiple agents — essential when governments, donors, and partners all make interdependent choices.</p>
+<p><strong>Nash equilibrium</strong> reveals the stable outcome when each agent optimizes individually. In MNH, this often means free-riding unless contracts are designed carefully.</p>
+<p><strong>Extensive-form analysis</strong> and backward induction show how the sequence of moves matters. Conditional commitments (milestone payments) transform the game’s equilibrium.</p>
+<p><strong>Strategy tables</strong> and the <strong>causal form</strong> connect game theory to the influence diagrams of Chapters 7–8, providing a unified framework for multi-agent decision problems.</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>Looking Ahead</h2>
+<div class="callout-box">
+<p><strong>Next: Chapter 10 — Data-Driven Causal Modeling</strong></p>
+<p>We return from theory to practice with real data:</p>
+<ul>
+<li>Learning causal structure from MNH datasets</li>
+<li>Bayesian network parameter estimation</li>
+<li>Combining expert knowledge with data</li>
+<li>Validation and sensitivity analysis for policy recommendations</li>
+</ul>
+</div>
+<div class="fragment">
+<div class="callout-box green">
+<p><strong>The arc of the book:</strong> Chapters 1–6 built causal models (inference). Chapters 7–9 used them for decisions (intervention). Chapter 10 grounds everything in data — closing the loop between theory and evidence.</p>
+</div>
+</div>
+</section>
+<section class="slide level2" data-background-color="white">
+<h2></h2>
+<p><br><br><br></p>
+<div style="text-align: center;">
+<p><img data-src="bka-logo.png" width="250"></p>
+<p><br></p>
+<p><span style="color: #005CB9; font-size: 0.6em;">Inference and Intervention | Chapter 9: Multi-Agent Interventions</span></p>
+<p><span style="color: #666; font-size: 0.5em;">BK Advisors</span></p>
+</div>
+
+</section></section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<p><img src="bka-logo.png" class="slide-logo"></p>
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="index_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="index_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="index_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="index_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="index_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="index_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="index_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="index_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="index_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="index_files/libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'fade',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'slide',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1280,
+
+        height: 720,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    
+
+    <script>
+
+      // htmlwidgets need to know to resize themselves when slides are shown/hidden.
+
+      // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
+
+      // slide changes (different for each slide format).
+
+      (function () {
+
+        // dispatch for htmlwidgets
+
+        function fireSlideEnter() {
+
+          const event = window.document.createEvent("Event");
+
+          event.initEvent("slideenter", true, true);
+
+          window.document.dispatchEvent(event);
+
+        }
+
+    
+
+        function fireSlideChanged(previousSlide, currentSlide) {
+
+          fireSlideEnter();
+
+    
+
+          // dispatch for shiny
+
+          if (window.jQuery) {
+
+            if (previousSlide) {
+
+              window.jQuery(previousSlide).trigger("hidden");
+
+            }
+
+            if (currentSlide) {
+
+              window.jQuery(currentSlide).trigger("shown");
+
+            }
+
+          }
+
+        }
+
+    
+
+        // hookup for slidy
+
+        if (window.w3c_slidy) {
+
+          window.w3c_slidy.add_observer(function (slide_num) {
+
+            // slide_num starts at position 1
+
+            fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
+
+          });
+
+        }
+
+    
+
+      })();
+
+    </script>
+
+    
+
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

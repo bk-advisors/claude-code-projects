@@ -1,0 +1,814 @@
+---
+title: "Chapter 3: The MNH Diagnostic Case Study"
+subtitle: "Inference and Intervention | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Apply the **iterative model-building process** used in program evaluations
+- Start with a simple model and **expand it systematically** through interviews
+- Identify **root nodes** (levers) vs. **intermediate nodes** in a causal system
+- Use a causal model to **prioritize recommendations** and structure analysis
+- Build a comprehensive MNH causal model through a simulated diagnostic case study
+:::
+
+
+## Chapter Overview
+
+::: {.callout-box}
+**The Book's Approach:** Chapter 3 of Ryall & Bramson presents the *Hubris Health* consulting case — a health insurance company whose renewals and new accounts are declining. Through iterative interviews, a causal model is built and refined.
+
+**Our Adaptation:** We apply the same diagnostic methodology to a large-scale MNH program assessment — diagnosing why Country X's neonatal mortality program is underperforming.
+:::
+
+. . .
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;">Case<br>Setup</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">Interview<br>Round 1</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #F8A623;">Interview<br>Round 2</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">Interview<br>Round 3</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">Final Model &<br>Recommendations</div>
+</div>
+
+
+# The Diagnostic Mindset {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">How technical advisors build causal models from stakeholder interviews</span>
+
+
+## The Iterative Process
+
+::: {.definition-box}
+**Diagnostic Causal Modeling:** An iterative cycle of hypothesis → stakeholder interview → model revision → deeper questions → refinement.
+:::
+
+. . .
+
+::: {.incremental}
+- **Start simple:** Begin with the most stripped-down model possible
+- **Walk back through causes:** What causes the outcome? What causes those causes?
+- **Identify decision variables:** What can the program leadership actually *control*?
+- **Sign the links:** Does increasing X increase or decrease Y?
+- **Test with interviews:** Does the model match what stakeholders report?
+- **Iterate:** Add complexity only when you actually need it
+:::
+
+
+## Key Principles from the Book
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**1. Focus on Significant Drivers**
+
+Not all variables matter equally. Identify the ones with the largest causal effects on the objective.
+:::
+
+::: {.callout-box .green}
+**2. Seek Sources of Common Problems**
+
+Look for common causes that explain multiple symptoms. These are high-leverage intervention points.
+:::
+:::
+
+::: {.col}
+::: {.callout-box .orange}
+**3. Ask Specific Questions**
+
+General questions yield vague answers. Use the model to generate *specific* hypotheses to test.
+:::
+
+::: {.callout-box .red}
+**4. Bring It All Together**
+
+The final model should tell a coherent causal story that links decisions to outcomes.
+:::
+:::
+:::
+
+
+# The Case Setup {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Country X's MNH program is underperforming</span>
+
+
+## The Program Brief
+
+::: {.callout-box}
+**Requesting Body:** The program's leadership team
+
+**Assessment:** Evaluate why Country X's MNH program has not achieved projected mortality reductions despite a substantial investment over 2 years.
+:::
+
+. . .
+
+**Key Facts Provided:**
+
+| Metric | Target (Year 2) | Actual (Year 2) |
+|---|---|---|
+| Neonatal Mortality Rate | On track | Significantly off target |
+| Maternal Mortality Ratio | On track | Significantly off target |
+| Intervention Coverage | 70% | 42% |
+| Funds Disbursed | ~100% | ~96% |
+
+. . .
+
+::: {.callout-box .red}
+**The puzzle:** The money has been spent, but outcomes haven't improved as projected. Why?
+:::
+
+
+## Initial Situational Assessment
+
+Following the book's approach, start by mapping what we know:
+
+. . .
+
+**Walk back from the objective:**
+
+::: {.incremental}
+- What causes NMR reduction? → **Quality of care** during labor, delivery, and neonatal period
+- What causes quality of care? → **Intervention coverage** (PPH bundle, CPAP, iKMC)
+- What causes intervention coverage? → **Investment** in products, workforce, systems
+- Investment has been made (nearly all funds disbursed) → So **something between investment and coverage is broken**
+:::
+
+. . .
+
+::: {.callout-box .orange}
+**Hypothesis:** The bottleneck is not in funding but in the *transmission mechanism* from investment to outcomes.
+:::
+
+
+## The Initial (Simple) Model
+
+<table style="width: 90%; margin: 0.5em auto; font-size: 0.55em;">
+<tr>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node decision rect">Investment<br>(Disbursed)</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node">Programs<br>Implemented</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node">Intervention<br>Coverage</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow negative">→ [−]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node outcome">NMR</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+**Problems with this model:**
+
+::: {.incremental}
+- Too simple — treats "Programs Implemented" as a single black box
+- Doesn't identify *which* programs are failing or *why*
+- No confounders or common causes
+- No decision variables beyond initial investment
+:::
+
+**We need interviews to deepen the model.**
+
+
+# Interview Round 1: Ministry of Health {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">The supply-side view</span>
+
+
+## MOH Director Interview
+
+**Key quotes from the MOH Director of Maternal Health:**
+
+. . .
+
+::: {.example-block}
+[Quote 1]{.example-label}
+
+"We have procured the equipment — CPAP machines, PPH bundles, ultrasound devices. They're in the hospitals. But the staff don't know how to use them properly."
+:::
+
+. . .
+
+::: {.example-block}
+[Quote 2]{.example-label}
+
+"The training programs ran on schedule. Over 3,000 health workers attended workshops. But when I visit hospitals, I see the same old practices."
+:::
+
+. . .
+
+::: {.example-block}
+[Quote 3]{.example-label}
+
+"We have a severe shortage of midwives. The staff:patient ratio in neonatal units is 1:22, far worse than the 1:4 standard."
+:::
+
+
+## Updating the Model: Round 1
+
+New variables discovered: **Equipment Availability**, **Training Delivery**, **Staff Competency**, **Staffing Levels**
+
+<table style="width: 95%; margin: 0.4em auto; font-size: 0.48em;">
+<tr>
+<td style="text-align: center; padding: 0.4em; vertical-align: middle;">
+<div class="dag-node decision rect">Investment</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow">→</span></td>
+<td style="text-align: center; padding: 0.4em; vertical-align: top;">
+<div class="dag-node" style="margin-bottom: 0.4em;">Equipment<br>Procured ✓</div><br>
+<div class="dag-node" style="margin-bottom: 0.4em;">Training<br>Delivered ✓</div><br>
+<div class="dag-node confounder">Staffing<br>Levels ✗</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow">→</span></td>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node" style="margin-bottom: 0.4em;">Staff<br>Competency ✗</div><br>
+<div class="dag-node">Equipment<br>Utilization ✗</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow">→</span></td>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node">Coverage</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow">→</span></td>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node outcome">NMR</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+::: {.callout-box}
+**Key Insight:** Equipment was procured ✓ and training was delivered ✓, but **staff competency** and **equipment utilization** remain low ✗. The gap is between *inputs* and *effective use*.
+:::
+
+
+## What Questions to Ask Next?
+
+The model suggests the bottleneck is in the **transmission** from inputs to utilization:
+
+::: {.incremental}
+- Why aren't trained health workers applying their training? → **Need to interview facility directors**
+- Why is equipment procured but not used? → **Need to understand facility-level barriers**
+- Is staffing the binding constraint? → **Need data on staff:patient ratios by facility**
+:::
+
+. . .
+
+::: {.callout-box .green}
+**The model guides the next interview.** Without it, we would be asking unfocused questions. The model generates *specific, testable hypotheses*.
+:::
+
+
+# Interview Round 2: Facility Directors {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">The front-line reality</span>
+
+
+## Hospital Director Interviews
+
+**Key findings from visiting 5 district hospitals:**
+
+. . .
+
+::: {.example-block}
+[Finding 1: Staff Attrition]{.example-label}
+
+"We trained 40 nurses on CPAP last year. Only 18 are still here. The rest transferred, emigrated, or left the profession." **Staff retention** is a critical missing variable.
+:::
+
+. . .
+
+::: {.example-block}
+[Finding 2: Equipment Maintenance]{.example-label}
+
+"The CPAP machines arrived 8 months ago. Two of our four units are already broken. We have no biomedical technician and spare parts take 3 months to arrive." **Equipment maintenance** breaks the chain.
+:::
+
+. . .
+
+::: {.example-block}
+[Finding 3: Referral Failures]{.example-label}
+
+"When a mother develops eclampsia at a health center, it takes 4-6 hours to arrange transport to our hospital. Many arrive too late." **Referral system gaps** are an independent cause of mortality.
+:::
+
+
+## Updating the Model: Round 2
+
+New variables: **Staff Retention**, **Equipment Maintenance**, **Referral System**
+
+<table style="width: 95%; margin: 0.3em auto; font-size: 0.42em;">
+<tr>
+<td colspan="7" style="text-align: center; padding: 0.3em;">
+<div class="dag-node decision rect">Investment (Disbursed)</div>
+</td>
+</tr>
+<tr>
+<td style="text-align: center; padding: 0.3em;"><span class="dag-arrow">↓</span></td>
+<td></td>
+<td style="text-align: center; padding: 0.3em;"><span class="dag-arrow">↓</span></td>
+<td></td>
+<td style="text-align: center; padding: 0.3em;"><span class="dag-arrow">↓</span></td>
+<td></td>
+<td style="text-align: center; padding: 0.3em;"><span class="dag-arrow">↓</span></td>
+</tr>
+<tr>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node">Training<br>Delivered</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow">→</span></td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node">Staff<br>Competency</div>
+</td>
+<td></td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node">Equipment<br>Procured</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow">→</span></td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node">Equipment<br>Utilization</div>
+</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td style="text-align: center; padding: 0.2em;"><span class="dag-arrow">↑ ↓</span></td>
+<td></td>
+<td></td>
+<td></td>
+<td style="text-align: center; padding: 0.2em;"><span class="dag-arrow">↑ ↓</span></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node confounder">Staff<br>Retention</div>
+</td>
+<td></td>
+<td></td>
+<td></td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node confounder">Equipment<br>Maintenance</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+::: {.callout-box .orange}
+**Critical discovery:** Staff retention and equipment maintenance are **common causes** (diverging triplets) that affect multiple downstream variables. These are high-leverage intervention points that the initial model completely missed.
+:::
+
+
+## Identifying Triplet Structures
+
+The expanded model reveals all three triplet types from Chapter 2:
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Serial (Chain)**
+
+Training → Competency → Coverage
+
+*Conditioning on competency blocks the flow from training to coverage*
+:::
+
+::: {.callout-box .green}
+**Diverging (Fork)**
+
+Competency ← Retention → Utilization
+
+*Staff retention is a common cause of both low competency (trained staff leave) and low utilization (not enough staff to operate equipment)*
+:::
+:::
+
+::: {.col}
+::: {.callout-box .orange}
+**Converging (Collider)**
+
+Staffing → Quality ← Equipment
+
+*If we observe Quality is low AND Equipment is available, we can infer Staffing must be inadequate (explaining away)*
+:::
+:::
+:::
+
+
+# Interview Round 3: Community Health Workers {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">The demand side</span>
+
+
+## Community Health Worker Interviews
+
+**New perspective: the demand side of MNH services**
+
+. . .
+
+::: {.example-block}
+[Finding 4: Transport Barriers]{.example-label}
+
+"Many mothers in rural areas cannot reach the hospital in time. The nearest facility with a neonatal unit is 3 hours away by foot." **Geographic access** limits who benefits from improved facility quality.
+:::
+
+. . .
+
+::: {.example-block}
+[Finding 5: Cultural Practices]{.example-label}
+
+"Some families prefer traditional birth attendants. They only come to the hospital when complications are severe — by then it's often too late." **Health-seeking behavior** mediates the effect of facility quality.
+:::
+
+. . .
+
+::: {.example-block}
+[Finding 6: Out-of-Pocket Costs]{.example-label}
+
+"Even though services are officially free, families pay for transport, food, and supplies during their stay. Many can't afford it." **Financial barriers** reduce effective demand.
+:::
+
+
+## Updating the Model: Round 3
+
+Adding demand-side nodes: **Geographic Access**, **Health-Seeking Behavior**, **Financial Barriers**
+
+. . .
+
+The complete model now has **12 nodes** organized in three layers:
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Supply Side (from Rounds 1-2)**
+
+- Investment → Training → Competency
+- Investment → Equipment → Utilization
+- Staff Retention affects both
+- Equipment Maintenance affects utilization
+- Referral System affects access
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**Demand Side (Round 3)**
+
+- Geographic Access → Facility Births
+- Health-Seeking Behavior → Facility Births
+- Financial Barriers → Facility Births
+- Facility Births × Quality → NMR
+:::
+:::
+:::
+
+
+## The Complete Causal Model
+
+::: {.callout-box}
+**The final model tells a coherent story:** Investment flows through three channels (people, products, systems), but is undermined by staff attrition, equipment breakdown, and referral failures on the supply side — and by geographic, cultural, and financial barriers on the demand side. Both supply and demand must work together to reduce NMR.
+:::
+
+. . .
+
+| Layer | Nodes | Key Bottleneck |
+|---|---|---|
+| **Inputs** | Investment, Training, Equipment, Staffing | Adequate ✓ |
+| **Transmission** | Competency, Utilization, Retention, Maintenance | **Broken** ✗ |
+| **Demand** | Access, Behavior, Financial Barriers | **Underestimated** ✗ |
+| **Outcomes** | Quality, Coverage, NMR | Below target ✗ |
+
+
+# Model Comparison Across Rounds {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">How our understanding evolved</span>
+
+
+## Evolution of the Model
+
+| Round | Nodes | Key Addition | What We Learned |
+|---|---|---|---|
+| **Initial** | 4 | Investment → Programs → Coverage → NMR | Too simple; no mechanism |
+| **Round 1** | 7 | Training, Equipment, Staffing, Competency | Supply-side decomposition |
+| **Round 2** | 10 | Retention, Maintenance, Referral | Transmission failures |
+| **Round 3** | 12 | Access, Behavior, Financial Barriers | Demand-side barriers |
+
+. . .
+
+::: {.callout-box .green}
+**Key Insight from the Book:** Start with the simplest model and add complexity incrementally. At each stage, the model tells you *what questions to ask next*. This is the power of the diagnostic causal modeling approach.
+:::
+
+
+## Prioritizing Recommendations
+
+Using the model to prioritize interventions:
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+**High Priority (Root causes with many downstream effects):**
+
+::: {.callout-box .red}
+<span class="step-number red">1</span> **Staff Retention Programs**
+
+Root cause affecting both competency AND utilization. Invest in housing allowances, career paths, bonding agreements.
+:::
+
+::: {.callout-box .orange}
+<span class="step-number orange">2</span> **Equipment Maintenance System**
+
+Deploy biomedical technicians and establish spare parts supply chains. Equipment without maintenance is wasted investment.
+:::
+:::
+
+::: {.col}
+**Medium Priority:**
+
+::: {.callout-box}
+<span class="step-number">3</span> **Emergency Referral Network**
+
+Independent pathway to mortality reduction. Partner with m-mama for transport coordination.
+:::
+
+::: {.callout-box .green}
+<span class="step-number green">4</span> **Demand-Side Interventions**
+
+Community health workers, transport subsidies, culturally-sensitive outreach to increase facility births.
+:::
+:::
+:::
+
+
+## Why Root Nodes Matter
+
+::: {.definition-box}
+**Root Node:** A node without any parents in the causal model. Root nodes are ultimate causes — intervening on them has the broadest downstream effects.
+:::
+
+. . .
+
+In our model, the key root nodes are:
+
+::: {.incremental}
+- **Investment allocation** (decision variable — we control this)
+- **Staff retention** (not currently addressed — new intervention needed)
+- **Equipment maintenance** (not currently addressed — new intervention needed)
+- **Geographic access** (structural constraint — requires referral systems)
+:::
+
+. . .
+
+::: {.key-takeaway}
+**The model reveals that the program invested in the right inputs** (training, equipment) **but missed critical transmission mechanisms** (retention, maintenance). Redirecting a portion of the budget to these mechanisms could unblock the entire chain.
+:::
+
+
+# R Workshop: Building Models Iteratively {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Using dagitty and ggdag to formalize each round</span>
+
+
+## R: Round 1 — Simple Model
+
+```{r}
+#| label: round1-dag
+#| echo: true
+#| fig-width: 9
+#| fig-height: 4
+
+library(dagitty)
+library(ggdag)
+library(ggplot2)
+
+# Round 1: Simple supply-side model
+round1 <- dagitty('dag {
+  Investment [pos="0,1"]
+  Training [pos="1,0"]
+  Equipment [pos="1,1"]
+  Staffing [pos="1,2"]
+  Competency [pos="2,0.5"]
+  Utilization [pos="2,1.5"]
+  Coverage [pos="3,1"]
+  NMR [pos="4,1"]
+
+  Investment -> Training
+  Investment -> Equipment
+  Investment -> Staffing
+  Training -> Competency
+  Staffing -> Competency
+  Equipment -> Utilization
+  Staffing -> Utilization
+  Competency -> Coverage
+  Utilization -> Coverage
+  Coverage -> NMR
+}')
+
+ggdag(round1) + theme_dag() +
+  labs(title = "Round 1: Supply-Side Model (7 nodes)")
+```
+
+
+## R: Round 2 — Adding Transmission Failures
+
+```{r}
+#| label: round2-dag
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+# Round 2: Add retention, maintenance, referral
+round2 <- dagitty('dag {
+  Investment [pos="0,1"]
+  Training [pos="1,0"]
+  Equipment [pos="1,2"]
+  Staffing [pos="1,1"]
+  Retention [pos="1.5,0.5"]
+  Maintenance [pos="1.5,2.5"]
+  Referral [pos="1.5,3"]
+  Competency [pos="2,0.5"]
+  Utilization [pos="2,2"]
+  Coverage [pos="3,1"]
+  NMR [pos="4,1"]
+
+  Investment -> Training
+  Investment -> Equipment
+  Investment -> Staffing
+  Investment -> Referral
+  Training -> Competency
+  Staffing -> Competency
+  Retention -> Competency
+  Retention -> Utilization
+  Equipment -> Utilization
+  Maintenance -> Utilization
+  Competency -> Coverage
+  Utilization -> Coverage
+  Referral -> Coverage
+  Coverage -> NMR
+}')
+
+ggdag(round2) + theme_dag() +
+  labs(title = "Round 2: Adding Transmission Failures (10 nodes)")
+```
+
+
+## R: Round 3 — Complete Model
+
+```{r}
+#| label: round3-dag
+#| echo: true
+#| fig-width: 11
+#| fig-height: 6
+
+# Round 3: Add demand-side variables
+round3 <- dagitty('dag {
+  Investment [pos="0,1.5"]
+  Training [pos="1,0"]
+  Equipment [pos="1,2"]
+  Staffing [pos="1,1"]
+  Retention [pos="1.5,0.5"]
+  Maintenance [pos="1.5,2.5"]
+  Referral [pos="1.5,3.5"]
+  Competency [pos="2,0.5"]
+  Utilization [pos="2,2"]
+  Access [pos="2,3.5"]
+  Behavior [pos="2,4.5"]
+  Fin_Barriers [pos="2,5.5"]
+  Facility_Births [pos="3,4"]
+  Quality [pos="3,1.5"]
+  NMR [pos="4,2.5"]
+
+  Investment -> Training
+  Investment -> Equipment
+  Investment -> Staffing
+  Investment -> Referral
+  Training -> Competency
+  Staffing -> Competency
+  Retention -> Competency
+  Retention -> Utilization
+  Equipment -> Utilization
+  Maintenance -> Utilization
+  Competency -> Quality
+  Utilization -> Quality
+  Referral -> Access
+  Access -> Facility_Births
+  Behavior -> Facility_Births
+  Fin_Barriers -> Facility_Births
+  Quality -> NMR
+  Facility_Births -> NMR
+}')
+
+ggdag(round3) + theme_dag() +
+  labs(title = "Round 3: Complete Model (15 nodes)")
+```
+
+
+## R: Identifying What to Measure
+
+```{r}
+#| label: adjustment-analysis
+#| echo: true
+
+# What must we control for to estimate the causal effect
+# of investment on NMR?
+adjustmentSets(round3,
+               exposure = "Investment",
+               outcome = "NMR")
+
+# What are the implied conditional independencies?
+# These are testable predictions of the model
+impliedConditionalIndependencies(round3)
+
+# What are all paths from Investment to NMR?
+paths(round3,
+      from = "Investment",
+      to = "NMR")
+```
+
+. . .
+
+::: {.callout-box .green}
+**Practical Value:** The `adjustmentSets()` function tells us which variables we *must* measure and control for in our evaluation. The `impliedConditionalIndependencies()` generate testable predictions — if the data violates them, our model is wrong.
+:::
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Build models iteratively.** Start simple and add complexity as interviews reveal new variables and mechanisms.
+
+**Root nodes are leverage points.** Staff retention and equipment maintenance emerged as critical bottlenecks that the initial investment plan overlooked.
+
+**The model guides the analysis.** Each round's model tells you what questions to ask next, what data to collect, and where the bottlenecks are.
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 4 — Quantitative Causal Models**
+
+We'll take the qualitative models built in this chapter and **add numbers**:
+
+- Conditional probability tables (CPTs) for each node
+- Joint probability distributions
+- Bayes' rule for updating beliefs with evidence
+- The mathematical foundation for precise inference and decision analysis
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[Inference and Intervention | Chapter 3: The MNH Diagnostic Case Study]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

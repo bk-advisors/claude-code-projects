@@ -1,0 +1,236 @@
+---
+title: "Chapter 4: Quantitative Causal Models"
+subtitle: "Conditional probability tables, Bayes' rule, and Bayesian networks"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Define **probability distributions** over discrete variable states and apply the basic axioms
+- Compute **conditional probabilities** and construct **Conditional Probability Tables (CPTs)**
+- Apply **Bayes' rule** to update beliefs when new evidence arrives
+- Explain the **Causal Markov Condition** and how a DAG factorizes a joint distribution
+- Build a **quantitative Bayesian network** in R using `bnlearn` and query it for MNH policy decisions
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### Conditional Probability Tables (CPTs)
+
+A CPT lists P(Child | Parents) for every combination of parent and child states. Each row in the table defines a conditional distribution, and every row must sum to 1. CPTs are the quantitative building blocks of a Bayesian network -- they encode the strength of causal relationships that qualitative models could only describe with [+] and [-] signs. In practice, CPTs are estimated from facility-level data, expert elicitation, or both.
+:::
+
+::: {.key-concept .green}
+#### Bayes' Rule
+
+Bayes' rule lets us "flip" the conditioning direction: given P(Evidence | Cause), it computes P(Cause | Evidence). The formula is P(A | B) = P(B | A) x P(A) / P(B). The prior P(A) represents what we believed before seeing evidence, the likelihood P(B | A) represents how probable the evidence is if the hypothesis is true, and the posterior P(A | B) represents our updated belief after incorporating evidence. This is the fundamental operation of situational assessment -- reasoning backward from what we observe to what is likely true.
+:::
+
+::: {.key-concept .orange}
+#### The Causal Markov Condition
+
+Each variable in a DAG is conditionally independent of its non-descendants given its parents. This means the full joint distribution factorizes as a product of CPTs: P(X1, X2, ..., Xn) = Product of P(Xi | Parents(Xi)). This factorization reduces computational complexity from exponential to manageable -- instead of specifying millions of probabilities, the causal structure lets us specify just a few hundred.
+:::
+
+::: {.key-concept .teal}
+#### Bayesian Network
+
+A Bayesian network equals a DAG plus a CPT for every node. It allows us to compute exact probabilities for any query, update beliefs with Bayes' rule when evidence arrives, and compare interventions using the do-operator. The do-operator severs incoming arrows to the intervention variable and sets it to a fixed value, giving us the causal effect rather than a mere correlation.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch04-quantitative-models/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch04-quantitative-models/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This chapter builds a complete Bayesian network in R using `bnlearn`, specifies CPTs for each node, and demonstrates forward queries, interventional queries, and sensitivity analysis.
+
+### Define the Network Structure
+
+We use `bnlearn`'s model string syntax to specify the DAG. The notation `[Node|Parent1:Parent2]` means a node is conditional on its parents, while `[Node]` alone denotes a root node with no parents.
+
+```{r}
+#| label: bn-structure
+#| echo: true
+
+library(bnlearn)
+
+# Define the DAG structure using bnlearn's model string syntax
+# [Node] means no parents; [Node|Parent1:Parent2] means conditional on parents
+dag <- model2network(
+  "[Staffing][Equipment][Quality|Staffing:Equipment][NMR|Quality]"
+)
+
+# Inspect the structure
+dag
+nodes(dag)    # "Staffing" "Equipment" "Quality" "NMR"
+arcs(dag)     # Shows the 3 directed edges
+```
+
+### Specify CPTs
+
+Each CPT is defined as an array with named dimensions. Root nodes get simple marginal distributions, while child nodes get conditional distributions indexed by all parent state combinations.
+
+```{r}
+#| label: bn-cpts
+#| echo: true
+
+# Define CPTs using arrays (states must match exactly)
+cpt_staffing <- array(c(0.40, 0.60), dim = 2,
+  dimnames = list(Staffing = c("Adequate", "Low")))
+
+cpt_equipment <- array(c(0.35, 0.65), dim = 2,
+  dimnames = list(Equipment = c("Available", "Unavailable")))
+
+cpt_quality <- array(
+  c(0.85, 0.15,  # Adequate + Available
+    0.50, 0.50,  # Low + Available
+    0.55, 0.45,  # Adequate + Unavailable
+    0.20, 0.80), # Low + Unavailable
+  dim = c(2, 2, 2),
+  dimnames = list(
+    Quality   = c("Good", "Poor"),
+    Staffing  = c("Adequate", "Low"),
+    Equipment = c("Available", "Unavailable")))
+
+cpt_nmr <- array(
+  c(0.85, 0.15,  # Good quality
+    0.40, 0.60), # Poor quality
+  dim = c(2, 2),
+  dimnames = list(NMR = c("Low", "High"), Quality = c("Good", "Poor")))
+
+# Combine into a fitted BN
+bn_mnh <- custom.fit(dag, list(
+  Staffing = cpt_staffing, Equipment = cpt_equipment,
+  Quality = cpt_quality, NMR = cpt_nmr))
+```
+
+### Query the Network
+
+The `cpquery()` function uses likelihood weighting to estimate conditional probabilities from the network. For exact inference, we convert the network to a junction tree using the `gRain` package.
+
+```{r}
+#| label: bn-query
+#| echo: true
+
+# Query: P(NMR = High | Staffing = Low)
+cpquery(bn_mnh,
+  event  = (NMR == "High"),
+  evidence = (Staffing == "Low"),
+  n = 1e6)
+# Expected: ~0.44
+
+# Query: P(NMR = High | Staffing = Adequate, Equipment = Available)
+cpquery(bn_mnh,
+  event  = (NMR == "High"),
+  evidence = (Staffing == "Adequate" & Equipment == "Available"),
+  n = 1e6)
+# Expected: ~0.22
+
+# Exact inference using grain (junction tree)
+library(gRain)
+bn_grain <- as.grain(bn_mnh)
+querygrain(bn_grain, nodes = "NMR")
+# Returns marginal P(NMR) across all facilities
+```
+
+### Visualize the Network
+
+Two visualization options are available: `bnlearn`'s built-in plot using Rgraphviz, and `ggdag` for publication-quality figures built on ggplot2.
+
+```{r}
+#| label: bn-visualize
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+# Option 1: bnlearn's built-in plot (uses Rgraphviz)
+graphviz.plot(bn_mnh, main = "MNH Bayesian Network",
+  shape = "rectangle",
+  highlight = list(nodes = "NMR", col = "#E24A3F", fill = "#E24A3F"))
+
+# Option 2: ggdag for publication-quality figures
+library(ggdag)
+library(dagitty)
+
+mnh_dag <- dagitty('dag {
+  Staffing [pos="0,0"]
+  Equipment [pos="2,0"]
+  Quality [pos="1,1"]
+  NMR [pos="1,2"]
+  Staffing -> Quality
+  Equipment -> Quality
+  Quality -> NMR
+}')
+
+ggdag(mnh_dag) +
+  theme_dag() +
+  labs(title = "MNH Causal Model (4 Nodes)")
+```
+
+### Interventional Queries
+
+The `mutilated()` function implements the do-operator -- it severs incoming arrows to the intervention variable and sets it to a fixed value. This lets us compare the causal effect of different interventions side by side.
+
+```{r}
+#| label: bn-intervention
+#| echo: true
+
+# Simulate do(Staffing = Adequate) by mutilating the network
+bn_do_adequate <- mutilated(bn_mnh, evidence = list(Staffing = "Adequate"))
+
+# P(NMR | do(Staffing = Adequate))
+querygrain(as.grain(bn_do_adequate), nodes = "NMR")
+
+# Compare scenarios
+scenarios <- data.frame(
+  Scenario = c("Status Quo", "do(Staff=Adequate)",
+               "do(Equip=Available)", "do(Both)"),
+  P_NMR_High = c(
+    querygrain(as.grain(bn_mnh),
+               nodes = "NMR")$NMR["High"],
+    querygrain(as.grain(
+      mutilated(bn_mnh, list(Staffing = "Adequate"))),
+               nodes = "NMR")$NMR["High"],
+    querygrain(as.grain(
+      mutilated(bn_mnh, list(Equipment = "Available"))),
+               nodes = "NMR")$NMR["High"],
+    querygrain(as.grain(
+      mutilated(bn_mnh, list(Staffing = "Adequate",
+                              Equipment = "Available"))),
+               nodes = "NMR")$NMR["High"]))
+
+# Display comparison
+scenarios$Reduction <- scenarios$P_NMR_High[1] - scenarios$P_NMR_High
+print(scenarios)
+```
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Quantitative causal models = DAG + CPTs = Bayesian Network.** They allow us to compute exact probabilities, update beliefs with Bayes' rule, and compare interventions using the do-operator.
+
+**Probability fundamentals:** States must be MECE; probabilities must sum to 1. CPTs encode the quantitative relationships in the DAG.
+
+**Bayes' rule** lets us reason backward from evidence to causes -- essential for situational assessment.
+
+**The Causal Markov Condition** simplifies computation from exponential to manageable. **Sensitivity analysis** reveals which interventions have the largest expected impact -- in the MNH model, staffing has a larger marginal effect than equipment, but the two are synergistic.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 5 -- Situational Analysis**, we turn to the first major application of quantitative causal models:
+
+- Updating beliefs with multiple evidence streams -- combining facility data, surveys, and expert judgment
+- Diagnostic inference -- given observed outcomes, which upstream causes are most likely?
+- The explaining away phenomenon -- how one piece of evidence changes the relevance of another
+- A complete district diagnosis using Bayesian inference on the MNH causal model

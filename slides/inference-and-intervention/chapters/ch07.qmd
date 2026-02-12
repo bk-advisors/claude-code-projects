@@ -1,0 +1,245 @@
+---
+title: "Chapter 7: Decision Analysis & Value of Information"
+subtitle: "Do-calculus, expected utility, influence diagrams, and the value of information for MNH intervention choices"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Construct **influence diagrams** with decision nodes, chance nodes, and objective nodes
+- Compute **expected value** of different intervention options
+- Calculate the **Expected Value of Perfect Information (EVPI)**
+- Understand the difference between **observing** and **intervening** (do-calculus)
+- Apply decision analysis to MNH program investment choices
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### Influence Diagram
+
+A causal model that includes at least one strategic option (decision) and one objective, in addition to the usual chance variables. Also called a decision network. Bayesian networks (Chapters 2--6) contain only chance nodes and support inference; influence diagrams add decision nodes (rectangles) and objective nodes (hexagons), enabling optimal decision analysis.
+:::
+
+::: {.key-concept .green}
+#### Expected Value (EV)
+
+The probability-weighted average of all possible outcomes for a given decision: $EV(\text{Decision}) = \sum_{\text{outcomes}} P(\text{outcome} \mid do(\text{Decision})) \times V(\text{outcome})$. Comparing the EV across alternative intervention strategies provides a principled basis for choosing the option that maximizes expected lives saved.
+:::
+
+::: {.key-concept .orange}
+#### Expected Value of Perfect Information (EVPI)
+
+The maximum amount a decision-maker should pay to learn the true state of an uncertain variable before deciding. Computed as $\text{EVPI} = EV(\text{with perfect info}) - EV(\text{without info})$. EVPI sets the upper bound on how much a pilot program, survey, or study is worth.
+:::
+
+::: {.key-concept .red}
+#### The do-Operator and Graph Surgery
+
+$do(X = x)$ is an intervention that sets variable X to value x regardless of X's parents in the causal model. Graph surgery deletes all arrows pointing into X, isolating the true causal effect from confounded associations. Observing that a facility has CPAP ($P(Y \mid X)$) is fundamentally different from giving a facility CPAP ($P(Y \mid do(X))$).
+:::
+
+::: {.key-concept .teal}
+#### Sensitivity Analysis
+
+Varying uncertain parameters to determine which ones matter most for the decision. In MNH, the probability of government co-financing often determines whether a workforce-heavy or equipment-heavy strategy is optimal. A sensitivity analysis identifies the crossover point where the optimal strategy changes.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch07-single-agent/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch07-single-agent/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This chapter implements decision analysis in R, covering expected value computation, EVPI calculation, sensitivity analysis visualization, and graph surgery using Bayesian networks.
+
+### Expected Value Calculation
+
+We define a three-strategy decision problem for MNH intervention deployment and compute the expected lives saved for each option.
+
+```{r}
+#| label: expected-value
+#| echo: true
+
+# Define the decision problem
+strategies <- data.frame(
+  strategy = rep(c("CPAP Only", "Workforce", "Split"), each = 2),
+  gov_support = rep(c("High", "Low"), 3),
+  probability = rep(c(0.40, 0.60), 3),
+  lives_saved = c(2800, 1200,   # CPAP
+                  3600, 1000,    # Workforce
+                  3100, 1400)    # Split
+)
+
+# Compute expected value per strategy
+library(dplyr)
+ev_table <- strategies %>%
+  group_by(strategy) %>%
+  summarise(
+    expected_lives = sum(probability * lives_saved),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(expected_lives))
+
+ev_table
+# Split: 2080, Workforce: 2040, CPAP: 1840
+```
+
+### EVPI Calculation
+
+EVPI tells us the maximum value of learning the true state of government co-financing before committing funds. It is computed as the difference between the expected value with perfect information and the expected value of the best uninformed strategy.
+
+```{r}
+#| label: evpi
+#| echo: true
+
+# EVPI = E[max value per scenario] - max E[value]
+
+# Best decision in each scenario
+best_per_scenario <- strategies %>%
+  group_by(gov_support) %>%
+  slice_max(lives_saved) %>%
+  ungroup()
+
+# Expected value with perfect information
+ev_perfect <- sum(best_per_scenario$probability *
+                  best_per_scenario$lives_saved)
+
+# Expected value without information (best overall strategy)
+ev_no_info <- max(ev_table$expected_lives)
+
+# EVPI
+evpi <- ev_perfect - ev_no_info
+cat("EV with perfect info:", ev_perfect, "\n")
+cat("EV without info:", ev_no_info, "\n")
+cat("EVPI:", evpi, "lives\n")
+# EVPI tells us the maximum value of learning government intentions
+```
+
+### Sensitivity Analysis Visualization
+
+This plot shows how the expected lives saved for each strategy varies as the probability of high government co-financing changes. The crossover points reveal when the optimal strategy shifts.
+
+```{r}
+#| label: sensitivity
+#| echo: true
+#| fig-width: 9
+#| fig-height: 5
+
+library(ggplot2)
+
+# Vary P(High co-financing) from 0 to 1
+p_seq <- seq(0, 1, by = 0.01)
+sensitivity <- data.frame(
+  p = rep(p_seq, 3),
+  strategy = rep(c("CPAP Only", "Workforce", "Split"),
+                 each = length(p_seq)),
+  ev = c(1200 + 1600 * p_seq,   # CPAP
+         1000 + 2600 * p_seq,    # Workforce
+         1400 + 1700 * p_seq)    # Split
+)
+
+ggplot(sensitivity, aes(x = p, y = ev, color = strategy)) +
+  geom_line(size = 1.2) +
+  geom_vline(xintercept = 0.40, linetype = "dashed", alpha = 0.5) +
+  scale_color_manual(values = c("#005CB9", "#83BD00", "#FA7650")) +
+  labs(x = "P(High Government Co-financing)",
+       y = "Expected Lives Saved",
+       title = "Sensitivity Analysis: Strategy Choice",
+       subtitle = "Dashed line = current estimate (p = 0.40)") +
+  theme_minimal(base_size = 14)
+```
+
+### Graph Surgery with bnlearn
+
+Graph surgery implements the do-operator by removing incoming arrows to the intervention variable. The original model includes confounding via Resources; the intervened model isolates the true causal effect of CPAP on NMR.
+
+```{r}
+#| label: graph-surgery
+#| echo: true
+
+library(bnlearn)
+
+# Original model (with confounding)
+original <- model2network(
+  "[Resources][CPAP|Resources][NMR|CPAP:Resources]"
+)
+
+# After graph surgery: do(CPAP) — remove Resources -> CPAP
+intervened <- model2network(
+  "[Resources][CPAP][NMR|CPAP:Resources]"
+)
+
+# The key difference:
+# In 'original': P(NMR | CPAP=Yes) includes confounding via Resources
+# In 'intervened': P(NMR | CPAP=Yes) is the true causal effect
+
+# With fitted CPTs, you would query:
+# cpquery(fit_original, (NMR == "Low"), (CPAP == "Yes"))
+# cpquery(fit_intervened, (NMR == "Low"), (CPAP == "Yes"))
+# The second query gives the causal effect
+```
+
+### Tornado Diagram
+
+A tornado diagram shows which uncertain parameter has the largest swing effect on the expected outcome of the Split strategy. Parameters with the widest bars deserve the most attention in data collection and negotiation.
+
+```{r}
+#| label: tornado
+#| echo: true
+#| fig-width: 9
+#| fig-height: 5
+
+# Sensitivity of Split strategy to each parameter
+params <- data.frame(
+  parameter = c("P(Gov High)", "Lives if High",
+                "Lives if Low", "Cost ($M)"),
+  low_ev  = c(1840, 1960, 1960, 2080),
+  base_ev = c(2080, 2080, 2080, 2080),
+  high_ev = c(2320, 2200, 2200, 2080)
+)
+
+params$swing <- params$high_ev - params$low_ev
+params <- params[order(params$swing, decreasing = TRUE), ]
+params$parameter <- factor(params$parameter,
+                           levels = rev(params$parameter))
+
+ggplot(params, aes(y = parameter)) +
+  geom_segment(aes(x = low_ev, xend = high_ev,
+                   yend = parameter),
+               size = 8, color = "#005CB9", alpha = 0.7) +
+  geom_vline(xintercept = 2080, linetype = "dashed") +
+  labs(x = "Expected Lives Saved", y = "",
+       title = "Tornado Diagram: Sensitivity of Split Strategy") +
+  theme_minimal(base_size = 14)
+```
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Influence diagrams** extend causal models with decisions and objectives, enabling optimal intervention analysis.
+
+**Expected value** provides a principled way to compare interventions under uncertainty. **EVPI** tells us the maximum value of better information.
+
+**Observing is not the same as intervening.** The do-operator and graph surgery isolate true causal effects from confounded associations.
+
+**Diversification** (splitting investment) can reduce risk and increase expected value when facing uncertainty about government co-financing and other key parameters.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 8 -- Multi-Country Resource Allocation**, we apply decision analysis to a full multi-country MNH program:
+
+- Allocating pooled funding across multiple countries
+- Sequential decisions: pilot then scale-up
+- Government co-financing uncertainty at country level
+- The value of waiting versus the cost of delay (measured in lives)
+
+Chapter 7 introduced the tools for a single decision-maker choosing among interventions. Chapter 8 scales this to a portfolio allocation problem across ten countries with country-specific risk profiles.

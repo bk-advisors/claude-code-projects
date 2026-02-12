@@ -1,0 +1,953 @@
+---
+title: "Chapter 8: MNH Resource Allocation"
+subtitle: "Inference and Intervention | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Frame a **multi-country resource allocation** problem as a decision under uncertainty
+- Build **probability distributions** over government co-financing, intervention coverage, and health outcomes
+- Apply **sequential decision making** (commit → observe → scale) with backward induction
+- Assess **stakeholder response** (crowding out vs. crowding in) as a strategic variable
+- Use **Monte Carlo simulation** in R to compare allocation strategies and quantify confidence intervals
+:::
+
+
+# Book Context: The Rideshare Case {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Resource allocation under uncertainty — the original case</span>
+
+
+## The Rideshare Problem
+
+::: {.definition-box}
+**The rideshare case** involves a ride-sharing organization deciding how to allocate drivers across cities (San Francisco vs. New York). The key uncertainties: market demand in each city, competitive dynamics, and the legal/regulatory response from incumbent taxi companies.
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Decision:** How many drivers to deploy in SF vs. NY?
+
+**Uncertainties:**
+
+- Market size in each city
+- Competitor legal response
+- Regulatory environment
+:::
+:::
+
+::: {.col}
+::: {.callout-box .orange}
+**Core tradeoff:**
+
+- **Concentrate** in one city → higher payoff *if* that market is large, but riskier
+- **Spread** across cities → lower variance, potentially lower peak return
+:::
+:::
+:::
+
+
+## From the Rideshare Case to the MNH Program
+
+The same analytical framework applies to public health resource allocation:
+
+. . .
+
+| Rideshare Case (Book) | MNH Program |
+|---|---|
+| Drivers across cities | The available funding across 10 countries |
+| Market demand uncertainty | Baseline burden + intervention coverage uncertainty |
+| Competitor legal response | Government co-financing commitment |
+| Regulatory environment | Health system readiness |
+| Revenue maximization | Lives saved maximization |
+
+. . .
+
+::: {.key-takeaway}
+**Same structure, different domain.** The tools from the book — influence diagrams, expected value, decision trees, and sensitivity analysis — apply directly to the MNH program's allocation problem.
+:::
+
+
+# The Multi-Country Allocation Problem {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">The available funding across 10 countries over the program timeline</span>
+
+
+## The MNH Program Portfolio
+
+::: {.callout-box}
+**The Program:** Pooled donor funding committed over the program timeline to reduce maternal and neonatal mortality across sub-Saharan Africa. Program Leadership must decide *how much* to allocate to *which countries* and *when*.
+:::
+
+. . .
+
+| Country | Lives Saved Target | Cohort | Baseline NMR (per 1,000) |
+|---|---|---|---|
+| **Country A** | 45,000 | Cohort 1 | 28.1 |
+| **Country B** | 38,000 | Cohort 1 | 20.3 |
+| **Country C** | 27,000 | Cohort 1 | 19.6 |
+| **Country D** | 25,000 | Cohort 2 | 19.0 |
+| **Country E** | 15,000 | Cohort 1 | 24.5 |
+| **Country F** | 12,000 | Cohort 1 | 22.4 |
+| **Country G** | 11,000 | Cohort 1 | 23.1 |
+| **Country H** | 8,500 | Cohort 1 | 16.2 |
+| **Country I** | 3,000 | Cohort 2 | 34.8 |
+| **Country J** | TBD | Subsequent funding cycle | 35.9 |
+| **Total** | **Hundreds of thousands** | | |
+
+
+## What Makes This Hard
+
+Each country differs on three critical dimensions:
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Baseline Burden**
+
+The number of maternal and neonatal deaths preventable with known interventions. Country A has the largest target because of both high NMR and large birth cohort.
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**Health System Capacity**
+
+Can the country absorb and deploy interventions effectively? Country H has strong systems; Country I has weaker infrastructure but high need per capita.
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box .orange}
+**Government Readiness**
+
+Will the government maintain co-financing commitments, sustain policy reforms, and absorb programs after the initiative exits? This is the *most uncertain* variable — and the one with the largest impact on long-run outcomes.
+:::
+
+
+## Sources of Uncertainty
+
+::: {.definition-box}
+**Key Insight:** The program cannot simply allocate proportional to burden. Each dollar's impact depends on uncertain, country-specific factors that interact with the allocation decision.
+:::
+
+. . .
+
+| Uncertainty | Description | Impact |
+|---|---|---|
+| **Government co-financing** | Will governments sustain funding after the program exits? | Determines long-run impact |
+| **Intervention coverage** | Will programs reach target populations? | Determines short-run lives saved |
+| **Workforce retention** | Will trained health workers stay in post? | Determines capacity sustainability |
+| **Political stability** | Will elections or conflict disrupt programs? | Binary risk (derails everything) |
+| **Other donor behavior** | Will other donors crowd in or crowd out? | Changes marginal value of program funding |
+
+. . .
+
+::: {.callout-box .red}
+**The fundamental challenge:** We must commit funds *before* resolving these uncertainties. The question is not "What is the right allocation?" but **"What allocation is robust to the uncertainty we face?"**
+:::
+
+
+## The Allocation Decision Space
+
+The program must choose an allocation vector: $\mathbf{a} = (a_1, a_2, \ldots, a_{10})$ where $a_i$ = dollars to country $i$ and $\sum a_i$ equals the total available funding.
+
+. . .
+
+**Three archetype strategies:**
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Concentrate**
+
+Allocate 70%+ to the top 3 countries by expected lives saved (Country A, Country B, Country C).
+
+*High expected value, high variance.*
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**Spread**
+
+Allocate roughly equally across all 10 countries.
+
+*Lower expected value, lower variance.*
+:::
+:::
+
+::: {.col}
+::: {.callout-box .orange}
+**Tiered**
+
+Weight by burden × capacity score, with floors and ceilings per country.
+
+*Balanced approach.*
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box}
+**This is the rideshare problem at scale.** Instead of 2 cities, we have 10 countries. Instead of drivers, we have the program's total budget. The analytical approach is the same: model uncertainty, compute expected outcomes, and find the robust allocation.
+:::
+
+
+# Modeling Uncertainty {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Probability distributions over key variables</span>
+
+
+## Government Co-Financing Scenarios
+
+::: {.definition-box}
+**Government co-financing** is the probability that the government will maintain or increase its health budget commitments after the program's investment period ends. This is the single most important uncertainty.
+:::
+
+. . .
+
+| Scenario | Probability | Description | Impact on Lives Saved |
+|---|---|---|---|
+| **High** | 0.40 | Government meets or exceeds commitments; absorbs programs | 100% of target achieved |
+| **Medium** | 0.50 | Partial commitment; some programs sustained | 60% of target achieved |
+| **Low** | 0.10 | Government reneges; programs collapse post-exit | 25% of target achieved |
+
+. . .
+
+::: {.callout-box .green}
+**Expected achievement rate:** $0.40 \times 1.00 + 0.50 \times 0.60 + 0.10 \times 0.25 = 0.40 + 0.30 + 0.025 = \mathbf{0.725}$ (72.5% of target)
+
+This is the **base case** expected outcome for any country. But co-financing probabilities vary by country.
+:::
+
+
+## Country-Specific Probability Profiles
+
+Not all countries carry the same risk profile:
+
+. . .
+
+| Country | P(High) | P(Medium) | P(Low) | Expected Achievement |
+|---|---|---|---|---|
+| Country H | 0.60 | 0.35 | 0.05 | 83.3% |
+| Country C | 0.50 | 0.40 | 0.10 | 76.5% |
+| Country A | 0.40 | 0.45 | 0.15 | 70.8% |
+| Country B | 0.45 | 0.40 | 0.15 | 72.8% |
+| Country E | 0.35 | 0.50 | 0.15 | 68.3% |
+| Country F | 0.30 | 0.50 | 0.20 | 65.0% |
+| Country D | 0.35 | 0.45 | 0.20 | 67.0% |
+| Country G | 0.25 | 0.45 | 0.30 | 59.5% |
+| Country I | 0.20 | 0.45 | 0.35 | 55.8% |
+| Country J | 0.30 | 0.40 | 0.30 | 61.5% |
+
+. . .
+
+::: {.callout-box .orange}
+**Key pattern:** Countries with stronger health systems (Country H, Country C) have higher expected achievement. But the countries with the largest burden (Country A, Country J) carry more uncertainty. This creates the core allocation tradeoff.
+:::
+
+
+## Decision Tree for a Single Country
+
+Consider allocating $X million to Country A:
+
+. . .
+
+<table style="width: 90%; margin: 0.4em auto; font-size: 0.5em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="padding: 0.4em 0.6em;">Allocate<br>$X million to A</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node" style="padding: 0.4em 0.6em;">Gov't<br>Co-finance</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center; padding: 0.5em; vertical-align: top;">
+<div style="margin-bottom: 0.3em;"><strong>High (0.40):</strong> 45,000 lives</div>
+<div style="margin-bottom: 0.3em;"><strong>Med (0.45):</strong> 27,000 lives</div>
+<div><strong>Low (0.15):</strong> 11,250 lives</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon" style="border-color: #3E9B6E; color: #3E9B6E; padding: 0.4em 0.6em;">EV =<br>31,838</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+::: {.math-block}
+$EV(\text{Country A}) = 0.40 \times 45{,}000 + 0.45 \times 27{,}000 + 0.15 \times 11{,}250 = 18{,}000 + 12{,}150 + 1{,}688 = \mathbf{31{,}838}$ lives
+:::
+
+. . .
+
+::: {.callout-box}
+**But this assumes the full allocation goes to Country A.** The real question is: would those dollars save *more* lives if allocated to Country C or Country B instead? We need to compare expected lives saved *per dollar* across countries.
+:::
+
+
+## Scenario Analysis: Best / Base / Worst
+
+Across the full program portfolio (all 10 countries):
+
+. . .
+
+| Scenario | Assumption | Total Lives Saved | % of Target |
+|---|---|---|---|
+| **Best Case** | All countries achieve High co-financing | ~185,000 | 100% |
+| **Base Case** | Country-specific probability mix | ~131,000 | 70.7% |
+| **Worst Case** | All countries achieve Low co-financing | ~46,000 | 25.0% |
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box .green}
+**Base case is credible.** The weighted-average expected outcome delivers ~70% of the target — consistent with typical large-scale public health programs.
+:::
+:::
+
+::: {.col}
+::: {.callout-box .red}
+**Worst case is devastating.** If co-financing fails across the board, only about a quarter of targeted lives would be saved. This tail risk motivates portfolio diversification.
+:::
+:::
+:::
+
+
+# Sequential Decision Making {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Commit → Observe → Scale</span>
+
+
+## The Multi-Stage Structure
+
+The program does not have to commit all funds on day one. Phased rollout enables **sequential decision making**:
+
+. . .
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;"><strong>Stage 1</strong><br>Commit seed<br>funding</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #F8A623;"><strong>Observe</strong><br>Pilot results<br>(12–18 months)</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;"><strong>Stage 2</strong><br>Scale or<br>reallocate</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;"><strong>Outcome</strong><br>Lives saved<br>(program period)</div>
+</div>
+
+. . .
+
+::: {.callout-box}
+**This is exactly the rideshare structure.** The book's ride-sharing organization can test a market before scaling. The MNH program can run pilots before committing full allocations. The value of this optionality depends on *how informative* the pilot results are.
+:::
+
+
+## Rolling Back the Decision Tree
+
+**Backward induction** for a 2-stage Country A decision:
+
+. . .
+
+**Stage 2 (after observing pilot):**
+
+| Pilot Signal | Updated P(High) | Optimal Stage 2 | Expected Lives |
+|---|---|---|---|
+| Promising | 0.70 | Scale up | 38,200 |
+| Mixed | 0.35 | Moderate | 25,300 |
+| Negative | 0.10 | Redirect funds | 6,400 |
+
+. . .
+
+**Stage 1 (before pilot):** P(Promising) = 0.35, P(Mixed) = 0.45, P(Negative) = 0.20
+
+::: {.math-block}
+$EV(\text{Sequential}) = 0.35 \times 38{,}200 + 0.45 \times 25{,}300 + 0.20 \times 6{,}400 = 13{,}370 + 11{,}385 + 1{,}280 = \mathbf{26{,}035}$
+:::
+
+. . .
+
+::: {.callout-box .green}
+Compare to **commit-all-upfront** EV of 31,838 lives. The sequential approach yields fewer expected lives (26,035) because *less money is committed*. But the key advantage is **risk reduction** — the worst case is much better.
+:::
+
+
+## The Value of Waiting vs. the Cost of Delay
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box .green}
+**Value of waiting:**
+
+- Better information → better allocation
+- Avoid committing large sums to a country with Low co-financing
+- EVPI from Chapter 7 applies: pilot provides imperfect but valuable signal
+- Reduces portfolio variance
+:::
+:::
+
+::: {.col}
+::: {.callout-box .red}
+**Cost of delay:**
+
+- **Lives lost during pilot period.** Every month of delay = preventable deaths occurring
+- Thousands of neonatal deaths per month across the 10 countries that could be averted
+- An 18-month pilot delay puts tens of thousands of potential lives at stake
+- Staff and political momentum may dissipate
+:::
+:::
+:::
+
+. . .
+
+::: {.key-takeaway}
+**The cost of delay is measured in lives.** Sequential decision making is valuable, but not free. The program must balance the information value of waiting against the human cost of inaction. This is a distinctive feature of public health versus commercial allocation problems.
+:::
+
+
+## MNH Application: 2-Stage Decision for Country J
+
+::: {.example-block}
+[Country J Allocation Decision]{.example-label}
+
+**Context:** Country J is planned for the next phase of funding. Program Leadership must decide *now* whether to begin preparatory investments.
+
+**Stage 1:** Invest $X million in a health system strengthening pilot in 3 subnational regions.
+
+**Observe:** Government co-financing behavior, workforce absorption, political stability.
+
+**Stage 2:** Based on pilot results, commit additional funds from the subsequent funding cycle.
+:::
+
+. . .
+
+| Decision Path | P | Investment | Expected Lives |
+|---|---|---|---|
+| Pilot → Promising → Full scale | 0.30 | Large | 24,000 |
+| Pilot → Mixed → Partial scale | 0.40 | Moderate | 9,000 |
+| Pilot → Negative → Exit | 0.30 | Seed only | 1,000 |
+| **EV(Sequential)** | | **Moderate** | **11,200** |
+| No pilot → Full commit | 1.00 | Large | 12,500 |
+
+. . .
+
+::: {.callout-box .orange}
+**The pilot saves significant resources in expected cost** while sacrificing only a modest number of expected lives. The freed capital can be deployed in higher-confidence countries.
+:::
+
+
+# Stakeholder Response {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Other donors and governments as strategic actors</span>
+
+
+## Crowding Out vs. Crowding In
+
+::: {.definition-box}
+**Crowding Out:** When the program's investment causes other donors or the government to *reduce* their own spending on MNH — "the program will cover it."
+
+**Crowding In:** When the program's investment causes others to *increase* their spending — "this sector is getting results; let's invest more."
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box .red}
+**Crowding Out Scenario**
+
+The program invests $X million in Country B MNH.
+
+Government redirects funds from MNH to other priorities.
+
+**Net new investment:** reduced.
+
+**Impact:** 63% of expected lives saved.
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**Crowding In Scenario**
+
+The program invests $X million in Country B MNH.
+
+Government adds matching funds. Another multilateral adds co-investment.
+
+**Net new investment:** amplified.
+
+**Impact:** 150% of expected lives saved.
+:::
+:::
+:::
+
+
+## Modeling Other Donors
+
+Other donors (multilateral agencies, bilateral agencies) respond to the program's allocation:
+
+. . .
+
+| Program Action | Other Donor Response | P | Net Multiplier |
+|---|---|---|---|
+| Large investment in country X | Redirect away ("covered") | 0.30 | 0.7× |
+| Large investment in country X | Maintain existing programs | 0.45 | 1.0× |
+| Large investment in country X | Match/expand programs | 0.25 | 1.4× |
+
+. . .
+
+::: {.math-block}
+$\text{Expected multiplier} = 0.30 \times 0.7 + 0.45 \times 1.0 + 0.25 \times 1.4 = 0.21 + 0.45 + 0.35 = \mathbf{1.01}$
+:::
+
+. . .
+
+::: {.callout-box .orange}
+**On average, the multiplier is roughly 1.0** — crowding out and crowding in approximately cancel. But the variance matters: in 30% of cases the program's dollar buys only $0.70 of new investment. Strategic coordination with other donors can shift these probabilities.
+:::
+
+
+## Preview: Game Theory (Chapter 9)
+
+::: {.callout-box}
+**The stakeholder response problem is fundamentally a game theory problem.** Each actor (program, government, other donors) makes decisions considering what the others will do.
+
+In Chapter 9, we will formalize this with:
+
+- **Nash equilibrium** — stable allocation patterns where no actor wants to deviate
+- **Commitment devices** — co-financing agreements that bind government behavior
+- **Signaling** — how the program's early investments signal priorities to other donors
+- **Mechanism design** — structuring incentives so all actors align toward lives saved
+:::
+
+. . .
+
+::: {.callout-box .green}
+**For now:** We treat stakeholder response as an *uncertain variable* in our decision model (a chance node). In Chapter 9, we upgrade it to a *strategic variable* with its own decision logic.
+:::
+
+
+# MNH Application: 3-Country Allocation {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Full decision analysis for Country A, Country C, and Country B</span>
+
+
+## The 3-Country Problem
+
+::: {.callout-box}
+**Simplified scenario:** Program Leadership has a fixed allocation to distribute across Country A, Country C, and Country B — the three largest target countries. How should it split the funds?
+:::
+
+. . .
+
+| Country | Lives Saved Target | Expected Achievement | Lives per $M |
+|---|---|---|---|
+| **Country A** | 45,000 | 70.8% | 610 |
+| **Country C** | 27,000 | 76.5% | 356 |
+| **Country B** | 38,000 | 72.8% | 462 |
+
+. . .
+
+::: {.callout-box .orange}
+**Naive approach:** Allocate proportional to lives-per-dollar → send almost everything to Country A. But this ignores **risk** (Country A has more uncertainty) and **diminishing returns** (marginal impact decreases with scale).
+:::
+
+
+## Influence Diagram for 3-Country Allocation
+
+<table style="width: 95%; margin: 0.4em auto; font-size: 0.42em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="padding: 0.4em 0.6em;">Allocation<br>$a_{A}, a_{C}, a_{B}$</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow" style="font-size: 1.8em;">→</span></td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node" style="padding: 0.4em 0.6em;">Coverage<br>(per country)</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow" style="font-size: 1.8em;">→</span></td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon" style="border-color: #3E9B6E; color: #3E9B6E; padding: 0.4em 0.6em;">Total<br>Lives Saved</div>
+</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td style="text-align: center; padding: 0.3em;">
+<span class="dag-arrow">↑</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="dag-arrow">↑</span>
+</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node confounder" style="padding: 0.4em 0.6em;">Gov't Co-<br>financing</div>
+</td>
+<td></td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node confounder" style="padding: 0.4em 0.6em;">Donor<br>Response</div>
+</td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+. . .
+
+::: {.incremental}
+- **Decision node** (rectangle): Allocation vector $(a_{A}, a_{C}, a_{B})$ summing to the available budget
+- **Chance nodes** (ovals): Coverage per country, influenced by allocation and uncertain factors
+- **Uncertain variables** (amber): Government co-financing and other donor response — both country-specific
+- **Objective** (hexagon): Total lives saved across all three countries
+:::
+
+
+## Comparing Strategies
+
+Three allocation strategies for the 3-country sub-portfolio:
+
+. . .
+
+| Strategy | Country A | Country C | Country B | Expected Lives | Std Dev |
+|---|---|---|---|---|---|
+| **Concentrate** | 70% | 15% | 15% | 57,400 | 14,500 |
+| **Spread** | 33% | 33% | 33% | 53,200 | 9,800 |
+| **Tiered** | 45% | 23% | 32% | 56,100 | 11,500 |
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Concentrate** has the highest expected value but also the highest risk. A bad outcome in Country A is catastrophic.
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**Tiered** sacrifices modest expected lives relative to Concentrate but reduces standard deviation by ~20%. This is the **efficient frontier** logic from portfolio theory.
+:::
+:::
+:::
+
+
+## Sensitivity to Government Co-Financing
+
+**At what P(High co-financing) does Concentrate beat Tiered?**
+
+. . .
+
+Let $p$ = P(High co-financing) for Country A specifically:
+
+::: {.math-block}
+$EV(\text{Concentrate})$ increases steeply with $p$ because the majority of funds are in Country A.
+
+$EV(\text{Tiered})$ is less sensitive to $p$ because funds are more diversified.
+:::
+
+. . .
+
+| Country A P(High) | EV(Concentrate) | EV(Tiered) | Best Strategy |
+|---|---|---|---|
+| 0.20 | ~48,000 | ~49,700 | Tiered |
+| 0.40 | ~57,400 | ~56,100 | Concentrate |
+| 0.60 | ~67,000 | ~62,500 | Concentrate |
+
+. . .
+
+::: {.callout-box .green}
+**Crossover point: P(High) ≈ 0.35.** If Program Leadership believes Country A has a >35% chance of high co-financing, concentrating funds becomes optimal in expectation. But the risk-adjusted answer depends on leadership's risk tolerance.
+:::
+
+
+## Recommendation with Confidence Intervals
+
+::: {.key-takeaway}
+**Recommended allocation: Tiered strategy**
+
+Country A 45% | Country C 23% | Country B 32%
+
+**Expected lives saved: ~56,100** (95% CI: ~34,900 – ~75,600)
+:::
+
+. . .
+
+::: {.example-block}
+[Rationale]{.example-label}
+
+1. **Robustness:** Tiered performs within 3% of Concentrate under favorable conditions and substantially better under adverse conditions
+
+2. **Portfolio diversification:** Spreading across 3 countries with different risk profiles reduces the probability of catastrophic shortfall
+
+3. **Political feasibility:** Extreme concentration raises equity concerns among participating governments
+
+4. **Adaptive capacity:** Tiered allocation preserves the option to reallocate in subsequent cycles based on observed performance
+:::
+
+
+# R Code Workshop {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Monte Carlo simulation and optimal allocation in R</span>
+
+
+## R Block 1: Monte Carlo Simulation
+
+```{r}
+#| label: monte-carlo-sim
+#| echo: true
+
+set.seed(42)
+n_sims <- 10000
+
+# Country parameters: target lives, expected lives per $M, sd per $M
+countries <- data.frame(
+  country = c("Country A", "Country C", "Country B"),
+  target = c(45000, 27000, 38000),
+  lives_per_M = c(610, 356, 462),
+  sd_per_M = c(185, 95, 130),  # uncertainty in effectiveness
+  p_high = c(0.40, 0.50, 0.45)  # P(high gov co-financing)
+)
+
+# Simulate outcomes for a given allocation (as proportions of budget)
+simulate_outcomes <- function(alloc, countries, n_sims) {
+  total_lives <- numeric(n_sims)
+  for (i in 1:n_sims) {
+    lives <- 0
+    for (j in 1:nrow(countries)) {
+      # Government co-financing scenario
+      gov <- sample(c("High", "Med", "Low"), 1,
+                    prob = c(countries$p_high[j],
+                             1 - countries$p_high[j] - 0.10,
+                             0.10))
+      multiplier <- switch(gov, High = 1.0, Med = 0.6, Low = 0.25)
+      # Lives saved = allocation * lives per $M * multiplier + noise
+      lives_j <- alloc[j] * rnorm(1, countries$lives_per_M[j],
+                                      countries$sd_per_M[j]) * multiplier
+      lives <- lives + max(0, lives_j)
+    }
+    total_lives[i] <- lives
+  }
+  total_lives
+}
+
+# Three strategies (as relative allocation units, not dollar amounts)
+strat_concentrate <- c(70, 15, 15)   # Heavy Country A
+strat_spread      <- c(33, 33, 33)   # Equal
+strat_tiered      <- c(45, 23, 32)   # Weighted
+```
+
+
+## R Block 2: Visualize Strategy Outcomes
+
+```{r}
+#| label: visualize-strategies
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+library(ggplot2)
+
+# Run simulations
+sim_conc   <- simulate_outcomes(strat_concentrate, countries, n_sims)
+sim_spread <- simulate_outcomes(strat_spread, countries, n_sims)
+sim_tiered <- simulate_outcomes(strat_tiered, countries, n_sims)
+
+# Combine into data frame
+sim_df <- data.frame(
+  lives = c(sim_conc, sim_spread, sim_tiered),
+  strategy = rep(c("Concentrate", "Spread", "Tiered"),
+                 each = n_sims)
+)
+
+# Violin plot with embedded box plot
+ggplot(sim_df, aes(x = strategy, y = lives / 1000, fill = strategy)) +
+  geom_violin(alpha = 0.6, draw_quantiles = c(0.025, 0.5, 0.975)) +
+  geom_boxplot(width = 0.15, alpha = 0.8, outlier.shape = NA) +
+  scale_fill_manual(values = c("#005CB9", "#83BD00", "#FA7650")) +
+  labs(x = "Allocation Strategy",
+       y = "Total Lives Saved (thousands)",
+       title = "Simulated Outcomes: 3-Country Allocation",
+       subtitle = "10,000 Monte Carlo draws | Violin shows full distribution") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none")
+```
+
+
+## R Block 3: Optimal Allocation via Grid Search
+
+```{r}
+#| label: grid-search
+#| echo: true
+
+# Grid search over allocation space
+# Constraint: a_A + a_C + a_B = 100 (percentage units)
+grid_step <- 5  # 5% increments
+results <- data.frame()
+
+for (a_A in seq(0, 100, grid_step)) {
+  for (a_C in seq(0, 100 - a_A, grid_step)) {
+    a_B <- 100 - a_A - a_C
+    alloc <- c(a_A, a_C, a_B)
+
+    # Quick simulation (fewer draws for speed)
+    sim <- simulate_outcomes(alloc, countries, n_sims = 2000)
+
+    results <- rbind(results, data.frame(
+      a_A = a_A, a_C = a_C, a_B = a_B,
+      ev = mean(sim),
+      sd = sd(sim),
+      p5 = quantile(sim, 0.05)  # 5th percentile (worst case)
+    ))
+  }
+}
+
+# Best by expected value
+best_ev <- results[which.max(results$ev), ]
+cat("Max EV allocation:", best_ev$a_A, "/",
+    best_ev$a_C, "/", best_ev$a_B, "\n")
+cat("Expected lives:", round(best_ev$ev), "\n")
+
+# Best by worst-case (maximin)
+best_p5 <- results[which.max(results$p5), ]
+cat("\nMaximin allocation:", best_p5$a_A, "/",
+    best_p5$a_C, "/", best_p5$a_B, "\n")
+cat("5th percentile lives:", round(best_p5$p5), "\n")
+```
+
+
+## R Block 4: Sensitivity Analysis
+
+```{r}
+#| label: sensitivity-analysis
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+library(tidyr)
+
+# Sensitivity: vary Country A P(High co-financing) from 0.1 to 0.8
+p_seq <- seq(0.1, 0.8, by = 0.05)
+sens_results <- data.frame()
+
+for (p_high_A in p_seq) {
+  # Update Country A's co-financing probability
+  countries_mod <- countries
+  countries_mod$p_high[1] <- p_high_A
+
+  ev_conc <- mean(simulate_outcomes(strat_concentrate, countries_mod, 3000))
+  ev_spr  <- mean(simulate_outcomes(strat_spread, countries_mod, 3000))
+  ev_tier <- mean(simulate_outcomes(strat_tiered, countries_mod, 3000))
+
+  sens_results <- rbind(sens_results, data.frame(
+    p_high = p_high_A,
+    Concentrate = ev_conc,
+    Spread = ev_spr,
+    Tiered = ev_tier
+  ))
+}
+
+# Pivot to long format and plot
+sens_long <- pivot_longer(sens_results, cols = -p_high,
+                          names_to = "Strategy", values_to = "EV")
+
+ggplot(sens_long, aes(x = p_high, y = EV / 1000, color = Strategy)) +
+  geom_line(size = 1.2) +
+  geom_vline(xintercept = 0.40, linetype = "dashed", alpha = 0.5) +
+  scale_color_manual(values = c("#005CB9", "#83BD00", "#FA7650")) +
+  labs(x = "P(High Gov't Co-financing) for Country A",
+       y = "Expected Lives Saved (thousands)",
+       title = "Sensitivity: How Country A's Co-financing Risk Affects Strategy Choice",
+       subtitle = "Dashed line = current estimate (p = 0.40)") +
+  theme_minimal(base_size = 14)
+```
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Resource allocation under uncertainty** requires balancing expected impact against risk. The optimal allocation depends not just on *where lives can be saved most efficiently*, but on *how uncertain* we are about each country's trajectory.
+:::
+
+. . .
+
+::: {.incremental}
+- **Portfolio thinking** applies to public health: diversification reduces catastrophic shortfall risk
+- **Sequential decisions** (pilot → scale) add value by resolving uncertainty — but delay costs lives
+- **Government co-financing** is the dominant uncertainty; small shifts in P(High) change the optimal strategy
+- **Stakeholder response** (crowding out/in) can amplify or undermine the program's investment
+- **Monte Carlo simulation** in R makes it possible to quantify confidence intervals and compare strategies rigorously
+- **The cost of delay is measured in lives** — a distinctive feature of health versus commercial allocation
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 9 — Multi-Agent Decision Making and Game Theory**
+
+We move from treating stakeholders as *uncertain variables* to modeling them as *strategic agents*:
+
+- **Nash equilibrium** in donor coordination games
+- **Commitment devices** that bind government co-financing
+- **Mechanism design** for aligning incentives across funders
+- **MNH application:** Designing a co-financing framework that maximizes collective impact
+:::
+
+. . .
+
+::: {.callout-box .green}
+**From Ch 8 to Ch 9:** We solved the allocation problem *as if* government and donor behavior were exogenous uncertainties. In Chapter 9, we recognize these actors have their own objectives — and we design strategies that account for their rational self-interest.
+:::
+
+
+## {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[Inference and Intervention | Chapter 8: MNH Resource Allocation]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

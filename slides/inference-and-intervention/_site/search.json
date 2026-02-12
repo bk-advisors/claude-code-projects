@@ -1,0 +1,982 @@
+[
+  {
+    "objectID": "chapters/ch10.html",
+    "href": "chapters/ch10.html",
+    "title": "Chapter 10: Structure Learning from Observational Data",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nDistinguish between causal models and probabilistic models (and why it matters)\nExplain Markov equivalence and observational indistinguishability\nApply constraint-based (PC algorithm) and score-based structure learning\nUse instrumental variables to identify causal effects from observational data\nAvoid common regression pitfalls: bad controls, collider bias, and mediator adjustment",
+    "crumbs": [
+      "Part IV: Data-Driven Methods",
+      "Chapter 10: Structure Learning from Observational Data"
+    ]
+  },
+  {
+    "objectID": "chapters/ch10.html#learning-objectives",
+    "href": "chapters/ch10.html#learning-objectives",
+    "title": "Chapter 10: Structure Learning from Observational Data",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nDistinguish between causal models and probabilistic models (and why it matters)\nExplain Markov equivalence and observational indistinguishability\nApply constraint-based (PC algorithm) and score-based structure learning\nUse instrumental variables to identify causal effects from observational data\nAvoid common regression pitfalls: bad controls, collider bias, and mediator adjustment",
+    "crumbs": [
+      "Part IV: Data-Driven Methods",
+      "Chapter 10: Structure Learning from Observational Data"
+    ]
+  },
+  {
+    "objectID": "chapters/ch10.html#key-concepts",
+    "href": "chapters/ch10.html#key-concepts",
+    "title": "Chapter 10: Structure Learning from Observational Data",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nMarkov Equivalence and Observational Indistinguishability\nMultiple causal structures (DAGs) can produce the same joint probability distribution. If two DAGs encode the same set of conditional independencies, no amount of observational data can distinguish them. They belong to the same Markov equivalence class, represented by a CPDAG (Completed Partially Directed Acyclic Graph) where directed edges indicate consensus on direction and undirected edges indicate ambiguity.\n\n\nStructure Learning Algorithms\nTwo main approaches discover candidate DAGs from data. The constraint-based approach (PC algorithm) tests conditional independencies to build a skeleton, then orients edges using collider rules. The score-based approach (hill climbing with BIC) searches over DAG space to optimize a scoring function that balances fit and parsimony. Both assume causal sufficiency, faithfulness, and sufficient sample size.\n\n\nInstrumental Variables (IV)\nA variable Z that is correlated with the treatment (relevance), affects the outcome only through the treatment (exclusion), and is independent of confounders (independence). Two-Stage Least Squares (2SLS) uses the instrument to extract exogenous variation in the treatment, yielding an unbiased causal effect estimate even when confounders are unobserved.\n\n\nGood Controls vs. Bad Controls\nNot all control variables improve a regression estimate. Controlling for confounders (common causes of treatment and outcome) removes bias. Controlling for mediators (variables on the causal path) blocks the causal effect and underestimates the total effect. Controlling for colliders (common effects of treatment and outcome) opens spurious paths and creates bias. The DAG must guide variable selection.\n\n\nThe MNH Data-Driven Workflow\nA five-step process: (1) learn the DAG skeleton from DHIS2 data using PC or hill-climbing algorithms, (2) orient ambiguous edges using expert knowledge and temporal ordering, (3) validate implied independencies against the data, (4) estimate causal effects using IV or adjusted regression, and (5) use the model for intervention decisions. This workflow integrates data-driven discovery with the expert-driven causal modeling of earlier chapters.",
+    "crumbs": [
+      "Part IV: Data-Driven Methods",
+      "Chapter 10: Structure Learning from Observational Data"
+    ]
+  },
+  {
+    "objectID": "chapters/ch10.html#lecture-slides",
+    "href": "chapters/ch10.html#lecture-slides",
+    "title": "Chapter 10: Structure Learning from Observational Data",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part IV: Data-Driven Methods",
+      "Chapter 10: Structure Learning from Observational Data"
+    ]
+  },
+  {
+    "objectID": "chapters/ch10.html#r-code-workshop",
+    "href": "chapters/ch10.html#r-code-workshop",
+    "title": "Chapter 10: Structure Learning from Observational Data",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis chapter implements structure learning from simulated DHIS2 data, compares constraint-based and score-based algorithms, demonstrates instrumental variable estimation, and illustrates good-control versus bad-control pitfalls.\n\nSimulating DHIS2-Like Data\nWe create a dataset with a known causal structure (8 variables reflecting facility staffing, equipment, training, drug availability, delivery patterns, and neonatal outcomes) so that we can evaluate how well structure learning algorithms recover the true DAG.\n\nlibrary(bnlearn)\nlibrary(tidyverse)\n\nset.seed(42)\nn &lt;- 3000  # facilities\n\n# True causal structure (known to us, not the algorithm)\ntrue_dag &lt;- model2network(paste0(\n  \"[Training][DrugAvail][Equipment]\",\n  \"[Staffing|Training]\",\n  \"[CSection|Staffing:DrugAvail:Equipment]\",\n  \"[Referral|Staffing:Equipment]\",\n  \"[Volume|Staffing:Equipment]\",\n  \"[NMR|CSection:Referral:Staffing:DrugAvail]\"\n))\n\n# Simulate from known structure with realistic parameters\ntraining    &lt;- rbinom(n, 1, 0.6)\ndrug_avail  &lt;- rbinom(n, 1, 0.7)\nequipment   &lt;- rnorm(n, 0.5, 0.15) |&gt; pmin(1) |&gt; pmax(0)\nstaffing    &lt;- rbinom(n, 1, 0.4 + 0.3 * training)\ncsection    &lt;- 5 + 8 * staffing + 3 * drug_avail + 4 * equipment + rnorm(n, 0, 3)\nreferral    &lt;- 15 - 5 * staffing - 3 * equipment + rnorm(n, 0, 4)\nvolume      &lt;- 50 + 30 * staffing + 20 * equipment + rnorm(n, 0, 15)\nnmr         &lt;- 35 - 8 * staffing - 4 * drug_avail - 3 * (csection &gt; 10) -\n               2 * (referral &lt; 10) + rnorm(n, 0, 5)\n\ndhis2 &lt;- tibble(\n  Training = factor(training, labels = c(\"No\", \"Yes\")),\n  DrugAvail = factor(drug_avail, labels = c(\"Stockout\", \"Available\")),\n  Equipment = equipment,\n  Staffing = factor(staffing, labels = c(\"Low\", \"Adequate\")),\n  CSection = csection,\n  Referral = referral,\n  Volume = volume,\n  NMR = nmr\n)\n\nhead(dhis2)\n\n\n\nPC Algorithm – Learning Structure from Data\nThe PC algorithm uses conditional independence tests to discover edges. It returns a CPDAG (partially directed graph) reflecting the Markov equivalence class that is consistent with the observed data.\n\n# Constraint-based structure learning: PC algorithm (stable version)\n# Uses conditional independence tests to discover edges\n\nlearned_pc &lt;- pc.stable(dhis2, test = \"mi-cg\", alpha = 0.05)\n# \"mi-cg\" = mutual information test for conditional Gaussian (mixed data)\n\n# Compare learned vs. true structure\ncat(\"True DAG edges:\\n\")\nprint(arcs(true_dag))\n\ncat(\"\\nLearned CPDAG edges:\\n\")\nprint(arcs(learned_pc))\n\n# Structural Hamming Distance (SHD) — lower is better\nshd_score &lt;- shd(learned_pc, true_dag)\ncat(\"\\nStructural Hamming Distance:\", shd_score, \"\\n\")\n\n# Which edges were correctly identified?\ntrue_arcs &lt;- arcs(true_dag)\nlearned_arcs &lt;- arcs(learned_pc)\ncat(\"\\nTrue positives:\", nrow(merge(true_arcs, learned_arcs)), \"\\n\")\ncat(\"False positives:\", nrow(learned_arcs) - nrow(merge(true_arcs, learned_arcs)), \"\\n\")\ncat(\"False negatives:\", nrow(true_arcs) - nrow(merge(true_arcs, learned_arcs)), \"\\n\")\n\n\n\nScore-Based Learning (Hill Climbing)\nHill climbing with BIC optimizes a score that balances fit and complexity. We compare the structures recovered by both approaches against the true DAG.\n\n# Score-based structure learning: Hill Climbing with BIC\nlearned_hc &lt;- hc(dhis2, score = \"bic-cg\")\n# \"bic-cg\" = BIC for conditional Gaussian networks\n\n# Compare all three structures\ncat(\"=== Structure Comparison ===\\n\\n\")\n\ncat(\"PC algorithm edges:\", nrow(arcs(learned_pc)), \"\\n\")\ncat(\"Hill climbing edges:\", nrow(arcs(learned_hc)), \"\\n\")\ncat(\"True DAG edges:\", nrow(arcs(true_dag)), \"\\n\\n\")\n\ncat(\"SHD (PC vs. true):\", shd(learned_pc, true_dag), \"\\n\")\ncat(\"SHD (HC vs. true):\", shd(learned_hc, true_dag), \"\\n\")\n\n# Visualize all three\npar(mfrow = c(1, 3))\ngraphviz.plot(true_dag, main = \"True DAG\", shape = \"ellipse\",\n              highlight = list(nodes = \"NMR\", fill = \"#E24A3F\", col = \"#E24A3F\"))\ngraphviz.plot(learned_pc, main = \"PC Algorithm (CPDAG)\", shape = \"ellipse\",\n              highlight = list(nodes = \"NMR\", fill = \"#E24A3F\", col = \"#E24A3F\"))\ngraphviz.plot(learned_hc, main = \"Hill Climbing (BIC)\", shape = \"ellipse\",\n              highlight = list(nodes = \"NMR\", fill = \"#E24A3F\", col = \"#E24A3F\"))\n\n\n\nInstrumental Variable Estimation\nWe simulate an IV scenario where district wealth confounds the relationship between midwife density and NMR. Distance to the nearest training college serves as an instrument that affects midwife density but not NMR directly. Two-stage least squares (2SLS) recovers the true causal effect.\n\nlibrary(ivreg)  # for 2SLS estimation\n\n# Does midwife density cause lower NMR?\n# Instrument: distance to nearest training college\n\nset.seed(123)\nn_districts &lt;- 500\n\n# Simulate IV scenario\nwealth        &lt;- rnorm(n_districts, 50, 15)           # confounder\ndistance      &lt;- runif(n_districts, 5, 200)            # instrument\nmidwife_density &lt;- 20 - 0.05 * distance + 0.3 * wealth + rnorm(n_districts, 0, 3)\nnmr_district  &lt;- 40 - 0.4 * midwife_density - 0.2 * wealth + rnorm(n_districts, 0, 5)\n\niv_data &lt;- tibble(\n  NMR = nmr_district,\n  Midwife = midwife_density,\n  Distance = distance,\n  Wealth = wealth\n)\n\n# Naive OLS (biased — omits wealth)\nols_naive &lt;- lm(NMR ~ Midwife, data = iv_data)\n\n# OLS with control (correct if we observe wealth)\nols_controlled &lt;- lm(NMR ~ Midwife + Wealth, data = iv_data)\n\n# 2SLS IV estimation (doesn't need wealth)\niv_est &lt;- ivreg(NMR ~ Midwife | Distance, data = iv_data)\n\n# Compare all three\ncat(\"=== Causal Effect of Midwife Density on NMR ===\\n\")\ncat(\"True effect:        -0.40\\n\")\ncat(\"Naive OLS:         \", round(coef(ols_naive)[\"Midwife\"], 3), \"\\n\")\ncat(\"Controlled OLS:    \", round(coef(ols_controlled)[\"Midwife\"], 3), \"\\n\")\ncat(\"IV (2SLS):         \", round(coef(iv_est)[\"Midwife\"], 3), \"\\n\")\n\n# First-stage F-statistic (test instrument strength)\nfirst_stage &lt;- lm(Midwife ~ Distance, data = iv_data)\ncat(\"\\nFirst-stage F-stat:\", summary(first_stage)$fstatistic[1] |&gt; round(1), \"\\n\")\ncat(\"(Rule of thumb: F &gt; 10 for strong instrument)\\n\")\n\n\n\nGood vs. Bad Controls in Regression\nTwo demonstrations: (1) controlling for a mediator underestimates the total effect of training on NMR, and (2) conditioning on a collider (quality rating) creates a spurious negative association between staffing and equipment.\n\n# Demonstrate: controlling for a mediator UNDERESTIMATES the total effect\n# Demonstrate: controlling for a collider CREATES spurious association\n\nset.seed(456)\nn &lt;- 2000\n\n# --- Mediator example ---\n# True DAG: Training → Competency → NMR\ntraining_m   &lt;- rbinom(n, 1, 0.5)\ncompetency   &lt;- 0.3 + 0.4 * training_m + rnorm(n, 0, 0.15)\nnmr_m        &lt;- 35 - 15 * competency + rnorm(n, 0, 4)\n\n# Total effect of training (correct)\ncat(\"=== Mediator Example ===\\n\")\ncat(\"Total effect (no mediator control):\",\n    round(coef(lm(nmr_m ~ training_m))[\"training_m\"], 2), \"\\n\")\n# Controlled direct effect (blocks causal path!)\ncat(\"Direct effect (controlling mediator):\",\n    round(coef(lm(nmr_m ~ training_m + competency))[\"training_m\"], 2), \"\\n\")\ncat(\"True total effect: -6.0\\n\\n\")\n\n# --- Collider example ---\n# True DAG: Staffing → Quality ← Equipment; Staffing ⊥ Equipment\nstaffing_c   &lt;- rbinom(n, 1, 0.5)\nequipment_c  &lt;- rnorm(n, 0.5, 0.2)\nquality      &lt;- 0.3 * staffing_c + 0.4 * equipment_c + rnorm(n, 0, 0.1)\n\ncat(\"=== Collider Example ===\\n\")\ncat(\"Staffing-Equipment correlation (unconditional):\",\n    round(cor(staffing_c, equipment_c), 3), \"\\n\")\n\n# Condition on collider — creates spurious association\nhigh_quality &lt;- quality &gt; median(quality)\ncat(\"Staffing-Equipment correlation (among high-quality):\",\n    round(cor(staffing_c[high_quality], equipment_c[high_quality]), 3), \"\\n\")\ncat(\"Expected: ~0 unconditional, negative conditional (collider bias)\\n\")\n\n# Visualize collider bias\ntibble(Staffing = staffing_c, Equipment = equipment_c,\n       Quality = ifelse(quality &gt; median(quality), \"High\", \"Low\")) |&gt;\n  ggplot(aes(x = factor(Staffing), y = Equipment, fill = Quality)) +\n  geom_boxplot(alpha = 0.7) +\n  scale_fill_manual(values = c(\"High\" = \"#83BD00\", \"Low\" = \"#E24A3F\")) +\n  labs(title = \"Collider Bias: Conditioning on Quality of Care\",\n       subtitle = \"Among high-quality facilities, staffing and equipment appear negatively correlated\",\n       x = \"Staffing (0 = Low, 1 = Adequate)\", y = \"Equipment Index\") +\n  theme_minimal(base_size = 14)",
+    "crumbs": [
+      "Part IV: Data-Driven Methods",
+      "Chapter 10: Structure Learning from Observational Data"
+    ]
+  },
+  {
+    "objectID": "chapters/ch10.html#key-takeaways",
+    "href": "chapters/ch10.html#key-takeaways",
+    "title": "Chapter 10: Structure Learning from Observational Data",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nData alone cannot determine causation. Markov equivalence means multiple DAGs fit the same data. Domain knowledge is essential to resolve ambiguity.\nStructure learning discovers candidate DAGs. The PC algorithm (constraint-based) and hill climbing (score-based) recover the skeleton; colliders are the key to orientation.\nInstrumental variables overcome confounding. When you cannot control for confounders, a valid instrument recovers the causal effect via 2SLS.\nNot all controls are good controls. Controlling for mediators underestimates effects; controlling for colliders creates bias. Let the DAG guide your regression specification.",
+    "crumbs": [
+      "Part IV: Data-Driven Methods",
+      "Chapter 10: Structure Learning from Observational Data"
+    ]
+  },
+  {
+    "objectID": "chapters/ch10.html#course-summary",
+    "href": "chapters/ch10.html#course-summary",
+    "title": "Chapter 10: Structure Learning from Observational Data",
+    "section": "Course Summary",
+    "text": "Course Summary\nThis chapter closes the loop on the complete Inference and Intervention toolkit:\n\n\n\n\n\n\n\nChapter\nTool\n\n\n\n\n1–3\nQualitative DAGs\n\n\n4–5\nBayesian networks and inference\n\n\n6\nCausal reasoning pitfalls (Simpson’s Paradox, Prosecutor’s Fallacy)\n\n\n7\nDecision analysis and do-calculus\n\n\n8\nResource allocation under uncertainty\n\n\n9\nMulti-agent game theory\n\n\n10\nData-driven discovery\n\n\n\nThe MNH program analyst’s workflow brings all these pieces together: build a DAG from expert interviews (Chapters 2–3), quantify it with DHIS2 data (Chapters 4–5, 10), avoid causal reasoning traps (Chapter 6), make allocation decisions (Chapters 7–8), anticipate strategic responses (Chapter 9), and validate and refine with new data (Chapter 10).\nCausal models are not just academic abstractions – they are practical tools for answering the questions that matter most in global health: Where should we invest? What should we do? How do we know it will work?",
+    "crumbs": [
+      "Part IV: Data-Driven Methods",
+      "Chapter 10: Structure Learning from Observational Data"
+    ]
+  },
+  {
+    "objectID": "chapters/ch08.html",
+    "href": "chapters/ch08.html",
+    "title": "Chapter 8: Multi-Country Resource Allocation",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nFrame a multi-country resource allocation problem as a decision under uncertainty\nBuild probability distributions over government co-financing, intervention coverage, and health outcomes\nApply sequential decision making (commit, observe, scale) with backward induction\nAssess stakeholder response (crowding out vs. crowding in) as a strategic variable\nUse Monte Carlo simulation in R to compare allocation strategies and quantify confidence intervals",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 8: Multi-Country Resource Allocation"
+    ]
+  },
+  {
+    "objectID": "chapters/ch08.html#learning-objectives",
+    "href": "chapters/ch08.html#learning-objectives",
+    "title": "Chapter 8: Multi-Country Resource Allocation",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nFrame a multi-country resource allocation problem as a decision under uncertainty\nBuild probability distributions over government co-financing, intervention coverage, and health outcomes\nApply sequential decision making (commit, observe, scale) with backward induction\nAssess stakeholder response (crowding out vs. crowding in) as a strategic variable\nUse Monte Carlo simulation in R to compare allocation strategies and quantify confidence intervals",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 8: Multi-Country Resource Allocation"
+    ]
+  },
+  {
+    "objectID": "chapters/ch08.html#key-concepts",
+    "href": "chapters/ch08.html#key-concepts",
+    "title": "Chapter 8: Multi-Country Resource Allocation",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nMulti-Country Resource Allocation\nA large-scale MNH program must allocate pooled donor funding across multiple countries, each with different baseline mortality, health system capacity, and government readiness. The optimal allocation depends not just on where lives can be saved most efficiently, but on how uncertain we are about each country’s trajectory.\n\n\nPortfolio Diversification\nBorrowing from financial portfolio theory, a tiered allocation strategy that weights by burden and capacity score (with floors and ceilings per country) can reduce the risk of catastrophic shortfall. Concentrating funds in the highest-burden country maximizes expected value but carries the most variance; spreading funds equally lowers both expected value and risk.\n\n\nSequential Decision Making\nThe program does not have to commit all funds on day one. A phased approach (commit seed funding, observe pilot results, then scale or reallocate) enables better-informed decisions. Backward induction solves these multi-stage problems by starting at the terminal outcomes and working backward through each decision point.\n\n\nThe Cost of Delay\nSequential decision making is valuable but not free. Every month of delay means preventable deaths that could have been averted. The program must balance the information value of waiting against the human cost of inaction – a distinctive feature of public health versus commercial allocation problems.\n\n\nCrowding Out vs. Crowding In\nWhen the program invests in a country, other donors and the government may reduce their own spending (crowding out) or increase it (crowding in). On average, these effects may roughly cancel, but the variance matters: in some cases the program’s dollar buys only $0.70 of net new investment.",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 8: Multi-Country Resource Allocation"
+    ]
+  },
+  {
+    "objectID": "chapters/ch08.html#lecture-slides",
+    "href": "chapters/ch08.html#lecture-slides",
+    "title": "Chapter 8: Multi-Country Resource Allocation",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 8: Multi-Country Resource Allocation"
+    ]
+  },
+  {
+    "objectID": "chapters/ch08.html#r-code-workshop",
+    "href": "chapters/ch08.html#r-code-workshop",
+    "title": "Chapter 8: Multi-Country Resource Allocation",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis chapter implements Monte Carlo simulation for comparing multi-country allocation strategies, grid search for optimal allocation, and sensitivity analysis of co-financing uncertainty.\n\nMonte Carlo Simulation Setup\nWe define country parameters (target lives, effectiveness per dollar, uncertainty) and a simulation function that draws government co-financing scenarios and computes total lives saved for a given allocation vector.\n\nset.seed(42)\nn_sims &lt;- 10000\n\n# Country parameters: target lives, expected lives per $M, sd per $M\ncountries &lt;- data.frame(\n  country = c(\"Country A\", \"Country C\", \"Country B\"),\n  target = c(45000, 27000, 38000),\n  lives_per_M = c(610, 356, 462),\n  sd_per_M = c(185, 95, 130),  # uncertainty in effectiveness\n  p_high = c(0.40, 0.50, 0.45)  # P(high gov co-financing)\n)\n\n# Simulate outcomes for a given allocation (as proportions of budget)\nsimulate_outcomes &lt;- function(alloc, countries, n_sims) {\n  total_lives &lt;- numeric(n_sims)\n  for (i in 1:n_sims) {\n    lives &lt;- 0\n    for (j in 1:nrow(countries)) {\n      # Government co-financing scenario\n      gov &lt;- sample(c(\"High\", \"Med\", \"Low\"), 1,\n                    prob = c(countries$p_high[j],\n                             1 - countries$p_high[j] - 0.10,\n                             0.10))\n      multiplier &lt;- switch(gov, High = 1.0, Med = 0.6, Low = 0.25)\n      # Lives saved = allocation * lives per $M * multiplier + noise\n      lives_j &lt;- alloc[j] * rnorm(1, countries$lives_per_M[j],\n                                      countries$sd_per_M[j]) * multiplier\n      lives &lt;- lives + max(0, lives_j)\n    }\n    total_lives[i] &lt;- lives\n  }\n  total_lives\n}\n\n# Three strategies (as relative allocation units, not dollar amounts)\nstrat_concentrate &lt;- c(70, 15, 15)   # Heavy Country A\nstrat_spread      &lt;- c(33, 33, 33)   # Equal\nstrat_tiered      &lt;- c(45, 23, 32)   # Weighted\n\n\n\nVisualizing Strategy Outcomes\nA violin plot with embedded box plot shows the full distribution of simulated outcomes for each allocation strategy across 10,000 Monte Carlo draws.\n\nlibrary(ggplot2)\n\n# Run simulations\nsim_conc   &lt;- simulate_outcomes(strat_concentrate, countries, n_sims)\nsim_spread &lt;- simulate_outcomes(strat_spread, countries, n_sims)\nsim_tiered &lt;- simulate_outcomes(strat_tiered, countries, n_sims)\n\n# Combine into data frame\nsim_df &lt;- data.frame(\n  lives = c(sim_conc, sim_spread, sim_tiered),\n  strategy = rep(c(\"Concentrate\", \"Spread\", \"Tiered\"),\n                 each = n_sims)\n)\n\n# Violin plot with embedded box plot\nggplot(sim_df, aes(x = strategy, y = lives / 1000, fill = strategy)) +\n  geom_violin(alpha = 0.6, draw_quantiles = c(0.025, 0.5, 0.975)) +\n  geom_boxplot(width = 0.15, alpha = 0.8, outlier.shape = NA) +\n  scale_fill_manual(values = c(\"#005CB9\", \"#83BD00\", \"#FA7650\")) +\n  labs(x = \"Allocation Strategy\",\n       y = \"Total Lives Saved (thousands)\",\n       title = \"Simulated Outcomes: 3-Country Allocation\",\n       subtitle = \"10,000 Monte Carlo draws | Violin shows full distribution\") +\n  theme_minimal(base_size = 14) +\n  theme(legend.position = \"none\")\n\n\n\nOptimal Allocation via Grid Search\nA grid search over the allocation space (in 5% increments, subject to the constraint that allocations sum to 100%) identifies the best allocation by expected value and by worst-case (maximin) criterion.\n\n# Grid search over allocation space\n# Constraint: a_A + a_C + a_B = 100 (percentage units)\ngrid_step &lt;- 5  # 5% increments\nresults &lt;- data.frame()\n\nfor (a_A in seq(0, 100, grid_step)) {\n  for (a_C in seq(0, 100 - a_A, grid_step)) {\n    a_B &lt;- 100 - a_A - a_C\n    alloc &lt;- c(a_A, a_C, a_B)\n\n    # Quick simulation (fewer draws for speed)\n    sim &lt;- simulate_outcomes(alloc, countries, n_sims = 2000)\n\n    results &lt;- rbind(results, data.frame(\n      a_A = a_A, a_C = a_C, a_B = a_B,\n      ev = mean(sim),\n      sd = sd(sim),\n      p5 = quantile(sim, 0.05)  # 5th percentile (worst case)\n    ))\n  }\n}\n\n# Best by expected value\nbest_ev &lt;- results[which.max(results$ev), ]\ncat(\"Max EV allocation:\", best_ev$a_A, \"/\",\n    best_ev$a_C, \"/\", best_ev$a_B, \"\\n\")\ncat(\"Expected lives:\", round(best_ev$ev), \"\\n\")\n\n# Best by worst-case (maximin)\nbest_p5 &lt;- results[which.max(results$p5), ]\ncat(\"\\nMaximin allocation:\", best_p5$a_A, \"/\",\n    best_p5$a_C, \"/\", best_p5$a_B, \"\\n\")\ncat(\"5th percentile lives:\", round(best_p5$p5), \"\\n\")\n\n\n\nSensitivity Analysis\nThis plot shows how varying Country A’s probability of high government co-financing affects the expected lives saved for each strategy. The crossover point identifies the threshold at which concentrating funds in Country A becomes optimal.\n\nlibrary(tidyr)\n\n# Sensitivity: vary Country A P(High co-financing) from 0.1 to 0.8\np_seq &lt;- seq(0.1, 0.8, by = 0.05)\nsens_results &lt;- data.frame()\n\nfor (p_high_A in p_seq) {\n  # Update Country A's co-financing probability\n  countries_mod &lt;- countries\n  countries_mod$p_high[1] &lt;- p_high_A\n\n  ev_conc &lt;- mean(simulate_outcomes(strat_concentrate, countries_mod, 3000))\n  ev_spr  &lt;- mean(simulate_outcomes(strat_spread, countries_mod, 3000))\n  ev_tier &lt;- mean(simulate_outcomes(strat_tiered, countries_mod, 3000))\n\n  sens_results &lt;- rbind(sens_results, data.frame(\n    p_high = p_high_A,\n    Concentrate = ev_conc,\n    Spread = ev_spr,\n    Tiered = ev_tier\n  ))\n}\n\n# Pivot to long format and plot\nsens_long &lt;- pivot_longer(sens_results, cols = -p_high,\n                          names_to = \"Strategy\", values_to = \"EV\")\n\nggplot(sens_long, aes(x = p_high, y = EV / 1000, color = Strategy)) +\n  geom_line(size = 1.2) +\n  geom_vline(xintercept = 0.40, linetype = \"dashed\", alpha = 0.5) +\n  scale_color_manual(values = c(\"#005CB9\", \"#83BD00\", \"#FA7650\")) +\n  labs(x = \"P(High Gov't Co-financing) for Country A\",\n       y = \"Expected Lives Saved (thousands)\",\n       title = \"Sensitivity: How Country A's Co-financing Risk Affects Strategy Choice\",\n       subtitle = \"Dashed line = current estimate (p = 0.40)\") +\n  theme_minimal(base_size = 14)",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 8: Multi-Country Resource Allocation"
+    ]
+  },
+  {
+    "objectID": "chapters/ch08.html#key-takeaways",
+    "href": "chapters/ch08.html#key-takeaways",
+    "title": "Chapter 8: Multi-Country Resource Allocation",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nResource allocation under uncertainty requires balancing expected impact against risk. The optimal allocation depends not just on where lives can be saved most efficiently, but on how uncertain we are about each country’s trajectory.\nPortfolio thinking applies to public health: diversification reduces catastrophic shortfall risk. Sequential decisions (pilot then scale) add value by resolving uncertainty, but delay costs lives.\nGovernment co-financing is the dominant uncertainty; small shifts in the probability of high co-financing change the optimal strategy. Monte Carlo simulation in R makes it possible to quantify confidence intervals and compare strategies rigorously.",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 8: Multi-Country Resource Allocation"
+    ]
+  },
+  {
+    "objectID": "chapters/ch08.html#looking-ahead",
+    "href": "chapters/ch08.html#looking-ahead",
+    "title": "Chapter 8: Multi-Country Resource Allocation",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 9 – Game Theory and Strategic Interactions, we move from treating stakeholders as uncertain variables to modeling them as strategic agents:\n\nNash equilibrium in donor coordination games\nCommitment devices that bind government co-financing\nMechanism design for aligning incentives across funders\nMNH application: Designing a co-financing framework that maximizes collective impact\n\nChapter 8 solved the allocation problem as if government and donor behavior were exogenous uncertainties. Chapter 9 recognizes that these actors have their own objectives – and designs strategies that account for their rational self-interest.",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 8: Multi-Country Resource Allocation"
+    ]
+  },
+  {
+    "objectID": "chapters/ch06.html",
+    "href": "chapters/ch06.html",
+    "title": "Chapter 6: Simpson’s Paradox & Cost-Effectiveness",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nIdentify Simpson’s Paradox and explain why aggregated data can reverse the direction of causal effects\nAvoid the Prosecutor’s Fallacy by applying Bayes’ rule to distinguish \\(P(\\text{Evidence} \\mid \\text{Hypothesis})\\) from \\(P(\\text{Hypothesis} \\mid \\text{Evidence})\\)\nApply causal reasoning to cost-effectiveness analysis, avoiding naive cross-country comparisons\nUse R to simulate, visualize, and model data that exhibit these paradoxes\nMake sound resource-allocation recommendations for a large-scale MNH program portfolio",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 6: Simpson's Paradox & Cost-Effectiveness"
+    ]
+  },
+  {
+    "objectID": "chapters/ch06.html#learning-objectives",
+    "href": "chapters/ch06.html#learning-objectives",
+    "title": "Chapter 6: Simpson’s Paradox & Cost-Effectiveness",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nIdentify Simpson’s Paradox and explain why aggregated data can reverse the direction of causal effects\nAvoid the Prosecutor’s Fallacy by applying Bayes’ rule to distinguish \\(P(\\text{Evidence} \\mid \\text{Hypothesis})\\) from \\(P(\\text{Hypothesis} \\mid \\text{Evidence})\\)\nApply causal reasoning to cost-effectiveness analysis, avoiding naive cross-country comparisons\nUse R to simulate, visualize, and model data that exhibit these paradoxes\nMake sound resource-allocation recommendations for a large-scale MNH program portfolio",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 6: Simpson's Paradox & Cost-Effectiveness"
+    ]
+  },
+  {
+    "objectID": "chapters/ch06.html#key-concepts",
+    "href": "chapters/ch06.html#key-concepts",
+    "title": "Chapter 6: Simpson’s Paradox & Cost-Effectiveness",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nSimpson’s Paradox\nA trend that appears in aggregated data reverses or disappears when the data is disaggregated by a confounding variable. The paradox arises when a lurking variable is associated with both the treatment and the outcome. Decisions based on aggregated data can be exactly wrong; resolution requires causal reasoning, not just statistical adjustment.\n\n\nCost Per Life Saved (CPLS)\nThe total program expenditure divided by the number of additional lives saved attributable to the intervention. Lower CPLS means greater efficiency. Naive comparisons of CPLS across countries can be deeply misleading because baseline severity, health system capacity, and population density confound the treatment-outcome relationship.\n\n\nThe Prosecutor’s Fallacy\nConfusing \\(P(\\text{Evidence} \\mid \\text{Hypothesis})\\) with \\(P(\\text{Hypothesis} \\mid \\text{Evidence})\\). The probability of observing the evidence given that a hypothesis is true is not the same as the probability that the hypothesis is true given the evidence. Bayes’ rule and the base rate are needed to convert one into the other.\n\n\nConfounders vs. Mediators\nAlways condition on confounders (common causes of treatment and outcome) to remove spurious associations. Never condition on mediators (variables on the causal path between treatment and outcome), because doing so blocks the very causal effect you are trying to estimate. Getting this distinction wrong leads to Simpson’s Paradox or underestimation of treatment effects.\n\n\nConfounder-Adjusted Rankings\nNaive ranking of countries by raw CPLS concentrates investment in countries with strong health systems and low mortality burden. Causal ranking, which adjusts for baseline NMR, health system capacity, population size, and existing coverage, targets countries where the causal effect of intervention is greatest. The causal approach can save thousands of additional lives with the same budget.",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 6: Simpson's Paradox & Cost-Effectiveness"
+    ]
+  },
+  {
+    "objectID": "chapters/ch06.html#lecture-slides",
+    "href": "chapters/ch06.html#lecture-slides",
+    "title": "Chapter 6: Simpson’s Paradox & Cost-Effectiveness",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 6: Simpson's Paradox & Cost-Effectiveness"
+    ]
+  },
+  {
+    "objectID": "chapters/ch06.html#r-code-workshop",
+    "href": "chapters/ch06.html#r-code-workshop",
+    "title": "Chapter 6: Simpson’s Paradox & Cost-Effectiveness",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis chapter uses R to simulate and analyze Simpson’s Paradox and the Prosecutor’s Fallacy, demonstrating how aggregated data can mislead and how Bayes’ rule corrects diagnostic reasoning.\n\nSimulating Simpson’s Paradox\nWe begin by generating an MNH dataset where a confounder (country group) drives both treatment assignment and baseline risk, producing a Simpson’s Paradox in the aggregated data.\n\nlibrary(tidyverse)\n\nset.seed(42)\n\n# Simulate MNH data exhibiting Simpson's Paradox\n# Confounder: country_group (high-burden vs low-burden)\nn &lt;- 2000\n\nmnh_data &lt;- tibble(\n  # Confounder: country group determines both treatment and baseline risk\n country_group = sample(c(\"High-burden\", \"Low-burden\"), n, replace = TRUE,\n                         prob = c(0.6, 0.4)),\n  # Treatment assignment depends on country group (confounder)\n  cpap = case_when(\n    country_group == \"High-burden\" ~ rbinom(n, 1, 0.75),\n    country_group == \"Low-burden\"  ~ rbinom(n, 1, 0.25)\n  ),\n  # Outcome depends on BOTH country group and treatment\n  # CPAP has a positive causal effect (+10pp), but high-burden has lower baseline\n  survival_prob = case_when(\n    country_group == \"High-burden\" & cpap == 1 ~ 0.68,\n    country_group == \"High-burden\" & cpap == 0 ~ 0.61,\n    country_group == \"Low-burden\"  & cpap == 1 ~ 0.85,\n    country_group == \"Low-burden\"  & cpap == 0 ~ 0.82\n  ),\n  survived = rbinom(n, 1, survival_prob)\n)\n\n# Aggregated result (misleading)\nmnh_data |&gt;\n  group_by(cpap) |&gt;\n  summarise(survival_rate = mean(survived), n = n(), .groups = \"drop\")\n\n# Disaggregated result (correct)\nmnh_data |&gt;\n  group_by(country_group, cpap) |&gt;\n  summarise(survival_rate = mean(survived), n = n(), .groups = \"drop\")\n\n\n\nVisualizing Aggregated vs. Stratified Results\nThe side-by-side comparison shows how the same data yields opposite conclusions depending on whether you stratify by the confounder.\n\nlibrary(ggplot2)\n\n# Prepare labels\nmnh_data &lt;- mnh_data |&gt;\n  mutate(cpap_label = ifelse(cpap == 1, \"CPAP\", \"No CPAP\"))\n\n# Aggregated view (misleading)\np_agg &lt;- ggplot(mnh_data, aes(x = cpap_label, y = survived, fill = cpap_label)) +\n  stat_summary(fun = mean, geom = \"bar\", width = 0.6) +\n  stat_summary(fun.data = mean_cl_boot, geom = \"errorbar\", width = 0.2) +\n  scale_fill_manual(values = c(\"CPAP\" = \"#005CB9\", \"No CPAP\" = \"#FA7650\")) +\n  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +\n  labs(title = \"Aggregated: CPAP Looks Harmful\",\n       y = \"Survival Rate\", x = NULL) +\n  theme_minimal(base_size = 14) +\n  theme(legend.position = \"none\")\n\n# Stratified view (correct)\np_strat &lt;- ggplot(mnh_data, aes(x = cpap_label, y = survived, fill = cpap_label)) +\n  stat_summary(fun = mean, geom = \"bar\", width = 0.6) +\n  stat_summary(fun.data = mean_cl_boot, geom = \"errorbar\", width = 0.2) +\n  facet_wrap(~ country_group) +\n  scale_fill_manual(values = c(\"CPAP\" = \"#005CB9\", \"No CPAP\" = \"#FA7650\")) +\n  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +\n  labs(title = \"Stratified: CPAP Helps in BOTH Groups\",\n       y = \"Survival Rate\", x = NULL) +\n  theme_minimal(base_size = 14) +\n  theme(legend.position = \"none\")\n\nlibrary(patchwork)\np_agg + p_strat +\n  plot_annotation(title = \"Simpson's Paradox in MNH Data\",\n                  subtitle = \"Same data, opposite conclusions\")\n\n\n\nNaive vs. Confounder-Adjusted Regression\nThe naive regression omits the confounder and produces a negative (misleading) CPAP coefficient. The adjusted regression includes the confounder and correctly estimates a positive causal effect.\n\n# Naive regression: ignores confounder\nnaive_model &lt;- lm(survived ~ cpap, data = mnh_data)\nsummary(naive_model)\n# Expected: CPAP coefficient is NEGATIVE (misleading)\n\n# Confounder-adjusted regression: includes country_group\nadjusted_model &lt;- lm(survived ~ cpap + country_group, data = mnh_data)\nsummary(adjusted_model)\n# Expected: CPAP coefficient is POSITIVE (correct)\n\n# Compare coefficients side by side\ntibble(\n  Model = c(\"Naive (no confounder)\", \"Adjusted (with confounder)\"),\n  CPAP_Coefficient = c(coef(naive_model)[\"cpap\"],\n                       coef(adjusted_model)[\"cpap\"]),\n  Interpretation = c(\"CPAP appears harmful\",\n                     \"CPAP is beneficial (+7pp)\")\n)\n\n\n\nBayesian Network Encoding the Causal Structure\nA Bayesian network that encodes the fork (confounder) structure automatically handles Simpson’s Paradox in its queries.\n\nlibrary(bnlearn)\n\n# Prepare data for bnlearn (factors required)\nbn_data &lt;- mnh_data |&gt;\n  mutate(\n    country_group = factor(country_group),\n    cpap = factor(cpap, labels = c(\"No\", \"Yes\")),\n    survived = factor(survived, labels = c(\"Died\", \"Survived\"))\n  ) |&gt;\n  select(country_group, cpap, survived) |&gt;\n  as.data.frame()\n\n# Define the causal structure (DAG)\ndag &lt;- model2network(\"[country_group][cpap|country_group][survived|cpap:country_group]\")\nplot(dag)\n\n# Fit the BN with maximum likelihood estimates\nfitted_bn &lt;- bn.fit(dag, bn_data)\n\n# Query: P(survived | do(cpap = Yes)) using causal reasoning\n# Marginalizing over country_group (the back-door adjustment)\ncpquery(fitted_bn,\n        event = (survived == \"Survived\"),\n        evidence = (cpap == \"Yes\"),\n        n = 100000)\n\n# Compare: P(survived | cpap = Yes, country_group = High-burden)\ncpquery(fitted_bn,\n        event = (survived == \"Survived\"),\n        evidence = (cpap == \"Yes\" & country_group == \"High-burden\"),\n        n = 100000)\n\n# The BN correctly handles the conditioning automatically\n\n\n\nProsecutor’s Fallacy Calculator\nThis Bayes’ rule calculator demonstrates how the positive predictive value (PPV) of a diagnostic test depends critically on the base rate (prevalence), not just on sensitivity and specificity.\n\n# Bayes' rule calculator for diagnostic tests\nbayes_diagnostic &lt;- function(sensitivity, specificity, prevalence) {\n  # P(positive | disease) = sensitivity\n  # P(negative | no disease) = specificity\n  # P(positive | no disease) = 1 - specificity (false positive rate)\n  # P(disease) = prevalence\n\n  p_pos_given_disease    &lt;- sensitivity\n  p_pos_given_no_disease &lt;- 1 - specificity\n  p_disease              &lt;- prevalence\n  p_no_disease           &lt;- 1 - prevalence\n\n  # Total probability of a positive test\n  p_positive &lt;- (p_pos_given_disease * p_disease) +\n                (p_pos_given_no_disease * p_no_disease)\n\n  # Bayes' rule: P(disease | positive)\n  p_disease_given_pos &lt;- (p_pos_given_disease * p_disease) / p_positive\n\n  # Return results\n  tibble(\n    Metric = c(\"Sensitivity\", \"Specificity\", \"Prevalence\",\n               \"P(Positive Test)\", \"P(Disease | Positive) [PPV]\",\n               \"Prosecutor's Fallacy Would Claim\"),\n    Value = c(\n      scales::percent(sensitivity, accuracy = 0.1),\n      scales::percent(specificity, accuracy = 0.1),\n      scales::percent(prevalence, accuracy = 0.1),\n      scales::percent(p_positive, accuracy = 0.1),\n      scales::percent(p_disease_given_pos, accuracy = 0.1),\n      scales::percent(sensitivity, accuracy = 0.1)\n    )\n  )\n}\n\n# Preeclampsia screening example\nbayes_diagnostic(\n  sensitivity = 0.90,\n  specificity = 0.85,\n  prevalence  = 0.05\n)\n\n# What if prevalence is higher (e.g., high-risk population)?\nbayes_diagnostic(\n  sensitivity = 0.90,\n  specificity = 0.85,\n  prevalence  = 0.20\n)\n\nAt 5% prevalence, the PPV is approximately 24%. At 20% prevalence, the PPV rises to approximately 60%. The same test with the same sensitivity and specificity, but the meaning of a positive result depends entirely on the base rate.",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 6: Simpson's Paradox & Cost-Effectiveness"
+    ]
+  },
+  {
+    "objectID": "chapters/ch06.html#key-takeaways",
+    "href": "chapters/ch06.html#key-takeaways",
+    "title": "Chapter 6: Simpson’s Paradox & Cost-Effectiveness",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nSimpson’s Paradox arises when a confounder creates a fork structure in the DAG. Aggregated data can reverse the true causal effect. Always stratify by confounders, never by mediators.\nThe Prosecutor’s Fallacy confuses \\(P(E \\mid H)\\) with \\(P(H \\mid E)\\). Base rates matter. Use Bayes’ rule to compute the correct posterior probability.\nIn MNH cost-effectiveness, naive cross-country comparisons mislead because baseline severity and health system strength confound the treatment-outcome relationship. Causal adjustment can change which countries and interventions are prioritized – and save thousands of additional lives.",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 6: Simpson's Paradox & Cost-Effectiveness"
+    ]
+  },
+  {
+    "objectID": "chapters/ch06.html#looking-ahead",
+    "href": "chapters/ch06.html#looking-ahead",
+    "title": "Chapter 6: Simpson’s Paradox & Cost-Effectiveness",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 7 – Decision Analysis and Value of Information, we build on the causal models from this chapter to make optimal decisions under uncertainty:\n\nDecision trees for intervention selection under multiple scenarios\nExpected Value of Perfect Information (EVPI): How much would it be worth to resolve uncertainty before investing?\nSensitivity analysis: Which uncertain parameters matter most for the allocation decision?\nMulti-criteria decision analysis: Balancing cost-effectiveness with equity, political feasibility, and sustainability\n\nChapter 6 taught us how to correctly estimate causal effects (avoiding Simpson’s Paradox and the Prosecutor’s Fallacy). Chapter 7 teaches us how to use those estimates to make optimal decisions about where to invest program resources.",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 6: Simpson's Paradox & Cost-Effectiveness"
+    ]
+  },
+  {
+    "objectID": "chapters/ch04.html",
+    "href": "chapters/ch04.html",
+    "title": "Chapter 4: Quantitative Causal Models",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nDefine probability distributions over discrete variable states and apply the basic axioms\nCompute conditional probabilities and construct Conditional Probability Tables (CPTs)\nApply Bayes’ rule to update beliefs when new evidence arrives\nExplain the Causal Markov Condition and how a DAG factorizes a joint distribution\nBuild a quantitative Bayesian network in R using bnlearn and query it for MNH policy decisions",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 4: Quantitative Causal Models"
+    ]
+  },
+  {
+    "objectID": "chapters/ch04.html#learning-objectives",
+    "href": "chapters/ch04.html#learning-objectives",
+    "title": "Chapter 4: Quantitative Causal Models",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nDefine probability distributions over discrete variable states and apply the basic axioms\nCompute conditional probabilities and construct Conditional Probability Tables (CPTs)\nApply Bayes’ rule to update beliefs when new evidence arrives\nExplain the Causal Markov Condition and how a DAG factorizes a joint distribution\nBuild a quantitative Bayesian network in R using bnlearn and query it for MNH policy decisions",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 4: Quantitative Causal Models"
+    ]
+  },
+  {
+    "objectID": "chapters/ch04.html#key-concepts",
+    "href": "chapters/ch04.html#key-concepts",
+    "title": "Chapter 4: Quantitative Causal Models",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nConditional Probability Tables (CPTs)\nA CPT lists P(Child | Parents) for every combination of parent and child states. Each row in the table defines a conditional distribution, and every row must sum to 1. CPTs are the quantitative building blocks of a Bayesian network – they encode the strength of causal relationships that qualitative models could only describe with [+] and [-] signs. In practice, CPTs are estimated from facility-level data, expert elicitation, or both.\n\n\nBayes’ Rule\nBayes’ rule lets us “flip” the conditioning direction: given P(Evidence | Cause), it computes P(Cause | Evidence). The formula is P(A | B) = P(B | A) x P(A) / P(B). The prior P(A) represents what we believed before seeing evidence, the likelihood P(B | A) represents how probable the evidence is if the hypothesis is true, and the posterior P(A | B) represents our updated belief after incorporating evidence. This is the fundamental operation of situational assessment – reasoning backward from what we observe to what is likely true.\n\n\nThe Causal Markov Condition\nEach variable in a DAG is conditionally independent of its non-descendants given its parents. This means the full joint distribution factorizes as a product of CPTs: P(X1, X2, …, Xn) = Product of P(Xi | Parents(Xi)). This factorization reduces computational complexity from exponential to manageable – instead of specifying millions of probabilities, the causal structure lets us specify just a few hundred.\n\n\nBayesian Network\nA Bayesian network equals a DAG plus a CPT for every node. It allows us to compute exact probabilities for any query, update beliefs with Bayes’ rule when evidence arrives, and compare interventions using the do-operator. The do-operator severs incoming arrows to the intervention variable and sets it to a fixed value, giving us the causal effect rather than a mere correlation.",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 4: Quantitative Causal Models"
+    ]
+  },
+  {
+    "objectID": "chapters/ch04.html#lecture-slides",
+    "href": "chapters/ch04.html#lecture-slides",
+    "title": "Chapter 4: Quantitative Causal Models",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 4: Quantitative Causal Models"
+    ]
+  },
+  {
+    "objectID": "chapters/ch04.html#r-code-workshop",
+    "href": "chapters/ch04.html#r-code-workshop",
+    "title": "Chapter 4: Quantitative Causal Models",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis chapter builds a complete Bayesian network in R using bnlearn, specifies CPTs for each node, and demonstrates forward queries, interventional queries, and sensitivity analysis.\n\nDefine the Network Structure\nWe use bnlearn’s model string syntax to specify the DAG. The notation [Node|Parent1:Parent2] means a node is conditional on its parents, while [Node] alone denotes a root node with no parents.\n\nlibrary(bnlearn)\n\n# Define the DAG structure using bnlearn's model string syntax\n# [Node] means no parents; [Node|Parent1:Parent2] means conditional on parents\ndag &lt;- model2network(\n  \"[Staffing][Equipment][Quality|Staffing:Equipment][NMR|Quality]\"\n)\n\n# Inspect the structure\ndag\nnodes(dag)    # \"Staffing\" \"Equipment\" \"Quality\" \"NMR\"\narcs(dag)     # Shows the 3 directed edges\n\n\n\nSpecify CPTs\nEach CPT is defined as an array with named dimensions. Root nodes get simple marginal distributions, while child nodes get conditional distributions indexed by all parent state combinations.\n\n# Define CPTs using arrays (states must match exactly)\ncpt_staffing &lt;- array(c(0.40, 0.60), dim = 2,\n  dimnames = list(Staffing = c(\"Adequate\", \"Low\")))\n\ncpt_equipment &lt;- array(c(0.35, 0.65), dim = 2,\n  dimnames = list(Equipment = c(\"Available\", \"Unavailable\")))\n\ncpt_quality &lt;- array(\n  c(0.85, 0.15,  # Adequate + Available\n    0.50, 0.50,  # Low + Available\n    0.55, 0.45,  # Adequate + Unavailable\n    0.20, 0.80), # Low + Unavailable\n  dim = c(2, 2, 2),\n  dimnames = list(\n    Quality   = c(\"Good\", \"Poor\"),\n    Staffing  = c(\"Adequate\", \"Low\"),\n    Equipment = c(\"Available\", \"Unavailable\")))\n\ncpt_nmr &lt;- array(\n  c(0.85, 0.15,  # Good quality\n    0.40, 0.60), # Poor quality\n  dim = c(2, 2),\n  dimnames = list(NMR = c(\"Low\", \"High\"), Quality = c(\"Good\", \"Poor\")))\n\n# Combine into a fitted BN\nbn_mnh &lt;- custom.fit(dag, list(\n  Staffing = cpt_staffing, Equipment = cpt_equipment,\n  Quality = cpt_quality, NMR = cpt_nmr))\n\n\n\nQuery the Network\nThe cpquery() function uses likelihood weighting to estimate conditional probabilities from the network. For exact inference, we convert the network to a junction tree using the gRain package.\n\n# Query: P(NMR = High | Staffing = Low)\ncpquery(bn_mnh,\n  event  = (NMR == \"High\"),\n  evidence = (Staffing == \"Low\"),\n  n = 1e6)\n# Expected: ~0.44\n\n# Query: P(NMR = High | Staffing = Adequate, Equipment = Available)\ncpquery(bn_mnh,\n  event  = (NMR == \"High\"),\n  evidence = (Staffing == \"Adequate\" & Equipment == \"Available\"),\n  n = 1e6)\n# Expected: ~0.22\n\n# Exact inference using grain (junction tree)\nlibrary(gRain)\nbn_grain &lt;- as.grain(bn_mnh)\nquerygrain(bn_grain, nodes = \"NMR\")\n# Returns marginal P(NMR) across all facilities\n\n\n\nVisualize the Network\nTwo visualization options are available: bnlearn’s built-in plot using Rgraphviz, and ggdag for publication-quality figures built on ggplot2.\n\n# Option 1: bnlearn's built-in plot (uses Rgraphviz)\ngraphviz.plot(bn_mnh, main = \"MNH Bayesian Network\",\n  shape = \"rectangle\",\n  highlight = list(nodes = \"NMR\", col = \"#E24A3F\", fill = \"#E24A3F\"))\n\n# Option 2: ggdag for publication-quality figures\nlibrary(ggdag)\nlibrary(dagitty)\n\nmnh_dag &lt;- dagitty('dag {\n  Staffing [pos=\"0,0\"]\n  Equipment [pos=\"2,0\"]\n  Quality [pos=\"1,1\"]\n  NMR [pos=\"1,2\"]\n  Staffing -&gt; Quality\n  Equipment -&gt; Quality\n  Quality -&gt; NMR\n}')\n\nggdag(mnh_dag) +\n  theme_dag() +\n  labs(title = \"MNH Causal Model (4 Nodes)\")\n\n\n\nInterventional Queries\nThe mutilated() function implements the do-operator – it severs incoming arrows to the intervention variable and sets it to a fixed value. This lets us compare the causal effect of different interventions side by side.\n\n# Simulate do(Staffing = Adequate) by mutilating the network\nbn_do_adequate &lt;- mutilated(bn_mnh, evidence = list(Staffing = \"Adequate\"))\n\n# P(NMR | do(Staffing = Adequate))\nquerygrain(as.grain(bn_do_adequate), nodes = \"NMR\")\n\n# Compare scenarios\nscenarios &lt;- data.frame(\n  Scenario = c(\"Status Quo\", \"do(Staff=Adequate)\",\n               \"do(Equip=Available)\", \"do(Both)\"),\n  P_NMR_High = c(\n    querygrain(as.grain(bn_mnh),\n               nodes = \"NMR\")$NMR[\"High\"],\n    querygrain(as.grain(\n      mutilated(bn_mnh, list(Staffing = \"Adequate\"))),\n               nodes = \"NMR\")$NMR[\"High\"],\n    querygrain(as.grain(\n      mutilated(bn_mnh, list(Equipment = \"Available\"))),\n               nodes = \"NMR\")$NMR[\"High\"],\n    querygrain(as.grain(\n      mutilated(bn_mnh, list(Staffing = \"Adequate\",\n                              Equipment = \"Available\"))),\n               nodes = \"NMR\")$NMR[\"High\"]))\n\n# Display comparison\nscenarios$Reduction &lt;- scenarios$P_NMR_High[1] - scenarios$P_NMR_High\nprint(scenarios)",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 4: Quantitative Causal Models"
+    ]
+  },
+  {
+    "objectID": "chapters/ch04.html#key-takeaways",
+    "href": "chapters/ch04.html#key-takeaways",
+    "title": "Chapter 4: Quantitative Causal Models",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nQuantitative causal models = DAG + CPTs = Bayesian Network. They allow us to compute exact probabilities, update beliefs with Bayes’ rule, and compare interventions using the do-operator.\nProbability fundamentals: States must be MECE; probabilities must sum to 1. CPTs encode the quantitative relationships in the DAG.\nBayes’ rule lets us reason backward from evidence to causes – essential for situational assessment.\nThe Causal Markov Condition simplifies computation from exponential to manageable. Sensitivity analysis reveals which interventions have the largest expected impact – in the MNH model, staffing has a larger marginal effect than equipment, but the two are synergistic.",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 4: Quantitative Causal Models"
+    ]
+  },
+  {
+    "objectID": "chapters/ch04.html#looking-ahead",
+    "href": "chapters/ch04.html#looking-ahead",
+    "title": "Chapter 4: Quantitative Causal Models",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 5 – Situational Analysis, we turn to the first major application of quantitative causal models:\n\nUpdating beliefs with multiple evidence streams – combining facility data, surveys, and expert judgment\nDiagnostic inference – given observed outcomes, which upstream causes are most likely?\nThe explaining away phenomenon – how one piece of evidence changes the relevance of another\nA complete district diagnosis using Bayesian inference on the MNH causal model",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 4: Quantitative Causal Models"
+    ]
+  },
+  {
+    "objectID": "chapters/ch02.html",
+    "href": "chapters/ch02.html",
+    "title": "Chapter 2: Qualitative Causal Models",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nIdentify the four types of nodes in a causal model and when each is used\nAssign signed directed links ([+]/[-]) to represent qualitative causal relationships\nConstruct conditional certainty tables for non-monotonic relationships\nRecognize the three fundamental triplet structures: serial (chain), diverging (fork), converging (collider)\nApply d-separation criteria to determine when information flows between variables\nBuild a complete qualitative DAG for an MNH program’s investment model",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 2: Qualitative Causal Models"
+    ]
+  },
+  {
+    "objectID": "chapters/ch02.html#learning-objectives",
+    "href": "chapters/ch02.html#learning-objectives",
+    "title": "Chapter 2: Qualitative Causal Models",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nIdentify the four types of nodes in a causal model and when each is used\nAssign signed directed links ([+]/[-]) to represent qualitative causal relationships\nConstruct conditional certainty tables for non-monotonic relationships\nRecognize the three fundamental triplet structures: serial (chain), diverging (fork), converging (collider)\nApply d-separation criteria to determine when information flows between variables\nBuild a complete qualitative DAG for an MNH program’s investment model",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 2: Qualitative Causal Models"
+    ]
+  },
+  {
+    "objectID": "chapters/ch02.html#key-concepts",
+    "href": "chapters/ch02.html#key-concepts",
+    "title": "Chapter 2: Qualitative Causal Models",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nThe Four Node Types\nA qualitative causal model uses four types of nodes: Probabilistic nodes (ovals) represent variables with uncertain states determined by nature. Objective nodes (hexagons) represent goals or performance metrics the decision-maker wants to optimize – they are always leaf nodes. Strategic option nodes (rectangles) represent deliberate choices made by a decision-maker – they are root nodes. Function nodes (chevrons) represent variables whose state is deterministically determined by their parents with no residual uncertainty.\n\n\nSigned Directed Links\nAn arrow from node A to node B means that A is a direct cause of B – changing A can change B while holding all other parents of B fixed. The sign [+] indicates that increasing A increases B, while [-] indicates that increasing A decreases B. The overall sign of a directed path is the product of the individual link signs, where [+] x [+] = [+], [-] x [-] = [+], and [+] x [-] = [-].\n\n\nThe Three Triplet Structures\nThe three fundamental triplet structures govern all information flow in a DAG. In a serial triplet (chain, A -&gt; B -&gt; C), B is a mediator and conditioning on B blocks the path. In a diverging triplet (fork, A &lt;- B -&gt; C), B is a common cause and conditioning on B removes the spurious correlation. In a converging triplet (collider, A -&gt; B &lt;- C), the path is naturally blocked but conditioning on B opens it, creating collider bias through the “explaining away” effect.\n\n\nd-Separation\nTwo nodes X and Y are d-separated given a conditioning set Z if every path between them is blocked. A path is blocked if it contains a chain or fork whose middle node is in Z, or a collider whose middle node (and all descendants) is not in Z. d-Separation implies conditional independence – these are testable predictions of the model. If data violates an implied independence, the model must be revised.",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 2: Qualitative Causal Models"
+    ]
+  },
+  {
+    "objectID": "chapters/ch02.html#lecture-slides",
+    "href": "chapters/ch02.html#lecture-slides",
+    "title": "Chapter 2: Qualitative Causal Models",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 2: Qualitative Causal Models"
+    ]
+  },
+  {
+    "objectID": "chapters/ch02.html#r-code-workshop",
+    "href": "chapters/ch02.html#r-code-workshop",
+    "title": "Chapter 2: Qualitative Causal Models",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis chapter builds and analyzes the full MNH qualitative DAG in R, using dagitty for DAG specification and d-separation testing, and ggdag for visualization.\n\nDefine the Full MNH DAG\nWe specify the comprehensive 10-node qualitative DAG with positional coordinates for layout, representing the MNH program’s theory of change from budget allocation through mediating variables to mortality outcomes.\n\nlibrary(dagitty)\nlibrary(ggdag)\nlibrary(ggplot2)\n\n# Define the comprehensive MNH qualitative DAG\nmnh_dag &lt;- dagitty('dag {\n  Budget          [pos=\"0,1\"]\n  Workforce       [pos=\"1.5,0\"]\n  Training        [pos=\"1.5,1\"]\n  Equipment       [pos=\"1.5,2\"]\n  Referral_System [pos=\"1.5,3\"]\n  Coverage        [pos=\"3,3\"]\n  Quality         [pos=\"3,1\"]\n  Baseline_Burden [pos=\"4,3\"]\n  NMR             [pos=\"4.5,0.5\"]\n  MMR             [pos=\"4.5,1.5\"]\n\n  Budget -&gt; Workforce\n  Budget -&gt; Training\n  Budget -&gt; Equipment\n  Budget -&gt; Referral_System\n  Training -&gt; Quality\n  Workforce -&gt; Quality\n  Equipment -&gt; Quality\n  Referral_System -&gt; Coverage\n  Coverage -&gt; Quality\n  Quality -&gt; NMR\n  Quality -&gt; MMR\n  Baseline_Burden -&gt; NMR\n  Baseline_Burden -&gt; MMR\n}')\n\n# Verify it is a valid DAG (acyclic)\nisAcyclic(mnh_dag)\n\n\n\nVisualize the DAG Color-Coded by Role\nWe merge node role metadata into the tidy DAG data to enable color-coding by function: decision nodes, mediators, contextual variables, and outcome objectives.\n\n# Create a tidy dag object with exposure and outcome\ntidy_dag &lt;- tidy_dagitty(mnh_dag)\n\n# Define node roles for coloring\nnode_roles &lt;- data.frame(\n  name = c(\"Budget\", \"Workforce\", \"Training\", \"Equipment\",\n           \"Referral_System\", \"Coverage\", \"Quality\",\n           \"Baseline_Burden\", \"NMR\", \"MMR\"),\n  role = c(\"Decision\", \"Mediator\", \"Mediator\", \"Mediator\",\n           \"Mediator\", \"Mediator\", \"Mediator\",\n           \"Context\", \"Outcome\", \"Outcome\")\n)\n\n# Merge roles into the dag data\ndag_data &lt;- left_join(as.data.frame(tidy_dag), node_roles,\n                      by = \"name\")\n\nggdag(mnh_dag) +\n  theme_dag() +\n  labs(title = \"MNH Program: Qualitative Causal Model\",\n       subtitle = \"10-node DAG for MNH investment decisions\") +\n  theme(plot.title = element_text(color = \"#005CB9\", size = 16),\n        plot.subtitle = element_text(color = \"#666\", size = 12))\n\n\n\nTest d-Separation\nThe dseparated() function lets us verify the conditional independence predictions implied by our DAG. Each test checks whether information flows between two variables given a conditioning set.\n\n# Test 1: Is Training d-separated from NMR given Quality?\ndseparated(mnh_dag, \"Training\", \"NMR\", \"Quality\")\n# Expected: TRUE (chain is blocked)\n\n# Test 2: Is Workforce d-separated from Equipment? (unconditional)\ndseparated(mnh_dag, \"Workforce\", \"Equipment\", c())\n# Expected: FALSE (common parent Budget creates fork)\n\n# Test 3: Is Workforce d-separated from Equipment given Budget?\ndseparated(mnh_dag, \"Workforce\", \"Equipment\", \"Budget\")\n# Expected: TRUE (conditioning on common cause blocks fork)\n\n# Test 4: Is Workforce d-separated from Equipment given Quality?\ndseparated(mnh_dag, \"Workforce\", \"Equipment\", \"Quality\")\n# Expected: FALSE (conditioning on collider opens path!)\n\n# Test 5: Is Training d-separated from Baseline_Burden?\ndseparated(mnh_dag, \"Training\", \"Baseline_Burden\", c())\n# Expected: TRUE (no connecting path)\n\n\n\nEnumerate All Paths\nThe paths() function lists every path between two nodes in the DAG, showing both directed (causal) and non-directed (non-causal) paths. This is useful for understanding the full set of channels through which one variable can influence another.\n\n# Find all paths from Budget to NMR\nbudget_nmr_paths &lt;- paths(mnh_dag,\n                          from = \"Budget\",\n                          to = \"NMR\")\nprint(budget_nmr_paths)\n\n# Find all paths from Budget to MMR\nbudget_mmr_paths &lt;- paths(mnh_dag,\n                          from = \"Budget\",\n                          to = \"MMR\")\nprint(budget_mmr_paths)\n\n# Find paths between Workforce and Equipment (through collider)\nworkforce_equip_paths &lt;- paths(mnh_dag,\n                               from = \"Workforce\",\n                               to = \"Equipment\")\nprint(workforce_equip_paths)\n\n\n\nImplied Conditional Independencies\nThe impliedConditionalIndependencies() function extracts every testable prediction from the DAG. These are the conditional independencies that must hold in the data if the model is correctly specified.\n\n# List all conditional independencies implied by the DAG\nimplied_cis &lt;- impliedConditionalIndependencies(mnh_dag)\nprint(implied_cis)\n\n# This tells us every testable prediction of our model.\n# For example, if our model is correct, we should observe:\n#   - Training _||_ Equipment | Budget\n#   - Workforce _||_ Referral_System | Budget\n#   - Training _||_ Baseline_Burden\n#   - NMR _||_ MMR | Quality, Baseline_Burden\n#\n# If DHIS2 data violates any of these, we need to revise the DAG.\n\n# Count total number of implied independencies\ncat(\"Total implied conditional independencies:\", length(implied_cis), \"\\n\")",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 2: Qualitative Causal Models"
+    ]
+  },
+  {
+    "objectID": "chapters/ch02.html#key-takeaways",
+    "href": "chapters/ch02.html#key-takeaways",
+    "title": "Chapter 2: Qualitative Causal Models",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nQualitative causal models are the foundation of rigorous analysis. A DAG encodes your causal beliefs explicitly using four node types and signed directed links.\nThe three triplet structures – chain, fork, and collider – govern all information flow. Chains and forks are blocked by conditioning; colliders are opened by conditioning.\nd-Separation translates graph structure into testable conditional independence predictions.\nFor MNH programs: the qualitative DAG reveals that People, Products, and Systems investments are complements flowing through Quality of Care – and that conditioning on Quality creates collider bias between investment pillars.",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 2: Qualitative Causal Models"
+    ]
+  },
+  {
+    "objectID": "chapters/ch02.html#looking-ahead",
+    "href": "chapters/ch02.html#looking-ahead",
+    "title": "Chapter 2: Qualitative Causal Models",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 3 – The MNH Diagnostic Case Study, we put qualitative models to work in a structured case study:\n\nBuilding a DAG from stakeholder interviews through an iterative process\nTranslating qualitative beliefs into a causal diagram round by round\nIdentifying key assumptions, disagreements, and transmission failures\nPreparing the model for quantification in later chapters",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 2: Qualitative Causal Models"
+    ]
+  },
+  {
+    "objectID": "references.html",
+    "href": "references.html",
+    "title": "References",
+    "section": "",
+    "text": "Ryall, M. D., & Bramson, A. (2014). Inference and Intervention: Causal Models for Business Analysis. Routledge.\n\nThis course adapts all examples from the textbook’s business context (advertising, market share, consulting) to maternal and newborn health (MNH) program analysis. The book’s original examples (Slimtree Publishing, Hubris Health, The Rideshare Case) are preserved in “Book Context” sections for reference."
+  },
+  {
+    "objectID": "references.html#primary-textbook",
+    "href": "references.html#primary-textbook",
+    "title": "References",
+    "section": "",
+    "text": "Ryall, M. D., & Bramson, A. (2014). Inference and Intervention: Causal Models for Business Analysis. Routledge.\n\nThis course adapts all examples from the textbook’s business context (advertising, market share, consulting) to maternal and newborn health (MNH) program analysis. The book’s original examples (Slimtree Publishing, Hubris Health, The Rideshare Case) are preserved in “Book Context” sections for reference."
+  },
+  {
+    "objectID": "references.html#causal-inference-literature",
+    "href": "references.html#causal-inference-literature",
+    "title": "References",
+    "section": "Causal Inference Literature",
+    "text": "Causal Inference Literature\nPearl, J. (2009). Causality: Models, Reasoning, and Inference (2nd ed.). Cambridge University Press.\nPearl, J., Glymour, M., & Jewell, N. P. (2016). Causal Inference in Statistics: A Primer. Wiley.\nSpirtes, P., Glymour, C., & Scheines, R. (2000). Causation, Prediction, and Search (2nd ed.). MIT Press.\nImbens, G. W., & Rubin, D. B. (2015). Causal Inference for Statistics, Social, and Biomedical Sciences: An Introduction. Cambridge University Press.\nMorgan, S. L., & Winship, C. (2015). Counterfactuals and Causal Inference: Methods and Principles for Social Research (2nd ed.). Cambridge University Press.\nHernán, M. A., & Robins, J. M. (2020). Causal Inference: What If. Chapman & Hall/CRC. Available free at miguelhernan.org."
+  },
+  {
+    "objectID": "references.html#decision-analysis-game-theory",
+    "href": "references.html#decision-analysis-game-theory",
+    "title": "References",
+    "section": "Decision Analysis & Game Theory",
+    "text": "Decision Analysis & Game Theory\nRaiffa, H. (1968). Decision Analysis: Introductory Lectures on Choices Under Uncertainty. Addison-Wesley.\nDixit, A. K., & Nalebuff, B. J. (2008). The Art of Strategy: A Game Theorist’s Guide to Success in Business and Life. W.W. Norton."
+  },
+  {
+    "objectID": "references.html#r-package-references",
+    "href": "references.html#r-package-references",
+    "title": "References",
+    "section": "R Package References",
+    "text": "R Package References\n\ndagitty\nTextor, J., van der Zander, B., Gilthorpe, M. S., Liśkiewicz, M., & Ellison, G. T. H. (2016). Robust causal inference using directed acyclic graphs: The R package ‘dagitty’. International Journal of Epidemiology, 45(6), 1887–1894.\n\nCRAN: cran.r-project.org/package=dagitty\nDocumentation: dagitty.net\n\n\n\nbnlearn\nScutari, M. (2010). Learning Bayesian networks with the bnlearn R package. Journal of Statistical Software, 35(3), 1–22.\n\nCRAN: cran.r-project.org/package=bnlearn\nDocumentation: bnlearn.com\n\n\n\nggdag\nBarrett, M. (2023). ggdag: Analyze and Create Elegant Directed Acyclic Graphs.\n\nCRAN: cran.r-project.org/package=ggdag\n\n\n\nggplot2\nWickham, H. (2016). ggplot2: Elegant Graphics for Data Analysis (2nd ed.). Springer.\n\nCRAN: cran.r-project.org/package=ggplot2\n\n\n\nivreg\nFox, J., Kleiber, C., & Zeileis, A. (2023). ivreg: Instrumental-Variables Regression.\n\nCRAN: cran.r-project.org/package=ivreg"
+  },
+  {
+    "objectID": "references.html#mnh-domain-references",
+    "href": "references.html#mnh-domain-references",
+    "title": "References",
+    "section": "MNH Domain References",
+    "text": "MNH Domain References\nWorld Health Organization. (2023). Trends in Maternal Mortality 2000 to 2020. WHO.\nUNICEF. (2023). Levels and Trends in Child Mortality: Report 2023. UN Inter-agency Group for Child Mortality Estimation.\nBhutta, Z. A., et al. (2014). Can available interventions end preventable deaths in mothers, newborn babies, and stillbirths, and at what cost? The Lancet, 384(9940), 347–370.\nDHIS2. (2024). District Health Information Software 2. dhis2.org."
+  },
+  {
+    "objectID": "references.html#business-to-public-health-terminology",
+    "href": "references.html#business-to-public-health-terminology",
+    "title": "References",
+    "section": "Business-to-Public-Health Terminology",
+    "text": "Business-to-Public-Health Terminology\nThe textbook uses business language that has been systematically adapted for MNH contexts:\n\n\n\nBusiness Term (Book)\nPublic Health Replacement\n\n\n\n\nAdvertising\nMass media campaign / demand generation\n\n\nFirm / Company\nProgram / MNH initiative\n\n\nClient\nBeneficiary / target population\n\n\nROI\nCost-effectiveness / lives saved per dollar\n\n\nRevenue\nLives saved / mortality reduction\n\n\nProfit\nImpact / net health benefit\n\n\nMarket share\nCoverage rate\n\n\nCEO / Board\nProgram Director / Leadership\n\n\nProduct launch\nIntervention rollout"
+  },
+  {
+    "objectID": "schedule.html",
+    "href": "schedule.html",
+    "title": "Course Schedule",
+    "section": "",
+    "text": "This course consists of 10 sessions, each corresponding to one chapter of the textbook. Sessions are grouped into four thematic parts that build on each other sequentially.\n\nPrerequisite chain: Each chapter builds on the previous ones. The dependency chain runs Ch1 → Ch2 → Ch3 → Ch4 → Ch5 → Ch6 → Ch7 → Ch8 → Ch9 → Ch10. It is strongly recommended to follow the chapters in order."
+  },
+  {
+    "objectID": "schedule.html#course-structure",
+    "href": "schedule.html#course-structure",
+    "title": "Course Schedule",
+    "section": "",
+    "text": "This course consists of 10 sessions, each corresponding to one chapter of the textbook. Sessions are grouped into four thematic parts that build on each other sequentially.\n\nPrerequisite chain: Each chapter builds on the previous ones. The dependency chain runs Ch1 → Ch2 → Ch3 → Ch4 → Ch5 → Ch6 → Ch7 → Ch8 → Ch9 → Ch10. It is strongly recommended to follow the chapters in order."
+  },
+  {
+    "objectID": "schedule.html#part-i-foundations-sessions-13",
+    "href": "schedule.html#part-i-foundations-sessions-13",
+    "title": "Course Schedule",
+    "section": "Part I: Foundations (Sessions 1–3)",
+    "text": "Part I: Foundations (Sessions 1–3)\n\n\n\nSession\nChapter\nTopics\nR Packages\nPreparation\n\n\n\n\n1\nCh 1: Introduction to Causal Analysis\nSituational assessment vs. intervention; correlation ≠ causation; confounding, reverse causation, selection bias\ndagitty, ggdag\nRead Ryall & Bramson Ch 1; install R packages\n\n\n2\nCh 2: Qualitative Causal Models\nFour node types; signed directed links; serial, diverging, converging triplets; d-separation\ndagitty, ggdag\nRead Ryall & Bramson Ch 2\n\n\n3\nCh 3: The MNH Diagnostic Case Study\nIterative model building; stakeholder interviews; root node identification; prioritizing recommendations\ndagitty, ggdag\nRead Ryall & Bramson Ch 3"
+  },
+  {
+    "objectID": "schedule.html#part-ii-quantitative-analysis-sessions-46",
+    "href": "schedule.html#part-ii-quantitative-analysis-sessions-46",
+    "title": "Course Schedule",
+    "section": "Part II: Quantitative Analysis (Sessions 4–6)",
+    "text": "Part II: Quantitative Analysis (Sessions 4–6)\n\n\n\nSession\nChapter\nTopics\nR Packages\nPreparation\n\n\n\n\n4\nCh 4: Quantitative Causal Models\nProbability distributions; CPTs; Bayes’ rule; Causal Markov Condition; Bayesian networks\nbnlearn, ggplot2\nRead Ryall & Bramson Ch 4\n\n\n5\nCh 5: Situational Analysis\nMarginal probabilities; belief updating; inference in serial, diverging, converging structures; explaining away\nbnlearn, ggplot2\nRead Ryall & Bramson Ch 5\n\n\n6\nCh 6: Simpson’s Paradox & Cost-Effectiveness\nSimpson’s Paradox; Prosecutor’s Fallacy; causal reasoning in cost-effectiveness analysis\nggplot2\nRead Ryall & Bramson Ch 6"
+  },
+  {
+    "objectID": "schedule.html#part-iii-decision-strategy-sessions-79",
+    "href": "schedule.html#part-iii-decision-strategy-sessions-79",
+    "title": "Course Schedule",
+    "section": "Part III: Decision & Strategy (Sessions 7–9)",
+    "text": "Part III: Decision & Strategy (Sessions 7–9)\n\n\n\nSession\nChapter\nTopics\nR Packages\nPreparation\n\n\n\n\n7\nCh 7: Decision Analysis & Value of Information\nDo-calculus; expected utility; decision trees; value of information; optimal intervention design\nbnlearn, ggplot2\nRead Ryall & Bramson Ch 7\n\n\n8\nCh 8: Multi-Country Resource Allocation\nPortfolio optimization; allocation under uncertainty; country-level analysis; budget distribution\nggplot2, tidyr\nRead Ryall & Bramson Ch 8\n\n\n9\nCh 9: Game Theory & Strategic Interactions\nNash equilibrium; dominant strategies; incentive design; donor-government dynamics\nggplot2\nRead Ryall & Bramson Ch 9"
+  },
+  {
+    "objectID": "schedule.html#part-iv-data-driven-methods-session-10",
+    "href": "schedule.html#part-iv-data-driven-methods-session-10",
+    "title": "Course Schedule",
+    "section": "Part IV: Data-Driven Methods (Session 10)",
+    "text": "Part IV: Data-Driven Methods (Session 10)\n\n\n\nSession\nChapter\nTopics\nR Packages\nPreparation\n\n\n\n\n10\nCh 10: Structure Learning from Observational Data\nMarkov equivalence; PC algorithm; hill-climbing; instrumental variables; causal regression\nbnlearn, dagitty, ggdag, ivreg\nRead Ryall & Bramson Ch 10"
+  },
+  {
+    "objectID": "schedule.html#chapter-dependency-chain",
+    "href": "schedule.html#chapter-dependency-chain",
+    "title": "Course Schedule",
+    "section": "Chapter Dependency Chain",
+    "text": "Chapter Dependency Chain\nCh 1 (Introduction)\n └─→ Ch 2 (Qualitative DAGs)\n      └─→ Ch 3 (Interview Case Study)\n           └─→ Ch 4 (Quantitative / CPTs / Bayes)\n                └─→ Ch 5 (Inference / Belief Updating)\n                     └─→ Ch 6 (Simpson's Paradox)\n                          └─→ Ch 7 (Decision Analysis / do-calculus)\n                               └─→ Ch 8 (Resource Allocation)\n                                    └─→ Ch 9 (Game Theory)\n                                         └─→ Ch 10 (Structure Learning)"
+  },
+  {
+    "objectID": "schedule.html#session-format",
+    "href": "schedule.html#session-format",
+    "title": "Course Schedule",
+    "section": "Session Format",
+    "text": "Session Format\nEach session follows a consistent structure:\n\nTheory presentation (lecture slides) — Core concepts from the textbook, adapted to MNH contexts\nMNH application — Real-world examples applying the theory to maternal and newborn health programs\nR code workshop — Hands-on coding exercises using the chapter’s R packages\nKey takeaways and discussion — Summary and preview of the next session"
+  },
+  {
+    "objectID": "schedule.html#textbook",
+    "href": "schedule.html#textbook",
+    "title": "Course Schedule",
+    "section": "Textbook",
+    "text": "Textbook\nRyall, M. D., & Bramson, A. (2014). Inference and Intervention: Causal Models for Business Analysis. Routledge.\nAll textbook examples have been adapted from business contexts to maternal and newborn health program analysis."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Inference and Intervention",
+    "section": "",
+    "text": "This course adapts the frameworks from Inference and Intervention: Causal Models for Business Analysis (Ryall & Bramson, 2014) for professionals working in maternal and newborn health (MNH) programs. Across 10 chapters, you will build a complete toolkit for causal reasoning — from constructing qualitative models to making data-driven resource allocation decisions.\n\nThe central message: Causal models are not just academic abstractions — they are practical tools for answering the questions that matter most in global health: Where should we invest? What should we do? How do we know it will work?"
+  },
+  {
+    "objectID": "index.html#course-overview",
+    "href": "index.html#course-overview",
+    "title": "Inference and Intervention",
+    "section": "",
+    "text": "This course adapts the frameworks from Inference and Intervention: Causal Models for Business Analysis (Ryall & Bramson, 2014) for professionals working in maternal and newborn health (MNH) programs. Across 10 chapters, you will build a complete toolkit for causal reasoning — from constructing qualitative models to making data-driven resource allocation decisions.\n\nThe central message: Causal models are not just academic abstractions — they are practical tools for answering the questions that matter most in global health: Where should we invest? What should we do? How do we know it will work?"
+  },
+  {
+    "objectID": "index.html#the-mnh-analysts-workflow",
+    "href": "index.html#the-mnh-analysts-workflow",
+    "title": "Inference and Intervention",
+    "section": "The MNH Analyst’s Workflow",
+    "text": "The MNH Analyst’s Workflow\nBy the end of this course, you will be able to follow this evidence-based workflow:\n\nBuild a DAG from expert interviews and program theory (Chapters 2–3)\nQuantify the model with DHIS2 and program data (Chapters 4–5, 10)\nAvoid causal reasoning traps like Simpson’s Paradox (Chapter 6)\nMake allocation decisions using decision analysis and do-calculus (Chapters 7–8)\nAnticipate strategic responses from implementing partners (Chapter 9)\nValidate and refine with observational data and structure learning (Chapter 10)"
+  },
+  {
+    "objectID": "index.html#chapters",
+    "href": "index.html#chapters",
+    "title": "Inference and Intervention",
+    "section": "Chapters",
+    "text": "Chapters\n\nPart I: Foundations\n\n\n\nChapter\nTitle\nFocus\n\n\n\n\n1\nIntroduction to Causal Analysis\nSituational assessment vs. intervention; correlation ≠ causation\n\n\n2\nQualitative Causal Models\nNodes, directed links, triplet structures, d-separation\n\n\n3\nThe MNH Diagnostic Case Study\nBuilding a complete DAG from stakeholder interviews\n\n\n\n\n\nPart II: Quantitative Analysis\n\n\n\nChapter\nTitle\nFocus\n\n\n\n\n4\nQuantitative Causal Models\nConditional probability tables, Bayes’ theorem, parameterization\n\n\n5\nSituational Analysis\nBelief updating, inference, evidence propagation\n\n\n6\nSimpson’s Paradox & Cost-Effectiveness\nAggregation paradoxes, causal reasoning in cost-effectiveness\n\n\n\n\n\nPart III: Decision & Strategy\n\n\n\nChapter\nTitle\nFocus\n\n\n\n\n7\nDecision Analysis & Value of Information\nDo-calculus, expected utility, value of information\n\n\n8\nMulti-Country Resource Allocation\nPortfolio optimization under uncertainty across countries\n\n\n9\nGame Theory & Strategic Interactions\nNash equilibrium, incentive design, multi-agent dynamics\n\n\n\n\n\nPart IV: Data-Driven Methods\n\n\n\nChapter\nTitle\nFocus\n\n\n\n\n10\nStructure Learning from Observational Data\nMarkov equivalence, constraint/score-based learning, instrumental variables"
+  },
+  {
+    "objectID": "index.html#the-complete-toolkit",
+    "href": "index.html#the-complete-toolkit",
+    "title": "Inference and Intervention",
+    "section": "The Complete Toolkit",
+    "text": "The Complete Toolkit\n\n\n\nChapters\nTool\n\n\n\n\n1–3\nQualitative DAGs\n\n\n4–5\nBayesian networks & inference\n\n\n6\nCausal reasoning pitfalls\n\n\n7\nDecision analysis & do-calculus\n\n\n8\nResource allocation under uncertainty\n\n\n9\nMulti-agent game theory\n\n\n10\nData-driven discovery"
+  },
+  {
+    "objectID": "index.html#prerequisites",
+    "href": "index.html#prerequisites",
+    "title": "Inference and Intervention",
+    "section": "Prerequisites",
+    "text": "Prerequisites\n\nBasic familiarity with probability and statistics\nIntroductory R programming (see the R Setup page for installation and packages)\nNo prior knowledge of causal inference is assumed"
+  },
+  {
+    "objectID": "index.html#textbook",
+    "href": "index.html#textbook",
+    "title": "Inference and Intervention",
+    "section": "Textbook",
+    "text": "Textbook\nRyall, M. D., & Bramson, A. (2014). Inference and Intervention: Causal Models for Business Analysis. Routledge.\n\nFor MNH program managers: This toolkit enables rigorous allocation of pooled funding across multiple countries, with clear reasoning about why each investment is expected to save lives — and honest acknowledgment of what we don’t know."
+  },
+  {
+    "objectID": "r-setup.html",
+    "href": "r-setup.html",
+    "title": "R Environment Setup",
+    "section": "",
+    "text": "Software\nVersion\nDownload\n\n\n\n\nR\n4.3 or later\nr-project.org\n\n\nRStudio (recommended IDE)\nLatest\nposit.co/downloads\n\n\nQuarto (for rendering slides)\n1.8 or later\nquarto.org\n\n\n\n\nNote: The slide decks and this website use eval: false for all R code blocks, meaning R code is displayed but not executed during rendering. You do not need R installed to view the slides or website. However, to run the workshop exercises interactively, you will need R and the packages below."
+  },
+  {
+    "objectID": "r-setup.html#required-software",
+    "href": "r-setup.html#required-software",
+    "title": "R Environment Setup",
+    "section": "",
+    "text": "Software\nVersion\nDownload\n\n\n\n\nR\n4.3 or later\nr-project.org\n\n\nRStudio (recommended IDE)\nLatest\nposit.co/downloads\n\n\nQuarto (for rendering slides)\n1.8 or later\nquarto.org\n\n\n\n\nNote: The slide decks and this website use eval: false for all R code blocks, meaning R code is displayed but not executed during rendering. You do not need R installed to view the slides or website. However, to run the workshop exercises interactively, you will need R and the packages below."
+  },
+  {
+    "objectID": "r-setup.html#package-installation",
+    "href": "r-setup.html#package-installation",
+    "title": "R Environment Setup",
+    "section": "Package Installation",
+    "text": "Package Installation\nRun this once in your R console to install all packages used across the 10 chapters:\n\ninstall.packages(c(\n  \"dagitty\",   # DAG specification and analysis\n  \"ggdag\",     # DAG visualization with ggplot2\n  \"bnlearn\",   # Bayesian network structure and parameter learning\n  \"ggplot2\",   # Data visualization\n  \"ivreg\",     # Instrumental variable regression (2SLS)\n  \"tidyr\",     # Data reshaping (pivot_longer)\n  \"gRain\"      # Exact inference in Bayesian networks (junction tree)\n))"
+  },
+  {
+    "objectID": "r-setup.html#packages-by-chapter",
+    "href": "r-setup.html#packages-by-chapter",
+    "title": "R Environment Setup",
+    "section": "Packages by Chapter",
+    "text": "Packages by Chapter\n\n\n\n\n\n\n\n\nPackage\nPurpose\nChapters Used\n\n\n\n\ndagitty\nDefine and analyze DAGs, d-separation, adjustment sets\n1, 2, 3, 4, 5, 10\n\n\nggdag\nVisualize DAGs using ggplot2\n1, 2, 3, 10\n\n\nbnlearn\nBayesian network structure and parameter learning\n4, 5, 7, 10\n\n\nggplot2\nAll data visualizations\n4, 5, 6, 7, 8, 9, 10\n\n\ngRain\nExact inference via junction trees (companion to bnlearn)\n4, 5\n\n\nivreg\nInstrumental variable regression (two-stage least squares)\n10\n\n\ntidyr\nData reshaping (pivot_longer)\n8"
+  },
+  {
+    "objectID": "r-setup.html#verification-script",
+    "href": "r-setup.html#verification-script",
+    "title": "R Environment Setup",
+    "section": "Verification Script",
+    "text": "Verification Script\nAfter installing, run this script to verify all packages load correctly:\n\n# Verification: load each package and print version\npackages &lt;- c(\"dagitty\", \"ggdag\", \"bnlearn\", \"ggplot2\", \"ivreg\", \"tidyr\", \"gRain\")\n\nfor (pkg in packages) {\n  if (requireNamespace(pkg, quietly = TRUE)) {\n    cat(sprintf(\"✓ %s %s\\n\", pkg, packageVersion(pkg)))\n  } else {\n    cat(sprintf(\"✗ %s — NOT INSTALLED\\n\", pkg))\n  }\n}\n\nExpected output (version numbers may vary):\n✓ dagitty 0.3-4\n✓ ggdag 0.2.12\n✓ bnlearn 4.9.4\n✓ ggplot2 3.5.1\n✓ ivreg 0.6-3\n✓ tidyr 1.3.1\n✓ gRain 1.4.3"
+  },
+  {
+    "objectID": "r-setup.html#troubleshooting",
+    "href": "r-setup.html#troubleshooting",
+    "title": "R Environment Setup",
+    "section": "Troubleshooting",
+    "text": "Troubleshooting\n\nbnlearn installation issues on Windows\nbnlearn requires compilation. If you encounter errors:\n\nInstall Rtools (match the version to your R version)\nRestart R and try install.packages(\"bnlearn\") again\n\n\n\ngRain dependency issues\ngRain depends on Bioconductor packages. If install.packages(\"gRain\") fails:\n\nif (!requireNamespace(\"BiocManager\", quietly = TRUE))\n  install.packages(\"BiocManager\")\nBiocManager::install(\"RBGL\")\nBiocManager::install(\"Rgraphviz\")\ninstall.packages(\"gRain\")\n\n\n\ndagitty on older R versions\nIf dagitty installation fails, ensure your R version is 4.3 or later. The package uses features not available in older versions."
+  },
+  {
+    "objectID": "r-setup.html#consistent-mnh-variables",
+    "href": "r-setup.html#consistent-mnh-variables",
+    "title": "R Environment Setup",
+    "section": "Consistent MNH Variables",
+    "text": "Consistent MNH Variables\nThese variable names are used consistently across chapters in the R code workshops:\n\n\n\n\n\n\n\n\nVariable\nValues\nR Name\n\n\n\n\nStaffing\nAdequate / Low\nStaffing\n\n\nEquipment (CPAP)\nAvailable / Unavailable\nEquipment or CPAP\n\n\nTraining\nCompleted / Not Completed\nTraining\n\n\nQuality of Care\nGood / Poor\nQuality\n\n\nNeonatal Mortality Rate\nHigh (&gt;25/1000) / Low (≤25/1000)\nNMR\n\n\nMaternal Mortality Ratio\nHigh (&gt;300/100K) / Low (≤300/100K)\nMMR\n\n\nCoverage\n&gt;80% / ≤80%\nCoverage"
+  },
+  {
+    "objectID": "chapters/ch01.html",
+    "href": "chapters/ch01.html",
+    "title": "Chapter 1: Introduction to Causal Analysis",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nDistinguish between situational assessment and managerial intervention\nExplain why correlation does not imply causation with real MNH examples\nIdentify three classic causal thinking traps: confounding, reverse causation, and selection bias\nDescribe the basic elements of a causal model (nodes, arrows, directed graphs)\nArticulate why causal thinking is essential for large-scale pooled investment decisions in maternal and newborn health programs",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 1: Introduction to Causal Analysis"
+    ]
+  },
+  {
+    "objectID": "chapters/ch01.html#learning-objectives",
+    "href": "chapters/ch01.html#learning-objectives",
+    "title": "Chapter 1: Introduction to Causal Analysis",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nDistinguish between situational assessment and managerial intervention\nExplain why correlation does not imply causation with real MNH examples\nIdentify three classic causal thinking traps: confounding, reverse causation, and selection bias\nDescribe the basic elements of a causal model (nodes, arrows, directed graphs)\nArticulate why causal thinking is essential for large-scale pooled investment decisions in maternal and newborn health programs",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 1: Introduction to Causal Analysis"
+    ]
+  },
+  {
+    "objectID": "chapters/ch01.html#key-concepts",
+    "href": "chapters/ch01.html#key-concepts",
+    "title": "Chapter 1: Introduction to Causal Analysis",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nSituational Assessment\nUsing evidence to reason about the current state of a system — determining which variables are in which states, and why. This is the “What is happening?” question every manager faces.\n\n\nManagerial Intervention\nA decision about which objects to control or change — the choice of what to act on, before deciding how to act. Resources are always limited, so every intervention involves trade-offs.\n\n\nThe Three Causal Thinking Traps\n\n\n\n\n\n\n\n\nTrap\nWhat Happens\nMNH Example\n\n\n\n\nConfounding\nThird variable drives both X and Y\nDisease burden drives both worker deployment and mortality\n\n\nReverse Causation\nY causes X, not X causes Y\nMortality attracts funding, not vice versa\n\n\nSelection Bias\nNon-random sample distorts relationship\nOnly high-capacity hospitals report data\n\n\n\n\n\nDirected Acyclic Graph (DAG)\nA causal diagram with no cycles — you cannot follow arrows from any node back to itself. An arrow from A to B means that changing A can change B, but changing B does not change A. This is the mathematical foundation of causal modeling.",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 1: Introduction to Causal Analysis"
+    ]
+  },
+  {
+    "objectID": "chapters/ch01.html#lecture-slides",
+    "href": "chapters/ch01.html#lecture-slides",
+    "title": "Chapter 1: Introduction to Causal Analysis",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 1: Introduction to Causal Analysis"
+    ]
+  },
+  {
+    "objectID": "chapters/ch01.html#r-code-workshop",
+    "href": "chapters/ch01.html#r-code-workshop",
+    "title": "Chapter 1: Introduction to Causal Analysis",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis chapter introduces the core R packages for causal analysis: dagitty for DAG specification and analysis, ggdag for visualization, and ggplot2 for general plotting.\n\nSetting Up the Environment\n\n# Install packages (run once)\n# install.packages(c(\"dagitty\", \"ggdag\", \"ggplot2\", \"bnlearn\"))\n\n# Load packages\nlibrary(dagitty)    # DAG specification and analysis\nlibrary(ggdag)      # DAG visualization with ggplot2\nlibrary(ggplot2)    # General plotting\n\n\n\nA Simple MNH Causal Model\n\n# Define a simple 3-node DAG\nmnh_simple &lt;- dagitty('dag {\n  Investment [pos=\"0,0\"]\n  Coverage [pos=\"1,0\"]\n  NMR [pos=\"2,0\"]\n\n  Investment -&gt; Coverage\n  Coverage -&gt; NMR\n}')\n\n# Visualize\nggdag(mnh_simple) +\n  theme_dag() +\n  labs(title = \"Simple MNH Causal Model\",\n       subtitle = \"Investment → Coverage → Neonatal Mortality Rate\")\n\n\n\nA Confounded Model\n\n# Hospital delivery and mortality: confounded by complication severity\nconfounded_dag &lt;- dagitty('dag {\n  Complication_Severity [pos=\"1,0\"]\n  Hospital_Delivery [pos=\"0,1\"]\n  Neonatal_Mortality [pos=\"2,1\"]\n\n  Complication_Severity -&gt; Hospital_Delivery\n  Complication_Severity -&gt; Neonatal_Mortality\n  Hospital_Delivery -&gt; Neonatal_Mortality\n}')\n\n# Visualize with exposure and outcome\nggdag_status(confounded_dag,\n             exposure = \"Hospital_Delivery\",\n             outcome = \"Neonatal_Mortality\") +\n  theme_dag() +\n  scale_color_manual(values = c(\"exposure\" = \"#83BD00\",\n                                \"outcome\" = \"#E24A3F\",\n                                \"other\" = \"#F8A623\")) +\n  labs(title = \"Confounding in Hospital Delivery Data\")\n\n\n\nFinding Adjustment Sets\n\n# What must we control for to estimate the causal effect\n# of hospital delivery on mortality?\nadjustmentSets(confounded_dag,\n               exposure = \"Hospital_Delivery\",\n               outcome = \"Neonatal_Mortality\")\n# Returns: { Complication_Severity }\n\nTo estimate the true causal effect of hospital delivery on neonatal mortality, we must control for complication severity. Without this adjustment, the correlation between hospital delivery and mortality is biased by confounding.\n\n\nA Richer MNH Model\n\n# MNH initiative theory of change\nmnh_toc &lt;- dagitty('dag {\n  Budget [pos=\"0,1\"]\n  Workforce [pos=\"1,0\"]\n  Equipment [pos=\"1,1\"]\n  Data_Systems [pos=\"1,2\"]\n  Quality [pos=\"2,1\"]\n  NMR [pos=\"3,1\"]\n  Baseline_Burden [pos=\"1.5,2.5\"]\n\n  Budget -&gt; Workforce\n  Budget -&gt; Equipment\n  Budget -&gt; Data_Systems\n  Workforce -&gt; Quality\n  Equipment -&gt; Quality\n  Data_Systems -&gt; Quality\n  Quality -&gt; NMR\n  Baseline_Burden -&gt; NMR\n  Baseline_Burden -&gt; Budget\n}')\n\n# Identify the adjustment set for Budget → NMR\nadjustmentSets(mnh_toc,\n               exposure = \"Budget\",\n               outcome = \"NMR\")\n\n# Visualize\nggdag(mnh_toc) +\n  theme_dag() +\n  labs(title = \"MNH Initiative: Theory of Change as a DAG\")",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 1: Introduction to Causal Analysis"
+    ]
+  },
+  {
+    "objectID": "chapters/ch01.html#key-takeaways",
+    "href": "chapters/ch01.html#key-takeaways",
+    "title": "Chapter 1: Introduction to Causal Analysis",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nCausal modeling serves two purposes: situational assessment (What is happening?) and managerial intervention (What should I do?).\nCorrelation ≠ causation. Confounding, reverse causation, and selection bias all create misleading associations.\nA causal model makes your assumptions explicit, testable, and actionable — essential for allocating large-scale program funding effectively.",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 1: Introduction to Causal Analysis"
+    ]
+  },
+  {
+    "objectID": "chapters/ch01.html#looking-ahead",
+    "href": "chapters/ch01.html#looking-ahead",
+    "title": "Chapter 1: Introduction to Causal Analysis",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 2 — Qualitative Causal Models, we learn the formal language of causal diagrams:\n\nFour types of nodes (probabilistic, objective, strategic option, function)\nDirected links with [+] and [−] signs\nThe three fundamental triplet structures: serial, diverging, and converging\nHow to determine whether two variables are causally independent (d-separation)",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 1: Introduction to Causal Analysis"
+    ]
+  },
+  {
+    "objectID": "chapters/ch03.html",
+    "href": "chapters/ch03.html",
+    "title": "Chapter 3: The MNH Diagnostic Case Study",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nApply the iterative model-building process used in program evaluations\nStart with a simple model and expand it systematically through interviews\nIdentify root nodes (levers) vs. intermediate nodes in a causal system\nUse a causal model to prioritize recommendations and structure analysis\nBuild a comprehensive MNH causal model through a simulated diagnostic case study",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 3: The MNH Diagnostic Case Study"
+    ]
+  },
+  {
+    "objectID": "chapters/ch03.html#learning-objectives",
+    "href": "chapters/ch03.html#learning-objectives",
+    "title": "Chapter 3: The MNH Diagnostic Case Study",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nApply the iterative model-building process used in program evaluations\nStart with a simple model and expand it systematically through interviews\nIdentify root nodes (levers) vs. intermediate nodes in a causal system\nUse a causal model to prioritize recommendations and structure analysis\nBuild a comprehensive MNH causal model through a simulated diagnostic case study",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 3: The MNH Diagnostic Case Study"
+    ]
+  },
+  {
+    "objectID": "chapters/ch03.html#key-concepts",
+    "href": "chapters/ch03.html#key-concepts",
+    "title": "Chapter 3: The MNH Diagnostic Case Study",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nDiagnostic Causal Modeling\nAn iterative cycle of hypothesis, stakeholder interview, model revision, deeper questions, and refinement. The process begins with the simplest possible model and adds complexity only as interviews reveal new variables and mechanisms. At each stage, the model tells you what questions to ask next – this is the power of structured causal thinking.\n\n\nThe Four Diagnostic Principles\nThe diagnostic approach follows four key principles. First, focus on significant drivers – not all variables matter equally, so identify those with the largest causal effects on the objective. Second, seek sources of common problems – look for common causes that explain multiple symptoms, as these are high-leverage intervention points. Third, ask specific questions – use the model to generate targeted hypotheses rather than open-ended inquiries. Fourth, bring it all together – the final model should tell a coherent causal story linking decisions to outcomes.\n\n\nSupply Side vs. Demand Side\nA complete diagnostic model must capture both supply-side and demand-side factors. On the supply side, investment flows through channels like training, equipment, and staffing but can be undermined by transmission failures such as staff attrition, equipment breakdown, and referral gaps. On the demand side, geographic access, health-seeking behavior, and financial barriers determine whether communities actually benefit from facility-level improvements. Both sides must work together to reduce mortality.\n\n\nRoot Nodes as Leverage Points\nRoot nodes are variables without any parents in the causal model – they are ultimate causes. Intervening on root nodes has the broadest downstream effects. In the MNH diagnostic case, staff retention and equipment maintenance emerged as critical root-level bottlenecks that the initial investment plan had overlooked. The model reveals that investing in the right inputs (training, equipment) is necessary but not sufficient when transmission mechanisms are broken.",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 3: The MNH Diagnostic Case Study"
+    ]
+  },
+  {
+    "objectID": "chapters/ch03.html#lecture-slides",
+    "href": "chapters/ch03.html#lecture-slides",
+    "title": "Chapter 3: The MNH Diagnostic Case Study",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 3: The MNH Diagnostic Case Study"
+    ]
+  },
+  {
+    "objectID": "chapters/ch03.html#r-code-workshop",
+    "href": "chapters/ch03.html#r-code-workshop",
+    "title": "Chapter 3: The MNH Diagnostic Case Study",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis chapter demonstrates how to formalize each round of the diagnostic interview process in R, building progressively more complex DAGs with dagitty and ggdag.\n\nRound 1: Simple Supply-Side Model\nAfter the initial interviews with the ministry of health, we decompose the investment-to-outcome chain into its supply-side components: training, equipment, staffing, competency, and utilization.\n\nlibrary(dagitty)\nlibrary(ggdag)\nlibrary(ggplot2)\n\n# Round 1: Simple supply-side model\nround1 &lt;- dagitty('dag {\n  Investment [pos=\"0,1\"]\n  Training [pos=\"1,0\"]\n  Equipment [pos=\"1,1\"]\n  Staffing [pos=\"1,2\"]\n  Competency [pos=\"2,0.5\"]\n  Utilization [pos=\"2,1.5\"]\n  Coverage [pos=\"3,1\"]\n  NMR [pos=\"4,1\"]\n\n  Investment -&gt; Training\n  Investment -&gt; Equipment\n  Investment -&gt; Staffing\n  Training -&gt; Competency\n  Staffing -&gt; Competency\n  Equipment -&gt; Utilization\n  Staffing -&gt; Utilization\n  Competency -&gt; Coverage\n  Utilization -&gt; Coverage\n  Coverage -&gt; NMR\n}')\n\nggdag(round1) + theme_dag() +\n  labs(title = \"Round 1: Supply-Side Model (7 nodes)\")\n\n\n\nRound 2: Adding Transmission Failures\nFacility director interviews revealed that staff retention, equipment maintenance, and referral system gaps are critical missing variables. These common causes explain why inputs were delivered but effective use remains low.\n\n# Round 2: Add retention, maintenance, referral\nround2 &lt;- dagitty('dag {\n  Investment [pos=\"0,1\"]\n  Training [pos=\"1,0\"]\n  Equipment [pos=\"1,2\"]\n  Staffing [pos=\"1,1\"]\n  Retention [pos=\"1.5,0.5\"]\n  Maintenance [pos=\"1.5,2.5\"]\n  Referral [pos=\"1.5,3\"]\n  Competency [pos=\"2,0.5\"]\n  Utilization [pos=\"2,2\"]\n  Coverage [pos=\"3,1\"]\n  NMR [pos=\"4,1\"]\n\n  Investment -&gt; Training\n  Investment -&gt; Equipment\n  Investment -&gt; Staffing\n  Investment -&gt; Referral\n  Training -&gt; Competency\n  Staffing -&gt; Competency\n  Retention -&gt; Competency\n  Retention -&gt; Utilization\n  Equipment -&gt; Utilization\n  Maintenance -&gt; Utilization\n  Competency -&gt; Coverage\n  Utilization -&gt; Coverage\n  Referral -&gt; Coverage\n  Coverage -&gt; NMR\n}')\n\nggdag(round2) + theme_dag() +\n  labs(title = \"Round 2: Adding Transmission Failures (10 nodes)\")\n\n\n\nRound 3: Complete Model with Demand Side\nCommunity health worker interviews added demand-side variables: geographic access, health-seeking behavior, and financial barriers. These factors determine whether communities benefit from improved facility quality.\n\n# Round 3: Add demand-side variables\nround3 &lt;- dagitty('dag {\n  Investment [pos=\"0,1.5\"]\n  Training [pos=\"1,0\"]\n  Equipment [pos=\"1,2\"]\n  Staffing [pos=\"1,1\"]\n  Retention [pos=\"1.5,0.5\"]\n  Maintenance [pos=\"1.5,2.5\"]\n  Referral [pos=\"1.5,3.5\"]\n  Competency [pos=\"2,0.5\"]\n  Utilization [pos=\"2,2\"]\n  Access [pos=\"2,3.5\"]\n  Behavior [pos=\"2,4.5\"]\n  Fin_Barriers [pos=\"2,5.5\"]\n  Facility_Births [pos=\"3,4\"]\n  Quality [pos=\"3,1.5\"]\n  NMR [pos=\"4,2.5\"]\n\n  Investment -&gt; Training\n  Investment -&gt; Equipment\n  Investment -&gt; Staffing\n  Investment -&gt; Referral\n  Training -&gt; Competency\n  Staffing -&gt; Competency\n  Retention -&gt; Competency\n  Retention -&gt; Utilization\n  Equipment -&gt; Utilization\n  Maintenance -&gt; Utilization\n  Competency -&gt; Quality\n  Utilization -&gt; Quality\n  Referral -&gt; Access\n  Access -&gt; Facility_Births\n  Behavior -&gt; Facility_Births\n  Fin_Barriers -&gt; Facility_Births\n  Quality -&gt; NMR\n  Facility_Births -&gt; NMR\n}')\n\nggdag(round3) + theme_dag() +\n  labs(title = \"Round 3: Complete Model (15 nodes)\")\n\n\n\nIdentifying What to Measure\nThe final model’s structure tells us which variables must be measured and controlled for in any evaluation, what conditional independencies the model predicts, and which causal paths connect investment to mortality outcomes.\n\n# What must we control for to estimate the causal effect\n# of investment on NMR?\nadjustmentSets(round3,\n               exposure = \"Investment\",\n               outcome = \"NMR\")\n\n# What are the implied conditional independencies?\n# These are testable predictions of the model\nimpliedConditionalIndependencies(round3)\n\n# What are all paths from Investment to NMR?\npaths(round3,\n      from = \"Investment\",\n      to = \"NMR\")\n\nThe adjustmentSets() function tells us which variables we must measure and control for in our evaluation. The impliedConditionalIndependencies() function generates testable predictions – if the data violates them, our model is wrong and needs revision.",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 3: The MNH Diagnostic Case Study"
+    ]
+  },
+  {
+    "objectID": "chapters/ch03.html#key-takeaways",
+    "href": "chapters/ch03.html#key-takeaways",
+    "title": "Chapter 3: The MNH Diagnostic Case Study",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nBuild models iteratively. Start simple and add complexity as interviews reveal new variables and mechanisms.\nRoot nodes are leverage points. Staff retention and equipment maintenance emerged as critical bottlenecks that the initial investment plan overlooked.\nThe model guides the analysis. Each round’s model tells you what questions to ask next, what data to collect, and where the bottlenecks are.",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 3: The MNH Diagnostic Case Study"
+    ]
+  },
+  {
+    "objectID": "chapters/ch03.html#looking-ahead",
+    "href": "chapters/ch03.html#looking-ahead",
+    "title": "Chapter 3: The MNH Diagnostic Case Study",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 4 – Quantitative Causal Models, we take the qualitative models built in this chapter and add numbers:\n\nConditional probability tables (CPTs) for each node\nJoint probability distributions\nBayes’ rule for updating beliefs with evidence\nThe mathematical foundation for precise inference and decision analysis",
+    "crumbs": [
+      "Part I: Foundations",
+      "Chapter 3: The MNH Diagnostic Case Study"
+    ]
+  },
+  {
+    "objectID": "chapters/ch05.html",
+    "href": "chapters/ch05.html",
+    "title": "Chapter 5: Situational Analysis",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nCompute marginal probabilities by summing out variables from joint distributions\nUpdate beliefs with evidence using Bayes’ rule and conditional probability\nPerform inference in serial, diverging, and converging structures and explain how information flows differently in each\nApply the explaining away phenomenon in converging structures – the most counterintuitive result in causal reasoning\nConduct a full district diagnosis using Bayesian inference on an MNH causal model",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 5: Situational Analysis"
+    ]
+  },
+  {
+    "objectID": "chapters/ch05.html#learning-objectives",
+    "href": "chapters/ch05.html#learning-objectives",
+    "title": "Chapter 5: Situational Analysis",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nCompute marginal probabilities by summing out variables from joint distributions\nUpdate beliefs with evidence using Bayes’ rule and conditional probability\nPerform inference in serial, diverging, and converging structures and explain how information flows differently in each\nApply the explaining away phenomenon in converging structures – the most counterintuitive result in causal reasoning\nConduct a full district diagnosis using Bayesian inference on an MNH causal model",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 5: Situational Analysis"
+    ]
+  },
+  {
+    "objectID": "chapters/ch05.html#key-concepts",
+    "href": "chapters/ch05.html#key-concepts",
+    "title": "Chapter 5: Situational Analysis",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nSituational Analysis\nThe process of observing outcomes and using a quantitative causal model to infer the most likely state of unobserved causes. Where Chapter 4 ran the model “forward” (given causes, predict effects), situational analysis runs the model “backward” (given effects, infer causes). This backward reasoning – from children to parents – is the heart of diagnostic decision-making.\n\n\nMarginal Probability\nThe probability of a variable computed by summing out (marginalizing over) all other variables in the joint distribution. It tells us the overall likelihood of an event, averaging across all possible parent combinations weighted by how likely each is. For example, the marginal P(NMR=High) answers: “What is the overall probability that a randomly selected district has high neonatal mortality?” – before any district-specific evidence.\n\n\nExplaining Away\nThe most counterintuitive phenomenon in causal reasoning. In a converging structure (A -&gt; B &lt;- C), when two independent causes compete to explain the same effect, confirming one cause makes the other less likely and disconfirming one makes the other more likely. For example, if a district has good workforce quality despite low staffing, equipment availability must be high – equipment “explains away” what staffing cannot. This only happens when we condition on the common effect (the collider).\n\n\nInformation Flow Across Structures\nThe three triplet structures determine how evidence propagates through the model. In serial chains (A -&gt; B -&gt; C), observing B blocks information flow from A to C. In diverging forks (A &lt;- B -&gt; C), observing the common cause B blocks the spurious correlation between A and C. In converging colliders (A -&gt; B &lt;- C), the path is naturally blocked but observing B opens it, creating dependence between the previously independent causes. These rules scale to full graphs via d-separation.",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 5: Situational Analysis"
+    ]
+  },
+  {
+    "objectID": "chapters/ch05.html#lecture-slides",
+    "href": "chapters/ch05.html#lecture-slides",
+    "title": "Chapter 5: Situational Analysis",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 5: Situational Analysis"
+    ]
+  },
+  {
+    "objectID": "chapters/ch05.html#r-code-workshop",
+    "href": "chapters/ch05.html#r-code-workshop",
+    "title": "Chapter 5: Situational Analysis",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis chapter implements Bayesian inference in R using bnlearn and gRain, demonstrating how to build a network with CPTs, query it with evidence, compare prior vs. posterior beliefs, and run a full district diagnostic workflow.\n\nBuild a Bayesian Network with CPTs\nWe construct a 5-node Bayesian network (Staffing, Equipment, Training, Quality, NMR) with CPTs calibrated to MNH program data. The Quality node has an 8-row CPT reflecting all combinations of its three parents.\n\nlibrary(bnlearn)\nlibrary(gRain)\n\n# Define the DAG structure\ndag &lt;- model2network(\"[Staffing][Equipment][Training][Quality|Staffing:Equipment:Training][NMR|Quality]\")\n\n# Define CPTs\ncpt_s &lt;- matrix(c(0.40, 0.60), ncol = 2,\n                dimnames = list(NULL, c(\"Adequate\", \"Low\")))\n\ncpt_e &lt;- matrix(c(0.35, 0.65), ncol = 2,\n                dimnames = list(NULL, c(\"Available\", \"Unavailable\")))\n\ncpt_t &lt;- matrix(c(0.50, 0.50), ncol = 2,\n                dimnames = list(NULL, c(\"Completed\", \"Not_Completed\")))\n\n# Quality CPT: P(Quality | Staffing, Equipment, Training)\ncpt_q &lt;- array(\n  c(0.95, 0.05,  # S=Adeq, E=Avail, T=Comp\n    0.80, 0.20,  # S=Adeq, E=Avail, T=Not\n    0.65, 0.35,  # S=Adeq, E=Unavail, T=Comp\n    0.45, 0.55,  # S=Adeq, E=Unavail, T=Not\n    0.55, 0.45,  # S=Low, E=Avail, T=Comp\n    0.35, 0.65,  # S=Low, E=Avail, T=Not\n    0.20, 0.80,  # S=Low, E=Unavail, T=Comp\n    0.08, 0.92), # S=Low, E=Unavail, T=Not\n  dim = c(2, 2, 2, 2),\n  dimnames = list(Quality = c(\"Good\", \"Poor\"),\n                  Staffing = c(\"Adequate\", \"Low\"),\n                  Equipment = c(\"Available\", \"Unavailable\"),\n                  Training = c(\"Completed\", \"Not_Completed\")))\n\n# NMR CPT: P(NMR | Quality)\ncpt_nmr &lt;- matrix(c(0.85, 0.15, 0.30, 0.70), ncol = 2,\n                  dimnames = list(NMR = c(\"Low\", \"High\"),\n                                  Quality = c(\"Good\", \"Poor\")))\n\n# Fit the BN with custom CPTs\nbn_fit &lt;- custom.fit(dag, list(\n  Staffing = cpt_s, Equipment = cpt_e, Training = cpt_t,\n  Quality = cpt_q, NMR = cpt_nmr))\n\n\n\nQuery with Evidence\nThe cpquery() function uses likelihood weighting to estimate conditional probabilities. We demonstrate marginal queries (no evidence), forward queries (evidence on root nodes), and backward queries (evidence on outcome nodes – the core of situational analysis).\n\n# --- Marginal probability (no evidence) ---\ncpquery(bn_fit,\n        event = (NMR == \"High\"),\n        evidence = TRUE,\n        n = 1e6)\n# ≈ 0.455\n\n# --- Posterior with evidence: NMR is High ---\n# What is P(Staffing = Low | NMR = High)?\ncpquery(bn_fit,\n        event = (Staffing == \"Low\"),\n        evidence = (NMR == \"High\"),\n        n = 1e6)\n# ≈ 0.71\n\n# --- Evidence on a root node ---\n# What is P(NMR = High | Staffing = Low)?\ncpquery(bn_fit,\n        event = (NMR == \"High\"),\n        evidence = (Staffing == \"Low\"),\n        n = 1e6)\n# ≈ 0.55\n\n# --- Multiple pieces of evidence ---\n# P(NMR = High | Staffing = Low, Equipment = Unavailable)\ncpquery(bn_fit,\n        event = (NMR == \"High\"),\n        evidence = (Staffing == \"Low\" & Equipment == \"Unavailable\"),\n        n = 1e6)\n# ≈ 0.63\n\n\n\nCompare Posterior vs. Prior\nThis block computes posterior probabilities for all root nodes given an NMR observation, allowing us to see which causes shift the most and therefore carry the strongest diagnostic signal.\n\n# Function to compute posteriors for all root nodes given NMR evidence\ncompute_posteriors &lt;- function(bn, nmr_state, n_samples = 1e6) {\n  data.frame(\n    Variable = c(\"Staffing=Low\", \"Equipment=Unavail\", \"Training=Not_Comp\"),\n    Prior = c(0.60, 0.65, 0.50),\n    Posterior = c(\n      cpquery(bn, (Staffing == \"Low\"), (NMR == nmr_state), n = n_samples),\n      cpquery(bn, (Equipment == \"Unavailable\"), (NMR == nmr_state), n = n_samples),\n      cpquery(bn, (Training == \"Not_Completed\"), (NMR == nmr_state), n = n_samples)\n    )\n  )\n}\n\n# Posteriors given NMR=High (District Mwanga)\npost_high &lt;- compute_posteriors(bn_fit, \"High\")\npost_high$Shift &lt;- post_high$Posterior - post_high$Prior\nprint(post_high)\n\n# Posteriors given NMR=Low (District Songea)\npost_low &lt;- compute_posteriors(bn_fit, \"Low\")\npost_low$Shift &lt;- post_low$Posterior - post_low$Prior\nprint(post_low)\n\n\n\nVisualize Belief Updating\nA grouped bar chart comparing prior and posterior probabilities makes the belief shifts visually clear. All “bad” states become more likely after observing high mortality.\n\nlibrary(ggplot2)\nlibrary(tidyr)\n\n# Combine prior and posterior into tidy format\nviz_data &lt;- data.frame(\n  Variable = rep(c(\"Staffing\\n(Low)\", \"Equipment\\n(Unavail)\", \"Training\\n(Not Comp)\"), 2),\n  Condition = rep(c(\"Prior\", \"Posterior\\n(NMR=High)\"), each = 3),\n  Probability = c(\n    0.60, 0.65, 0.50,          # Priors\n    0.710, 0.738, 0.573         # Posteriors given NMR=High\n  )\n)\nviz_data$Condition &lt;- factor(viz_data$Condition,\n                              levels = c(\"Prior\", \"Posterior\\n(NMR=High)\"))\n\nggplot(viz_data, aes(x = Variable, y = Probability, fill = Condition)) +\n  geom_col(position = \"dodge\", width = 0.6) +\n  geom_text(aes(label = sprintf(\"%.1f%%\", Probability * 100)),\n            position = position_dodge(width = 0.6), vjust = -0.3, size = 4) +\n  scale_fill_manual(values = c(\"Prior\" = \"#00A1DF\", \"Posterior\\n(NMR=High)\" = \"#E24A3F\"),\n                    name = \"\") +\n  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +\n  labs(title = \"Belief Updating: Prior vs. Posterior Given NMR = High\",\n       subtitle = \"All 'bad' states become more likely after observing high mortality\",\n       x = NULL, y = \"Probability\") +\n  theme_minimal(base_size = 14) +\n  theme(legend.position = \"top\",\n        plot.title = element_text(color = \"#005CB9\", face = \"bold\"))\n\n\n\nFull District Diagnosis Workflow\nThis reusable function accepts a fitted Bayesian network and a list of evidence, then computes posterior probabilities for all root nodes and ranks them by the magnitude of their belief shift. This is the complete diagnostic workflow for a district assessment.\n\n# ---- Full diagnosis workflow for a district ----\n\ndiagnose_district &lt;- function(bn, evidence_list, n_samples = 1e6) {\n  # Build evidence string\n  ev_expr &lt;- paste(names(evidence_list), \"==\",\n                   paste0('\"', evidence_list, '\"'), collapse = \" & \")\n\n  # Query each root node\n  results &lt;- data.frame(\n    Node = c(\"Staffing\", \"Equipment\", \"Training\"),\n    Bad_State = c(\"Low\", \"Unavailable\", \"Not_Completed\"),\n    Prior = c(0.60, 0.65, 0.50)\n  )\n\n  results$Posterior &lt;- sapply(1:nrow(results), function(i) {\n    cpquery(bn,\n            event = eval(parse(text = paste0(results$Node[i], ' == \"',\n                                              results$Bad_State[i], '\"'))),\n            evidence = eval(parse(text = ev_expr)),\n            n = n_samples)\n  })\n\n  results$Shift &lt;- results$Posterior - results$Prior\n  results$Priority &lt;- rank(-abs(results$Shift))\n  results[order(results$Priority), ]\n}\n\n# Diagnose District Mwanga (NMR=High)\ncat(\"=== District Mwanga Diagnosis ===\\n\")\nmwanga &lt;- diagnose_district(bn_fit, list(NMR = \"High\"))\nprint(mwanga)\n\n# Diagnose with additional evidence (NMR=High, Quality=Poor)\ncat(\"\\n=== With additional evidence: Quality=Poor ===\\n\")\nmwanga_deep &lt;- diagnose_district(bn_fit,\n                                  list(NMR = \"High\", Quality = \"Poor\"))\nprint(mwanga_deep)",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 5: Situational Analysis"
+    ]
+  },
+  {
+    "objectID": "chapters/ch05.html#key-takeaways",
+    "href": "chapters/ch05.html#key-takeaways",
+    "title": "Chapter 5: Situational Analysis",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nMarginal probabilities tell us baseline expectations. The marginal P(NMR=High) = 45.5% is the starting point before any district-specific evidence.\nEvidence updates beliefs via Bayes’ rule. Observing NMR=High shifts all root causes toward their “bad” states – with staffing showing the largest shift.\nThe three structures determine information flow: serial and diverging chains are blocked by conditioning on the middle node; converging chains are activated by it.\nExplaining away is the most counterintuitive phenomenon. In a collider, observing the common effect makes independent causes compete – confirming one reduces belief in the other.",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 5: Situational Analysis"
+    ]
+  },
+  {
+    "objectID": "chapters/ch05.html#looking-ahead",
+    "href": "chapters/ch05.html#looking-ahead",
+    "title": "Chapter 5: Situational Analysis",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 6 – Simpson’s Paradox and Cost-Effectiveness, we apply inference to a critical problem:\n\nSimpson’s Paradox – when aggregate data reverses the true causal effect\nHow conditioning on the wrong variable produces misleading cost-effectiveness estimates\nWhy program evaluation in MNH requires causal reasoning, not just data analysis\nPractical implications for how large MNH programs evaluate their country portfolios",
+    "crumbs": [
+      "Part II: Quantitative Analysis",
+      "Chapter 5: Situational Analysis"
+    ]
+  },
+  {
+    "objectID": "chapters/ch07.html",
+    "href": "chapters/ch07.html",
+    "title": "Chapter 7: Decision Analysis & Value of Information",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nConstruct influence diagrams with decision nodes, chance nodes, and objective nodes\nCompute expected value of different intervention options\nCalculate the Expected Value of Perfect Information (EVPI)\nUnderstand the difference between observing and intervening (do-calculus)\nApply decision analysis to MNH program investment choices",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 7: Decision Analysis & Value of Information"
+    ]
+  },
+  {
+    "objectID": "chapters/ch07.html#learning-objectives",
+    "href": "chapters/ch07.html#learning-objectives",
+    "title": "Chapter 7: Decision Analysis & Value of Information",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nConstruct influence diagrams with decision nodes, chance nodes, and objective nodes\nCompute expected value of different intervention options\nCalculate the Expected Value of Perfect Information (EVPI)\nUnderstand the difference between observing and intervening (do-calculus)\nApply decision analysis to MNH program investment choices",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 7: Decision Analysis & Value of Information"
+    ]
+  },
+  {
+    "objectID": "chapters/ch07.html#key-concepts",
+    "href": "chapters/ch07.html#key-concepts",
+    "title": "Chapter 7: Decision Analysis & Value of Information",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nInfluence Diagram\nA causal model that includes at least one strategic option (decision) and one objective, in addition to the usual chance variables. Also called a decision network. Bayesian networks (Chapters 2–6) contain only chance nodes and support inference; influence diagrams add decision nodes (rectangles) and objective nodes (hexagons), enabling optimal decision analysis.\n\n\nExpected Value (EV)\nThe probability-weighted average of all possible outcomes for a given decision: \\(EV(\\text{Decision}) = \\sum_{\\text{outcomes}} P(\\text{outcome} \\mid do(\\text{Decision})) \\times V(\\text{outcome})\\). Comparing the EV across alternative intervention strategies provides a principled basis for choosing the option that maximizes expected lives saved.\n\n\nExpected Value of Perfect Information (EVPI)\nThe maximum amount a decision-maker should pay to learn the true state of an uncertain variable before deciding. Computed as \\(\\text{EVPI} = EV(\\text{with perfect info}) - EV(\\text{without info})\\). EVPI sets the upper bound on how much a pilot program, survey, or study is worth.\n\n\nThe do-Operator and Graph Surgery\n\\(do(X = x)\\) is an intervention that sets variable X to value x regardless of X’s parents in the causal model. Graph surgery deletes all arrows pointing into X, isolating the true causal effect from confounded associations. Observing that a facility has CPAP (\\(P(Y \\mid X)\\)) is fundamentally different from giving a facility CPAP (\\(P(Y \\mid do(X))\\)).\n\n\nSensitivity Analysis\nVarying uncertain parameters to determine which ones matter most for the decision. In MNH, the probability of government co-financing often determines whether a workforce-heavy or equipment-heavy strategy is optimal. A sensitivity analysis identifies the crossover point where the optimal strategy changes.",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 7: Decision Analysis & Value of Information"
+    ]
+  },
+  {
+    "objectID": "chapters/ch07.html#lecture-slides",
+    "href": "chapters/ch07.html#lecture-slides",
+    "title": "Chapter 7: Decision Analysis & Value of Information",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 7: Decision Analysis & Value of Information"
+    ]
+  },
+  {
+    "objectID": "chapters/ch07.html#r-code-workshop",
+    "href": "chapters/ch07.html#r-code-workshop",
+    "title": "Chapter 7: Decision Analysis & Value of Information",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis chapter implements decision analysis in R, covering expected value computation, EVPI calculation, sensitivity analysis visualization, and graph surgery using Bayesian networks.\n\nExpected Value Calculation\nWe define a three-strategy decision problem for MNH intervention deployment and compute the expected lives saved for each option.\n\n# Define the decision problem\nstrategies &lt;- data.frame(\n  strategy = rep(c(\"CPAP Only\", \"Workforce\", \"Split\"), each = 2),\n  gov_support = rep(c(\"High\", \"Low\"), 3),\n  probability = rep(c(0.40, 0.60), 3),\n  lives_saved = c(2800, 1200,   # CPAP\n                  3600, 1000,    # Workforce\n                  3100, 1400)    # Split\n)\n\n# Compute expected value per strategy\nlibrary(dplyr)\nev_table &lt;- strategies %&gt;%\n  group_by(strategy) %&gt;%\n  summarise(\n    expected_lives = sum(probability * lives_saved),\n    .groups = \"drop\"\n  ) %&gt;%\n  arrange(desc(expected_lives))\n\nev_table\n# Split: 2080, Workforce: 2040, CPAP: 1840\n\n\n\nEVPI Calculation\nEVPI tells us the maximum value of learning the true state of government co-financing before committing funds. It is computed as the difference between the expected value with perfect information and the expected value of the best uninformed strategy.\n\n# EVPI = E[max value per scenario] - max E[value]\n\n# Best decision in each scenario\nbest_per_scenario &lt;- strategies %&gt;%\n  group_by(gov_support) %&gt;%\n  slice_max(lives_saved) %&gt;%\n  ungroup()\n\n# Expected value with perfect information\nev_perfect &lt;- sum(best_per_scenario$probability *\n                  best_per_scenario$lives_saved)\n\n# Expected value without information (best overall strategy)\nev_no_info &lt;- max(ev_table$expected_lives)\n\n# EVPI\nevpi &lt;- ev_perfect - ev_no_info\ncat(\"EV with perfect info:\", ev_perfect, \"\\n\")\ncat(\"EV without info:\", ev_no_info, \"\\n\")\ncat(\"EVPI:\", evpi, \"lives\\n\")\n# EVPI tells us the maximum value of learning government intentions\n\n\n\nSensitivity Analysis Visualization\nThis plot shows how the expected lives saved for each strategy varies as the probability of high government co-financing changes. The crossover points reveal when the optimal strategy shifts.\n\nlibrary(ggplot2)\n\n# Vary P(High co-financing) from 0 to 1\np_seq &lt;- seq(0, 1, by = 0.01)\nsensitivity &lt;- data.frame(\n  p = rep(p_seq, 3),\n  strategy = rep(c(\"CPAP Only\", \"Workforce\", \"Split\"),\n                 each = length(p_seq)),\n  ev = c(1200 + 1600 * p_seq,   # CPAP\n         1000 + 2600 * p_seq,    # Workforce\n         1400 + 1700 * p_seq)    # Split\n)\n\nggplot(sensitivity, aes(x = p, y = ev, color = strategy)) +\n  geom_line(size = 1.2) +\n  geom_vline(xintercept = 0.40, linetype = \"dashed\", alpha = 0.5) +\n  scale_color_manual(values = c(\"#005CB9\", \"#83BD00\", \"#FA7650\")) +\n  labs(x = \"P(High Government Co-financing)\",\n       y = \"Expected Lives Saved\",\n       title = \"Sensitivity Analysis: Strategy Choice\",\n       subtitle = \"Dashed line = current estimate (p = 0.40)\") +\n  theme_minimal(base_size = 14)\n\n\n\nGraph Surgery with bnlearn\nGraph surgery implements the do-operator by removing incoming arrows to the intervention variable. The original model includes confounding via Resources; the intervened model isolates the true causal effect of CPAP on NMR.\n\nlibrary(bnlearn)\n\n# Original model (with confounding)\noriginal &lt;- model2network(\n  \"[Resources][CPAP|Resources][NMR|CPAP:Resources]\"\n)\n\n# After graph surgery: do(CPAP) — remove Resources -&gt; CPAP\nintervened &lt;- model2network(\n  \"[Resources][CPAP][NMR|CPAP:Resources]\"\n)\n\n# The key difference:\n# In 'original': P(NMR | CPAP=Yes) includes confounding via Resources\n# In 'intervened': P(NMR | CPAP=Yes) is the true causal effect\n\n# With fitted CPTs, you would query:\n# cpquery(fit_original, (NMR == \"Low\"), (CPAP == \"Yes\"))\n# cpquery(fit_intervened, (NMR == \"Low\"), (CPAP == \"Yes\"))\n# The second query gives the causal effect\n\n\n\nTornado Diagram\nA tornado diagram shows which uncertain parameter has the largest swing effect on the expected outcome of the Split strategy. Parameters with the widest bars deserve the most attention in data collection and negotiation.\n\n# Sensitivity of Split strategy to each parameter\nparams &lt;- data.frame(\n  parameter = c(\"P(Gov High)\", \"Lives if High\",\n                \"Lives if Low\", \"Cost ($M)\"),\n  low_ev  = c(1840, 1960, 1960, 2080),\n  base_ev = c(2080, 2080, 2080, 2080),\n  high_ev = c(2320, 2200, 2200, 2080)\n)\n\nparams$swing &lt;- params$high_ev - params$low_ev\nparams &lt;- params[order(params$swing, decreasing = TRUE), ]\nparams$parameter &lt;- factor(params$parameter,\n                           levels = rev(params$parameter))\n\nggplot(params, aes(y = parameter)) +\n  geom_segment(aes(x = low_ev, xend = high_ev,\n                   yend = parameter),\n               size = 8, color = \"#005CB9\", alpha = 0.7) +\n  geom_vline(xintercept = 2080, linetype = \"dashed\") +\n  labs(x = \"Expected Lives Saved\", y = \"\",\n       title = \"Tornado Diagram: Sensitivity of Split Strategy\") +\n  theme_minimal(base_size = 14)",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 7: Decision Analysis & Value of Information"
+    ]
+  },
+  {
+    "objectID": "chapters/ch07.html#key-takeaways",
+    "href": "chapters/ch07.html#key-takeaways",
+    "title": "Chapter 7: Decision Analysis & Value of Information",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nInfluence diagrams extend causal models with decisions and objectives, enabling optimal intervention analysis.\nExpected value provides a principled way to compare interventions under uncertainty. EVPI tells us the maximum value of better information.\nObserving is not the same as intervening. The do-operator and graph surgery isolate true causal effects from confounded associations.\nDiversification (splitting investment) can reduce risk and increase expected value when facing uncertainty about government co-financing and other key parameters.",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 7: Decision Analysis & Value of Information"
+    ]
+  },
+  {
+    "objectID": "chapters/ch07.html#looking-ahead",
+    "href": "chapters/ch07.html#looking-ahead",
+    "title": "Chapter 7: Decision Analysis & Value of Information",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 8 – Multi-Country Resource Allocation, we apply decision analysis to a full multi-country MNH program:\n\nAllocating pooled funding across multiple countries\nSequential decisions: pilot then scale-up\nGovernment co-financing uncertainty at country level\nThe value of waiting versus the cost of delay (measured in lives)\n\nChapter 7 introduced the tools for a single decision-maker choosing among interventions. Chapter 8 scales this to a portfolio allocation problem across ten countries with country-specific risk profiles.",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 7: Decision Analysis & Value of Information"
+    ]
+  },
+  {
+    "objectID": "chapters/ch09.html",
+    "href": "chapters/ch09.html",
+    "title": "Chapter 9: Game Theory & Strategic Interactions",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nDefine games with players, strategies, and payoffs in the context of global health\nFind Nash equilibria in normal-form (matrix) games\nAnalyze sequential (extensive-form) games using backward induction\nRepresent multi-agent problems as causal-form games and strategy tables\nApply game theory to donor-government interactions in an MNH program portfolio",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 9: Game Theory & Strategic Interactions"
+    ]
+  },
+  {
+    "objectID": "chapters/ch09.html#learning-objectives",
+    "href": "chapters/ch09.html#learning-objectives",
+    "title": "Chapter 9: Game Theory & Strategic Interactions",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nDefine games with players, strategies, and payoffs in the context of global health\nFind Nash equilibria in normal-form (matrix) games\nAnalyze sequential (extensive-form) games using backward induction\nRepresent multi-agent problems as causal-form games and strategy tables\nApply game theory to donor-government interactions in an MNH program portfolio",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 9: Game Theory & Strategic Interactions"
+    ]
+  },
+  {
+    "objectID": "chapters/ch09.html#key-concepts",
+    "href": "chapters/ch09.html#key-concepts",
+    "title": "Chapter 9: Game Theory & Strategic Interactions",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nNash Equilibrium\nA strategy profile where no player can improve their payoff by unilaterally changing their strategy, holding all other players’ strategies fixed. In MNH contexts, Nash equilibria often reveal free-riding behavior: the donor funds generously and the government reduces its own co-financing because individual incentives push toward a suboptimal collective outcome.\n\n\nExtensive-Form Games and Backward Induction\nA game represented as a tree showing the sequence of moves, information available at each decision point, and payoffs at terminal nodes. Backward induction solves the game by starting at terminal nodes and working backward. The order of moves matters: when the donor commits first without conditions, the government can observe and free-ride.\n\n\nCommitment Devices and Mechanism Design\nContract structures that change the payoff matrix so that cooperation becomes the dominant strategy. Milestone-based payments, bonding agreements, and conditional funding triggers are all commitment devices. They work by making free-riding costly and cooperation genuinely attractive for both sides. Credibility is essential: conditionalities only work if the donor would actually withhold funding when milestones are missed.\n\n\nCausal-Form Games\nA multi-agent influence diagram where each player has their own decision node and objective node, and the causal structure shows how decisions interact to produce outcomes. The causal form connects game theory to the DAG-based causal models of earlier chapters, making explicit why payoffs have their values and how decisions flow through intermediate variables to outcomes.\n\n\nStrategy Tables\nA complete enumeration of contingent plans specifying what a player will do at every decision point, contingent on what they observe. With 2 information sets and 2 actions each, a player has \\(2^2 = 4\\) possible strategies. Conditional strategies such as “Match” (cooperate if and only if the other player cooperates) are central to designing effective funding agreements.",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 9: Game Theory & Strategic Interactions"
+    ]
+  },
+  {
+    "objectID": "chapters/ch09.html#lecture-slides",
+    "href": "chapters/ch09.html#lecture-slides",
+    "title": "Chapter 9: Game Theory & Strategic Interactions",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 9: Game Theory & Strategic Interactions"
+    ]
+  },
+  {
+    "objectID": "chapters/ch09.html#r-code-workshop",
+    "href": "chapters/ch09.html#r-code-workshop",
+    "title": "Chapter 9: Game Theory & Strategic Interactions",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis chapter implements game theory analysis in R, including Nash equilibrium computation, payoff matrix visualization, backward induction for extensive-form games, and simulation of repeated games with conditional strategies.\n\nRepresenting and Solving a 2x2 Game\nWe define the Workforce Absorption Game as payoff matrices and implement a general Nash equilibrium finder using the best-response method.\n\n# Define the Workforce Absorption Game (2-player, 2x3 reduced to 2x2)\n# Payoffs: list(Donor, Government)\n\n# Donor strategies: Full Funding, Reduced Funding (rows)\n# Gov strategies: Full Absorb, No Absorb (columns, simplified)\n\ndonor_payoffs &lt;- matrix(c(4500, 2200,   # Full Absorb column\n                          500,  300),    # No Absorb column\n                        nrow = 2, ncol = 2,\n                        dimnames = list(\n                          Donor = c(\"Full Funding\", \"Reduced\"),\n                          Gov = c(\"Full Absorb\", \"No Absorb\")))\n\ngov_payoffs &lt;- matrix(c(600, 400,     # Full Absorb column\n                        1000, 800),   # No Absorb column\n                      nrow = 2, ncol = 2,\n                      dimnames = list(\n                        Donor = c(\"Full Funding\", \"Reduced\"),\n                        Gov = c(\"Full Absorb\", \"No Absorb\")))\n\n# Find Nash Equilibria by checking best responses\nfind_nash &lt;- function(p1, p2) {\n  nr &lt;- nrow(p1); nc &lt;- ncol(p1)\n  nash &lt;- list()\n  for (i in 1:nr) {\n    for (j in 1:nc) {\n      # Is i a best response for Player 1 given Player 2 plays j?\n      p1_br &lt;- p1[i, j] == max(p1[, j])\n      # Is j a best response for Player 2 given Player 1 plays i?\n      p2_br &lt;- p2[i, j] == max(p2[i, ])\n      if (p1_br & p2_br) {\n        nash &lt;- c(nash, list(c(row = i, col = j)))\n      }\n    }\n  }\n  nash\n}\n\nne &lt;- find_nash(donor_payoffs, gov_payoffs)\ncat(\"Nash Equilibria:\\n\")\nfor (eq in ne) {\n  cat(sprintf(\"  (%s, %s) -&gt; Donor: %d, Gov: %d\\n\",\n              rownames(donor_payoffs)[eq[1]],\n              colnames(donor_payoffs)[eq[2]],\n              donor_payoffs[eq[1], eq[2]],\n              gov_payoffs[eq[1], eq[2]]))\n}\n# Expected output: (Full Funding, No Absorb) -&gt; Donor: 500, Gov: 1000\n\n\n\nPayoff Matrix Heatmap\nA heatmap visualization of the full 2x3 payoff matrix for the Workforce Absorption Game, with cell labels showing both players’ payoffs and color encoding the donor’s outcome.\n\nlibrary(ggplot2)\nlibrary(tidyr)\n\n# Build tidy data for both players\ngame_df &lt;- expand.grid(\n  Donor = c(\"Full Funding\", \"Reduced\"),\n  Gov = c(\"Full Absorb\", \"Partial Absorb\", \"No Absorb\")\n)\ngame_df$Donor_Payoff &lt;- c(4500, 2200, 2800, 1500, 500, 300)\ngame_df$Gov_Payoff   &lt;- c(600,  400,  900,  700,  1000, 800)\ngame_df$Total        &lt;- game_df$Donor_Payoff + game_df$Gov_Payoff\ngame_df$Label &lt;- paste0(\"D: \", game_df$Donor_Payoff,\n                        \"\\nG: \", game_df$Gov_Payoff)\n\n# Factor ordering\ngame_df$Donor &lt;- factor(game_df$Donor,\n                        levels = c(\"Full Funding\", \"Reduced\"))\ngame_df$Gov   &lt;- factor(game_df$Gov,\n                        levels = c(\"Full Absorb\", \"Partial Absorb\",\n                                   \"No Absorb\"))\n\nggplot(game_df, aes(x = Gov, y = Donor, fill = Donor_Payoff)) +\n  geom_tile(color = \"white\", linewidth = 2) +\n  geom_text(aes(label = Label), size = 5, fontface = \"bold\") +\n  scale_fill_gradient2(low = \"#E24A3F\", mid = \"#FED141\",\n                       high = \"#83BD00\", midpoint = 2000,\n                       name = \"Donor\\nPayoff\") +\n  labs(title = \"Workforce Absorption Game: Payoff Matrix\",\n       x = \"Government Strategy\", y = \"Donor Strategy\") +\n  theme_minimal(base_size = 16) +\n  theme(panel.grid = element_blank(),\n        plot.title = element_text(color = \"#005CB9\", face = \"bold\"))\n\n\n\nExtensive Form – Backward Induction\nWe solve the sequential version of the game where the donor moves first and the government observes the donor’s choice before responding. Backward induction reveals the subgame perfect equilibrium.\n\n# Extensive form: Donor moves first, Government observes and responds\n# Define terminal payoffs: (Donor, Gov)\nterminal &lt;- list(\n  \"Full-&gt;FullAbsorb\"    = c(D = 4500, G = 600),\n  \"Full-&gt;PartialAbsorb\" = c(D = 2800, G = 900),\n  \"Full-&gt;NoAbsorb\"      = c(D = 500,  G = 1000),\n  \"Reduced-&gt;FullAbsorb\"    = c(D = 2200, G = 400),\n  \"Reduced-&gt;PartialAbsorb\" = c(D = 1500, G = 700),\n  \"Reduced-&gt;NoAbsorb\"      = c(D = 300,  G = 800)\n)\n\n# Step 1: Government's best response at each information set\ngov_after_full &lt;- terminal[grep(\"^Full-&gt;\", names(terminal))]\ngov_br_full &lt;- names(which.max(sapply(gov_after_full, `[`, \"G\")))\ncat(\"Gov best response after Full Funding:\", gov_br_full, \"\\n\")\ncat(\"  Payoffs:\", gov_after_full[[gov_br_full]], \"\\n\\n\")\n\ngov_after_reduced &lt;- terminal[grep(\"^Reduced-&gt;\", names(terminal))]\ngov_br_reduced &lt;- names(which.max(sapply(gov_after_reduced, `[`, \"G\")))\ncat(\"Gov best response after Reduced:\", gov_br_reduced, \"\\n\")\ncat(\"  Payoffs:\", gov_after_reduced[[gov_br_reduced]], \"\\n\\n\")\n\n# Step 2: Donor anticipates and chooses\ndonor_full    &lt;- gov_after_full[[gov_br_full]][\"D\"]\ndonor_reduced &lt;- gov_after_reduced[[gov_br_reduced]][\"D\"]\ncat(\"Donor payoff if Full:\", donor_full, \"\\n\")\ncat(\"Donor payoff if Reduced:\", donor_reduced, \"\\n\")\ncat(\"Donor optimal choice:\",\n    ifelse(donor_full &gt;= donor_reduced, \"Full Funding\", \"Reduced\"), \"\\n\")\n\n# SPE: (Full Funding, Gov always plays No Absorb)\n# Donor gets 500 lives — motivating the need for conditionality\n\n\n\nSimulating a Repeated Game\nA repeated-game simulation compares unconditional funding (always fund high) versus a tit-for-tat conditional strategy. The tit-for-tat approach induces government cooperation over time by punishing free-riding with reduced funding in the following round.\n\nlibrary(ggplot2)\n\n# Simulate repeated interaction with tit-for-tat strategy\n# Donor uses conditional strategy: fund high if Gov cooperated last round\nset.seed(42)\nn_rounds &lt;- 20\n\n# Strategy profiles\nsimulate_repeated &lt;- function(donor_strategy, n = 20) {\n  donor_action &lt;- character(n)\n  gov_action   &lt;- character(n)\n  donor_payoff &lt;- numeric(n)\n  gov_payoff   &lt;- numeric(n)\n\n  # Payoffs per round (lives saved in hundreds)\n  payoff_matrix &lt;- list(\n    \"High_High\" = c(D = 24, G = 7),\n    \"High_Low\"  = c(D = 5,  G = 10),\n    \"Low_High\"  = c(D = 18, G = 5),\n    \"Low_Low\"   = c(D = 8,  G = 6)\n  )\n\n  for (t in 1:n) {\n    # Donor strategy\n    if (donor_strategy == \"unconditional\") {\n      donor_action[t] &lt;- \"High\"\n    } else if (donor_strategy == \"tit_for_tat\") {\n      donor_action[t] &lt;- if (t == 1) \"High\"\n                          else if (gov_action[t-1] == \"High\") \"High\"\n                          else \"Low\"\n    }\n    # Government: rational, but learns from consequences\n    # Starts by free-riding, switches to cooperate if punished\n    if (t &lt;= 3) {\n      gov_action[t] &lt;- \"Low\"  # Test the donor\n    } else if (donor_strategy == \"tit_for_tat\" &\n               donor_action[t] == \"Low\") {\n      gov_action[t] &lt;- \"High\"  # Cooperate after punishment\n    } else {\n      gov_action[t] &lt;- \"Low\"   # Free-ride if no punishment\n    }\n\n    key &lt;- paste0(donor_action[t], \"_\", gov_action[t])\n    donor_payoff[t] &lt;- payoff_matrix[[key]][\"D\"]\n    gov_payoff[t]   &lt;- payoff_matrix[[key]][\"G\"]\n  }\n\n  data.frame(round = 1:n, donor_action, gov_action,\n             donor_payoff, gov_payoff)\n}\n\n# Compare unconditional vs tit-for-tat\nuncond &lt;- simulate_repeated(\"unconditional\")\nuncond$strategy &lt;- \"Unconditional\"\ntft &lt;- simulate_repeated(\"tit_for_tat\")\ntft$strategy &lt;- \"Tit-for-Tat\"\nresults &lt;- rbind(uncond, tft)\n\nggplot(results, aes(x = round, y = cumsum(donor_payoff),\n                    color = strategy)) +\n  geom_line(linewidth = 1.2) +\n  geom_point(aes(shape = gov_action), size = 2.5) +\n  scale_color_manual(values = c(\"#E24A3F\", \"#83BD00\")) +\n  scale_shape_manual(values = c(High = 16, Low = 4),\n                     name = \"Gov Action\") +\n  labs(title = \"Repeated Game: Cumulative Donor Payoff\",\n       subtitle = \"Tit-for-tat induces Government cooperation over time\",\n       x = \"Funding Round\", y = \"Cumulative Lives Saved (hundreds)\",\n       color = \"Donor Strategy\") +\n  theme_minimal(base_size = 14) +\n  theme(plot.title = element_text(color = \"#005CB9\", face = \"bold\"))",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 9: Game Theory & Strategic Interactions"
+    ]
+  },
+  {
+    "objectID": "chapters/ch09.html#key-takeaways",
+    "href": "chapters/ch09.html#key-takeaways",
+    "title": "Chapter 9: Game Theory & Strategic Interactions",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nGame theory models strategic interaction among multiple agents – essential when governments, donors, and partners all make interdependent choices.\nNash equilibrium reveals the stable outcome when each agent optimizes individually. In MNH, this often means free-riding unless contracts are designed carefully.\nExtensive-form analysis and backward induction show how the sequence of moves matters. Conditional commitments (milestone payments) transform the game’s equilibrium.\nStrategy tables and the causal form connect game theory to the influence diagrams of Chapters 7–8, providing a unified framework for multi-agent decision problems.",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 9: Game Theory & Strategic Interactions"
+    ]
+  },
+  {
+    "objectID": "chapters/ch09.html#looking-ahead",
+    "href": "chapters/ch09.html#looking-ahead",
+    "title": "Chapter 9: Game Theory & Strategic Interactions",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 10 – Structure Learning from Observational Data, we return from theory to practice with real data:\n\nLearning causal structure from MNH datasets\nBayesian network parameter estimation\nCombining expert knowledge with data\nValidation and sensitivity analysis for policy recommendations\n\nChapters 1–6 built causal models (inference). Chapters 7–9 used them for decisions (intervention). Chapter 10 grounds everything in data, closing the loop between theory and evidence.",
+    "crumbs": [
+      "Part III: Decision & Strategy",
+      "Chapter 9: Game Theory & Strategic Interactions"
+    ]
+  }
+]

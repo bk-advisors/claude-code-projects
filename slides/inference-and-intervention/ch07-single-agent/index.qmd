@@ -1,0 +1,794 @@
+---
+title: "Chapter 7: Single-Agent Interventions"
+subtitle: "Inference and Intervention | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Construct **influence diagrams** with decision nodes, chance nodes, and objective nodes
+- Compute **expected value** of different intervention options
+- Calculate the **Expected Value of Perfect Information (EVPI)**
+- Understand the difference between **observing** and **intervening** (do-calculus)
+- Apply decision analysis to MNH program investment choices
+:::
+
+
+## Chapter Overview
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;">Influence<br>Diagrams</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">Expected<br>Value</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #F8A623;">Value of<br>Information</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #E24A3F;">Observing vs.<br>Intervening</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">MNH Decision<br>Analysis</div>
+</div>
+
+. . .
+
+::: {.callout-box}
+**The shift:** Chapters 1–6 focused on *understanding* the system (inference). Now we move to *acting* on it (intervention). The question changes from "What is happening?" to **"What should I do?"**
+:::
+
+
+# From Analysis to Decision {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">The difference between inference and intervention</span>
+
+
+## Two Modes of Causal Reasoning
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Inference (Chapters 1–6)**
+
+Observe evidence → update beliefs about unobserved variables
+
+*"District X has high NMR. What is the most likely cause?"*
+
+$$P(\text{Staffing}=\text{Low} \mid \text{NMR}=\text{High})$$
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**Intervention (Chapters 7–9)**
+
+Choose an action → predict its consequences
+
+*"If we deploy CPAP machines, how much will NMR decrease?"*
+
+$$P(\text{NMR}=\text{Low} \mid do(\text{CPAP}=\text{Yes}))$$
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box .orange}
+**Critical distinction:** $P(\text{NMR} \mid \text{CPAP}=\text{Yes})$ ≠ $P(\text{NMR} \mid do(\text{CPAP}=\text{Yes}))$
+
+Observing that a facility has CPAP is different from *giving* a facility CPAP. Observation reflects existing correlations; intervention changes the system.
+:::
+
+
+## Why the Distinction Matters
+
+::: {.example-block}
+[MNH Example]{.example-label}
+
+**Observation:** Facilities with CPAP machines have 30% lower NMR.
+
+But these facilities also tend to have more staff, better training, and stronger management. The observed association conflates CPAP's causal effect with these confounders.
+
+**Intervention:** If we *deploy* CPAP to a facility that currently lacks it (changing nothing else), the true causal effect may be a 12% NMR reduction — still valuable, but less than the naive correlation suggests.
+:::
+
+
+# Influence Diagrams {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Adding decisions and objectives to causal models</span>
+
+
+## Three Node Types in Influence Diagrams
+
+::: {.definition-box}
+**Influence Diagram:** A causal model that includes at least one strategic option (decision) and one objective, in addition to the usual chance variables. Also called a *decision network*.
+:::
+
+. . .
+
+| Node Type | Shape | Description | MNH Example |
+|---|---|---|---|
+| **Chance** | Oval | Uncertain variable | NMR, Quality of Care |
+| **Decision** | Rectangle | Variable we control | Budget allocation, intervention choice |
+| **Objective** | Hexagon | Payoff to optimize | Lives saved, cost-effectiveness |
+
+. . .
+
+::: {.callout-box}
+**Bayesian network** (Ch 2–6) = chance nodes only → inference
+
+**Influence diagram** (Ch 7–9) = chance + decision + objective → optimal decisions
+:::
+
+
+## A Simple Influence Diagram
+
+<table style="width: 85%; margin: 0.5em auto; font-size: 0.55em;">
+<tr>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node decision rect" style="padding: 0.5em 0.7em;">Deploy<br>CPAP?</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node" style="padding: 0.5em 0.7em;">Neonatal<br>Outcomes</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node hexagon" style="padding: 0.5em 0.7em; border-color: #3E9B6E; color: #3E9B6E;">Lives<br>Saved</div>
+</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td style="text-align: center; padding: 0.3em;">
+<span class="dag-arrow">↑</span>
+</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node confounder" style="padding: 0.5em 0.7em;">Baseline<br>Severity</div>
+</td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+. . .
+
+::: {.incremental}
+- **Decision node** (rectangle): Deploy CPAP? {Yes, No}
+- **Chance node** (oval): Neonatal Outcomes, Baseline Severity
+- **Objective node** (hexagon): Lives Saved — the value we want to maximize
+- Arrow from Decision to Outcomes = **causal effect** of our intervention
+:::
+
+
+## Information Links
+
+::: {.definition-box}
+**Informational Link:** An arrow pointing *into* a decision node, indicating that the decision-maker knows the state of the parent variable when making the decision.
+:::
+
+. . .
+
+<table style="width: 80%; margin: 0.4em auto; font-size: 0.55em;">
+<tr>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node" style="padding: 0.4em 0.6em;">Pilot<br>Results</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span><br><span style="font-size: 0.7em; color: #666;">(info link)</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node decision rect" style="padding: 0.4em 0.6em;">Scale-Up<br>Decision</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span><br><span style="font-size: 0.7em; color: #666;">(causal link)</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node" style="padding: 0.4em 0.6em;">National<br>Outcomes</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+The program leadership can observe pilot results *before* deciding whether to scale. This information link changes the optimal decision strategy.
+
+
+# Expected Value Calculation {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Choosing the intervention with the highest expected payoff</span>
+
+
+## The Expected Value Framework
+
+::: {.definition-box}
+**Expected Value (EV):** The probability-weighted average of all possible outcomes for a given decision.
+
+$$EV(\text{Decision}) = \sum_{\text{outcomes}} P(\text{outcome} \mid do(\text{Decision})) \times V(\text{outcome})$$
+:::
+
+. . .
+
+**MNH Application: CPAP Deployment Decision**
+
+| Outcome | P(outcome \| do(CPAP=Yes)) | Lives Saved | Weighted |
+|---|---|---|---|
+| Equipment works, staff trained | 0.50 | 2,400 | 1,200 |
+| Equipment works, staff untrained | 0.20 | 800 | 160 |
+| Equipment fails | 0.30 | 0 | 0 |
+| **Expected Lives Saved** | | | **1,360** |
+
+
+## Comparing Two Interventions
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Option A: CPAP Deployment**
+
+| Scenario | P | Lives |
+|---|---|---|
+| Full success | 0.50 | 2,400 |
+| Partial success | 0.20 | 800 |
+| Equipment failure | 0.30 | 0 |
+
+**EV = 1,360 lives**
+
+Cost per life: $14,706
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**Option B: Workforce Training**
+
+| Scenario | P | Lives |
+|---|---|---|
+| Full retention | 0.35 | 3,200 |
+| Partial retention | 0.45 | 1,600 |
+| High attrition | 0.20 | 400 |
+
+**EV = 1,920 lives**
+
+Cost per life: $10,417
+:::
+:::
+:::
+
+. . .
+
+::: {.key-takeaway}
+**Option B (Workforce Training) has higher expected lives saved** and better cost-effectiveness. But this assumes we know the probabilities correctly. What if we could get better information first?
+:::
+
+
+## Decision Trees
+
+The expected value calculation follows a **decision tree** structure:
+
+. . .
+
+::: {.callout-box}
+**The General Solution Procedure (from the book):**
+
+1. Start at the **objective node** (lives saved)
+2. For each **chance node** pointing to the objective, compute the expected value by weighting outcomes by their probabilities
+3. For each **decision node**, choose the option that maximizes expected value
+4. Work backward (**fold back**) through the tree until you reach the first decision
+:::
+
+. . .
+
+This "backward induction" or "folding back" procedure is the core algorithm for solving influence diagrams.
+
+
+## Multi-Stage Decisions
+
+The MNH program faces a **sequential** decision problem:
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;"><strong>Stage 1</strong><br>Run pilot?</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #F8A623;"><strong>Observe</strong><br>Pilot results</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;"><strong>Stage 2</strong><br>Scale up?</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;"><strong>Outcome</strong><br>Lives saved</div>
+</div>
+
+. . .
+
+::: {.incremental}
+- At Stage 1: Decide whether to run a pilot program ($2M, 6 months)
+- Observe: Pilot results (promising / mixed / negative)
+- At Stage 2: Decide whether to scale up the full program ($18M)
+- The value of the pilot depends on *how much it changes your decision*
+:::
+
+
+# The Value of Information {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">How much should we pay for better data?</span>
+
+
+## Expected Value of Perfect Information (EVPI)
+
+::: {.definition-box}
+**EVPI:** The maximum amount a decision-maker should pay to learn the true state of an uncertain variable before deciding.
+
+$$\text{EVPI} = EV(\text{with perfect info}) - EV(\text{without info})$$
+:::
+
+. . .
+
+**MNH Example: Should we learn the true attrition rate before investing?**
+
+Without info: Choose Option B (workforce training). EV = 1,920 lives.
+
+. . .
+
+With perfect info about attrition:
+
+| True Attrition | Best Decision | Lives Saved | P(scenario) |
+|---|---|---|---|
+| Low (0.35) | Workforce | 3,200 | 0.35 |
+| Medium (0.45) | Workforce | 1,600 | 0.45 |
+| High (0.20) | **CPAP** | **1,360** | 0.20 |
+
+$EV(\text{perfect info}) = 0.35 \times 3200 + 0.45 \times 1600 + 0.20 \times 1360 = 2,112$
+
+. . .
+
+$$\text{EVPI} = 2{,}112 - 1{,}920 = 192 \text{ lives (or } \sim\$2M \text{ equivalent)}$$
+
+
+## Expected Value of Sample Information (EVSI)
+
+::: {.definition-box}
+**EVSI:** The value of *imperfect* information from a test, pilot, or survey. Always: $0 \leq \text{EVSI} \leq \text{EVPI}$.
+:::
+
+. . .
+
+**MNH Example: Value of a pilot program**
+
+The pilot costs $2M and provides an imperfect signal about attrition:
+
+::: {.incremental}
+- If pilot shows "promising" → P(Low attrition) increases from 0.35 to 0.60
+- If pilot shows "mixed" → probabilities stay roughly the same
+- If pilot shows "negative" → P(High attrition) increases from 0.20 to 0.55
+:::
+
+. . .
+
+::: {.callout-box .green}
+**Decision Rule:** Run the pilot if EVSI > cost of pilot ($2M equivalent in lives).
+
+The pilot *changes your decision* only when it reveals high attrition (switching from workforce to CPAP). The EVSI is the expected gain from making this better-informed choice.
+:::
+
+
+# Observing vs. Intervening {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">The do-calculus and graph surgery</span>
+
+
+## The do-Operator
+
+::: {.definition-box}
+**do(X = x):** An intervention that *sets* variable X to value x, regardless of X's parents in the causal model. This is different from *observing* X = x.
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Observing** $P(Y \mid X = x)$
+
+- X takes value x *naturally*
+- All causal relationships intact
+- Confounders still active
+- "Among facilities that *happen to have* CPAP..."
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**Intervening** $P(Y \mid do(X = x))$
+
+- X is *forced* to value x
+- Incoming arrows to X are severed
+- Confounders blocked
+- "If we *give* a facility CPAP..."
+:::
+:::
+:::
+
+
+## Graph Surgery
+
+::: {.callout-box}
+**Graph Surgery:** To compute $P(Y \mid do(X=x))$, delete all arrows pointing *into* X in the DAG, then compute probabilities in the modified graph.
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+**Original DAG:**
+
+<table style="font-size: 0.5em; margin: 0 auto;">
+<tr><td style="text-align:center;"><div class="dag-node confounder">Resources</div></td></tr>
+<tr><td style="text-align:center;"><span class="dag-arrow">↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↓</span></td></tr>
+<tr>
+<td style="text-align:center;">
+<div class="dag-node treatment" style="display:inline-block;">CPAP</div>
+<span class="dag-arrow">→</span>
+<div class="dag-node outcome" style="display:inline-block;">NMR</div>
+</td>
+</tr>
+</table>
+
+$P(\text{NMR} \mid \text{CPAP})$ includes confounding
+:::
+
+::: {.col}
+**After Graph Surgery — do(CPAP):**
+
+<table style="font-size: 0.5em; margin: 0 auto;">
+<tr><td style="text-align:center;"><div class="dag-node confounder">Resources</div></td></tr>
+<tr><td style="text-align:center;"><span style="color:#ccc;">↓ (cut)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span class="dag-arrow">↓</span></td></tr>
+<tr>
+<td style="text-align:center;">
+<div class="dag-node treatment" style="display:inline-block;">CPAP</div>
+<span class="dag-arrow">→</span>
+<div class="dag-node outcome" style="display:inline-block;">NMR</div>
+</td>
+</tr>
+</table>
+
+$P(\text{NMR} \mid do(\text{CPAP}))$ isolates causal effect
+:::
+:::
+
+. . .
+
+::: {.callout-box .orange}
+After surgery, Resources no longer influences CPAP (we *set* it), so the confounder is blocked. The remaining path CPAP → NMR captures the true causal effect.
+:::
+
+
+# MNH Application: The CPAP vs. Workforce Decision {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">A full decision analysis for a large-scale MNH program</span>
+
+
+## The Decision Context
+
+::: {.callout-box}
+**Scenario:** The MNH program has a budget tranche to allocate in a new target country. The program leadership must choose between two strategies:
+
+- **Strategy A:** Deploy CPAP machines and PPH bundles across 15 hospitals
+- **Strategy B:** Train and deploy 200 nurse-midwives across the same hospitals
+- **Strategy C:** Split — half CPAP + half workforce
+
+Which strategy maximizes expected lives saved?
+:::
+
+
+## Building the Influence Diagram
+
+<table style="width: 95%; margin: 0.4em auto; font-size: 0.45em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect">Strategy<br>Choice</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow">→</span></td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node">Equipment<br>Availability</div>
+</td>
+<td rowspan="3" style="text-align: center;"><span class="dag-arrow" style="font-size: 2em;">→</span></td>
+<td rowspan="3" style="text-align: center; padding: 0.5em;">
+<div class="dag-node">Quality<br>of Care</div>
+</td>
+<td rowspan="3" style="text-align: center;"><span class="dag-arrow" style="font-size: 2em;">→</span></td>
+<td rowspan="3" style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon" style="border-color: #3E9B6E; color: #3E9B6E;">Lives<br>Saved</div>
+</td>
+</tr>
+<tr>
+<td style="text-align: center; padding: 0.5em;"></td>
+<td style="text-align: center;"><span class="dag-arrow">→</span></td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node">Staffing<br>Adequacy</div>
+</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node confounder">Gov't Co-<br>financing</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+**Uncertain variable:** Government co-financing commitment
+
+- High co-financing (P = 0.40): Government absorbs staff, maintains equipment
+- Low co-financing (P = 0.60): Sustainability at risk
+
+
+## Expected Value Analysis
+
+| Strategy | Gov't Support | P | Lives Saved | Weighted |
+|---|---|---|---|---|
+| **A: CPAP Only** | High | 0.40 | 2,800 | 1,120 |
+| | Low | 0.60 | 1,200 | 720 |
+| | **Total EV** | | | **1,840** |
+| **B: Workforce** | High | 0.40 | 3,600 | 1,440 |
+| | Low | 0.60 | 1,000 | 600 |
+| | **Total EV** | | | **2,040** |
+| **C: Split** | High | 0.40 | 3,100 | 1,240 |
+| | Low | 0.60 | 1,400 | 840 |
+| | **Total EV** | | | **2,080** |
+
+. . .
+
+::: {.key-takeaway}
+**Strategy C (Split) has the highest expected value** at 2,080 lives. It also has the **lowest variance** — performing reasonably well under both co-financing scenarios. Diversification reduces risk.
+:::
+
+
+## Sensitivity Analysis
+
+**At what probability of high co-financing does Strategy B overtake Strategy C?**
+
+. . .
+
+Let $p$ = P(High co-financing):
+
+- $EV(B) = 3600p + 1000(1-p) = 1000 + 2600p$
+- $EV(C) = 3100p + 1400(1-p) = 1400 + 1700p$
+
+Setting equal: $1000 + 2600p = 1400 + 1700p$ → $p = 0.44$
+
+. . .
+
+::: {.callout-box .green}
+**If P(High co-financing) > 0.44**, Strategy B (Workforce Only) becomes optimal. The program leadership should focus its advocacy efforts on securing government co-financing commitments — this changes the optimal strategy.
+:::
+
+
+# R Workshop: Decision Analysis {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Expected value, EVPI, and graph surgery in R</span>
+
+
+## R: Expected Value Calculation
+
+```{r}
+#| label: expected-value
+#| echo: true
+
+# Define the decision problem
+strategies <- data.frame(
+  strategy = rep(c("CPAP Only", "Workforce", "Split"), each = 2),
+  gov_support = rep(c("High", "Low"), 3),
+  probability = rep(c(0.40, 0.60), 3),
+  lives_saved = c(2800, 1200,   # CPAP
+                  3600, 1000,    # Workforce
+                  3100, 1400)    # Split
+)
+
+# Compute expected value per strategy
+library(dplyr)
+ev_table <- strategies %>%
+  group_by(strategy) %>%
+  summarise(
+    expected_lives = sum(probability * lives_saved),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(expected_lives))
+
+ev_table
+# Split: 2080, Workforce: 2040, CPAP: 1840
+```
+
+
+## R: EVPI Calculation
+
+```{r}
+#| label: evpi
+#| echo: true
+
+# EVPI = E[max value per scenario] - max E[value]
+
+# Best decision in each scenario
+best_per_scenario <- strategies %>%
+  group_by(gov_support) %>%
+  slice_max(lives_saved) %>%
+  ungroup()
+
+# Expected value with perfect information
+ev_perfect <- sum(best_per_scenario$probability *
+                  best_per_scenario$lives_saved)
+
+# Expected value without information (best overall strategy)
+ev_no_info <- max(ev_table$expected_lives)
+
+# EVPI
+evpi <- ev_perfect - ev_no_info
+cat("EV with perfect info:", ev_perfect, "\n")
+cat("EV without info:", ev_no_info, "\n")
+cat("EVPI:", evpi, "lives\n")
+# EVPI tells us the maximum value of learning government intentions
+```
+
+
+## R: Sensitivity Analysis Visualization
+
+```{r}
+#| label: sensitivity
+#| echo: true
+#| fig-width: 9
+#| fig-height: 5
+
+library(ggplot2)
+
+# Vary P(High co-financing) from 0 to 1
+p_seq <- seq(0, 1, by = 0.01)
+sensitivity <- data.frame(
+  p = rep(p_seq, 3),
+  strategy = rep(c("CPAP Only", "Workforce", "Split"),
+                 each = length(p_seq)),
+  ev = c(1200 + 1600 * p_seq,   # CPAP
+         1000 + 2600 * p_seq,    # Workforce
+         1400 + 1700 * p_seq)    # Split
+)
+
+ggplot(sensitivity, aes(x = p, y = ev, color = strategy)) +
+  geom_line(size = 1.2) +
+  geom_vline(xintercept = 0.40, linetype = "dashed", alpha = 0.5) +
+  scale_color_manual(values = c("#005CB9", "#83BD00", "#FA7650")) +
+  labs(x = "P(High Government Co-financing)",
+       y = "Expected Lives Saved",
+       title = "Sensitivity Analysis: Strategy Choice",
+       subtitle = "Dashed line = current estimate (p = 0.40)") +
+  theme_minimal(base_size = 14)
+```
+
+
+## R: Graph Surgery with bnlearn
+
+```{r}
+#| label: graph-surgery
+#| echo: true
+
+library(bnlearn)
+
+# Original model (with confounding)
+original <- model2network(
+  "[Resources][CPAP|Resources][NMR|CPAP:Resources]"
+)
+
+# After graph surgery: do(CPAP) — remove Resources -> CPAP
+intervened <- model2network(
+  "[Resources][CPAP][NMR|CPAP:Resources]"
+)
+
+# The key difference:
+# In 'original': P(NMR | CPAP=Yes) includes confounding via Resources
+# In 'intervened': P(NMR | CPAP=Yes) is the true causal effect
+
+# With fitted CPTs, you would query:
+# cpquery(fit_original, (NMR == "Low"), (CPAP == "Yes"))
+# cpquery(fit_intervened, (NMR == "Low"), (CPAP == "Yes"))
+# The second query gives the causal effect
+```
+
+
+## R: Tornado Diagram
+
+```{r}
+#| label: tornado
+#| echo: true
+#| fig-width: 9
+#| fig-height: 5
+
+# Sensitivity of Split strategy to each parameter
+params <- data.frame(
+  parameter = c("P(Gov High)", "Lives if High",
+                "Lives if Low", "Cost ($M)"),
+  low_ev  = c(1840, 1960, 1960, 2080),
+  base_ev = c(2080, 2080, 2080, 2080),
+  high_ev = c(2320, 2200, 2200, 2080)
+)
+
+params$swing <- params$high_ev - params$low_ev
+params <- params[order(params$swing, decreasing = TRUE), ]
+params$parameter <- factor(params$parameter,
+                           levels = rev(params$parameter))
+
+ggplot(params, aes(y = parameter)) +
+  geom_segment(aes(x = low_ev, xend = high_ev,
+                   yend = parameter),
+               size = 8, color = "#005CB9", alpha = 0.7) +
+  geom_vline(xintercept = 2080, linetype = "dashed") +
+  labs(x = "Expected Lives Saved", y = "",
+       title = "Tornado Diagram: Sensitivity of Split Strategy") +
+  theme_minimal(base_size = 14)
+```
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Influence diagrams** extend causal models with decisions and objectives, enabling optimal intervention analysis.
+
+**Expected value** provides a principled way to compare interventions under uncertainty. **EVPI** tells us the maximum value of better information.
+
+**Observing ≠ Intervening.** The do-operator and graph surgery isolate true causal effects from confounded associations.
+
+**Diversification** (splitting investment) can reduce risk and increase expected value when facing uncertainty.
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 8 — MNH Resource Allocation Under Uncertainty**
+
+We'll apply decision analysis to a full multi-country MNH program:
+
+- Allocating pooled funding across multiple countries
+- Sequential decisions: pilot → scale-up
+- Government co-financing uncertainty
+- The value of waiting vs. the cost of delay
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[Inference and Intervention | Chapter 7: Single-Agent Interventions]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

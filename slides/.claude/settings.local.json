@@ -9,7 +9,19 @@
       "Bash(powershell:*)",
       "Bash(copy \"BKA Slides Template_vFinal.pptx\" \"template.zip\")",
       "Bash(quarto:*)",
-      "Bash(pdftotext:*)"
+      "Bash(pdftotext:*)",
+      "Bash(python -m pip install:*)",
+      "Bash(python -X utf8 -c:*)",
+      "Bash(git -C \"c:\\\\Users\\\\HP\\\\Desktop\\\\Parking Lot\\\\1 Frequently Used\\\\Web Projects\\\\bk-github\\\\claude-code-projects\\\\slides\" log --oneline -10)",
+      "Bash(git -C \"c:\\\\Users\\\\HP\\\\Desktop\\\\Parking Lot\\\\1 Frequently Used\\\\Web Projects\\\\bk-github\\\\claude-code-projects\\\\slides\" show HEAD:\".gitignore\")",
+      "Bash(for dir in inference-and-intervention/ch01-intro inference-and-intervention/ch02-qualitative-models inference-and-intervention/ch03-interview-case inference-and-intervention/ch04-quantitative-models inference-and-intervention/ch05-situational-analysis inference-and-intervention/ch06-business-financials inference-and-intervention/ch07-single-agent inference-and-intervention/ch08-resource-allocation inference-and-intervention/ch09-multi-agent inference-and-intervention/ch10-data-driven)",
+      "Bash(do cp \"slide-master/BKA_Enhanced_Logo_Apr2025.png\" \"$dir/bka-logo.png\")",
+      "Bash(for:*)",
+      "Bash(do cp ch01-intro/custom.scss \"$dir/custom.scss\")",
+      "Bash(findstr:*)",
+      "Bash(find:*)",
+      "Bash(git -C \"c:/Users/HP/Desktop/Parking Lot/1 Frequently Used/Web Projects/bk-github/claude-code-projects/slides\" show HEAD:.gitignore)",
+      "Bash(git diff:*)"
     ]
   }
 }

@@ -1,0 +1,286 @@
+---
+title: "Chapter 5: Situational Analysis"
+subtitle: "Belief updating, diagnostic inference, and explaining away"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Compute **marginal probabilities** by summing out variables from joint distributions
+- **Update beliefs with evidence** using Bayes' rule and conditional probability
+- Perform **inference in serial, diverging, and converging structures** and explain how information flows differently in each
+- Apply the **explaining away** phenomenon in converging structures -- the most counterintuitive result in causal reasoning
+- Conduct a full **district diagnosis** using Bayesian inference on an MNH causal model
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### Situational Analysis
+
+The process of observing outcomes and using a quantitative causal model to infer the most likely state of unobserved causes. Where Chapter 4 ran the model "forward" (given causes, predict effects), situational analysis runs the model "backward" (given effects, infer causes). This backward reasoning -- from children to parents -- is the heart of diagnostic decision-making.
+:::
+
+::: {.key-concept .green}
+#### Marginal Probability
+
+The probability of a variable computed by summing out (marginalizing over) all other variables in the joint distribution. It tells us the overall likelihood of an event, averaging across all possible parent combinations weighted by how likely each is. For example, the marginal P(NMR=High) answers: "What is the overall probability that a randomly selected district has high neonatal mortality?" -- before any district-specific evidence.
+:::
+
+::: {.key-concept .orange}
+#### Explaining Away
+
+The most counterintuitive phenomenon in causal reasoning. In a converging structure (A -> B <- C), when two independent causes compete to explain the same effect, confirming one cause makes the other less likely and disconfirming one makes the other more likely. For example, if a district has good workforce quality despite low staffing, equipment availability must be high -- equipment "explains away" what staffing cannot. This only happens when we condition on the common effect (the collider).
+:::
+
+::: {.key-concept .red}
+#### Information Flow Across Structures
+
+The three triplet structures determine how evidence propagates through the model. In **serial chains** (A -> B -> C), observing B blocks information flow from A to C. In **diverging forks** (A <- B -> C), observing the common cause B blocks the spurious correlation between A and C. In **converging colliders** (A -> B <- C), the path is naturally blocked but observing B *opens* it, creating dependence between the previously independent causes. These rules scale to full graphs via d-separation.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch05-situational-analysis/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch05-situational-analysis/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This chapter implements Bayesian inference in R using `bnlearn` and `gRain`, demonstrating how to build a network with CPTs, query it with evidence, compare prior vs. posterior beliefs, and run a full district diagnostic workflow.
+
+### Build a Bayesian Network with CPTs
+
+We construct a 5-node Bayesian network (Staffing, Equipment, Training, Quality, NMR) with CPTs calibrated to MNH program data. The Quality node has an 8-row CPT reflecting all combinations of its three parents.
+
+```{r}
+#| label: bn-build
+#| echo: true
+
+library(bnlearn)
+library(gRain)
+
+# Define the DAG structure
+dag <- model2network("[Staffing][Equipment][Training][Quality|Staffing:Equipment:Training][NMR|Quality]")
+
+# Define CPTs
+cpt_s <- matrix(c(0.40, 0.60), ncol = 2,
+                dimnames = list(NULL, c("Adequate", "Low")))
+
+cpt_e <- matrix(c(0.35, 0.65), ncol = 2,
+                dimnames = list(NULL, c("Available", "Unavailable")))
+
+cpt_t <- matrix(c(0.50, 0.50), ncol = 2,
+                dimnames = list(NULL, c("Completed", "Not_Completed")))
+
+# Quality CPT: P(Quality | Staffing, Equipment, Training)
+cpt_q <- array(
+  c(0.95, 0.05,  # S=Adeq, E=Avail, T=Comp
+    0.80, 0.20,  # S=Adeq, E=Avail, T=Not
+    0.65, 0.35,  # S=Adeq, E=Unavail, T=Comp
+    0.45, 0.55,  # S=Adeq, E=Unavail, T=Not
+    0.55, 0.45,  # S=Low, E=Avail, T=Comp
+    0.35, 0.65,  # S=Low, E=Avail, T=Not
+    0.20, 0.80,  # S=Low, E=Unavail, T=Comp
+    0.08, 0.92), # S=Low, E=Unavail, T=Not
+  dim = c(2, 2, 2, 2),
+  dimnames = list(Quality = c("Good", "Poor"),
+                  Staffing = c("Adequate", "Low"),
+                  Equipment = c("Available", "Unavailable"),
+                  Training = c("Completed", "Not_Completed")))
+
+# NMR CPT: P(NMR | Quality)
+cpt_nmr <- matrix(c(0.85, 0.15, 0.30, 0.70), ncol = 2,
+                  dimnames = list(NMR = c("Low", "High"),
+                                  Quality = c("Good", "Poor")))
+
+# Fit the BN with custom CPTs
+bn_fit <- custom.fit(dag, list(
+  Staffing = cpt_s, Equipment = cpt_e, Training = cpt_t,
+  Quality = cpt_q, NMR = cpt_nmr))
+```
+
+### Query with Evidence
+
+The `cpquery()` function uses likelihood weighting to estimate conditional probabilities. We demonstrate marginal queries (no evidence), forward queries (evidence on root nodes), and backward queries (evidence on outcome nodes -- the core of situational analysis).
+
+```{r}
+#| label: bn-query
+#| echo: true
+
+# --- Marginal probability (no evidence) ---
+cpquery(bn_fit,
+        event = (NMR == "High"),
+        evidence = TRUE,
+        n = 1e6)
+# ≈ 0.455
+
+# --- Posterior with evidence: NMR is High ---
+# What is P(Staffing = Low | NMR = High)?
+cpquery(bn_fit,
+        event = (Staffing == "Low"),
+        evidence = (NMR == "High"),
+        n = 1e6)
+# ≈ 0.71
+
+# --- Evidence on a root node ---
+# What is P(NMR = High | Staffing = Low)?
+cpquery(bn_fit,
+        event = (NMR == "High"),
+        evidence = (Staffing == "Low"),
+        n = 1e6)
+# ≈ 0.55
+
+# --- Multiple pieces of evidence ---
+# P(NMR = High | Staffing = Low, Equipment = Unavailable)
+cpquery(bn_fit,
+        event = (NMR == "High"),
+        evidence = (Staffing == "Low" & Equipment == "Unavailable"),
+        n = 1e6)
+# ≈ 0.63
+```
+
+### Compare Posterior vs. Prior
+
+This block computes posterior probabilities for all root nodes given an NMR observation, allowing us to see which causes shift the most and therefore carry the strongest diagnostic signal.
+
+```{r}
+#| label: bn-compare
+#| echo: true
+
+# Function to compute posteriors for all root nodes given NMR evidence
+compute_posteriors <- function(bn, nmr_state, n_samples = 1e6) {
+  data.frame(
+    Variable = c("Staffing=Low", "Equipment=Unavail", "Training=Not_Comp"),
+    Prior = c(0.60, 0.65, 0.50),
+    Posterior = c(
+      cpquery(bn, (Staffing == "Low"), (NMR == nmr_state), n = n_samples),
+      cpquery(bn, (Equipment == "Unavailable"), (NMR == nmr_state), n = n_samples),
+      cpquery(bn, (Training == "Not_Completed"), (NMR == nmr_state), n = n_samples)
+    )
+  )
+}
+
+# Posteriors given NMR=High (District Mwanga)
+post_high <- compute_posteriors(bn_fit, "High")
+post_high$Shift <- post_high$Posterior - post_high$Prior
+print(post_high)
+
+# Posteriors given NMR=Low (District Songea)
+post_low <- compute_posteriors(bn_fit, "Low")
+post_low$Shift <- post_low$Posterior - post_low$Prior
+print(post_low)
+```
+
+### Visualize Belief Updating
+
+A grouped bar chart comparing prior and posterior probabilities makes the belief shifts visually clear. All "bad" states become more likely after observing high mortality.
+
+```{r}
+#| label: bn-viz
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+library(ggplot2)
+library(tidyr)
+
+# Combine prior and posterior into tidy format
+viz_data <- data.frame(
+  Variable = rep(c("Staffing\n(Low)", "Equipment\n(Unavail)", "Training\n(Not Comp)"), 2),
+  Condition = rep(c("Prior", "Posterior\n(NMR=High)"), each = 3),
+  Probability = c(
+    0.60, 0.65, 0.50,          # Priors
+    0.710, 0.738, 0.573         # Posteriors given NMR=High
+  )
+)
+viz_data$Condition <- factor(viz_data$Condition,
+                              levels = c("Prior", "Posterior\n(NMR=High)"))
+
+ggplot(viz_data, aes(x = Variable, y = Probability, fill = Condition)) +
+  geom_col(position = "dodge", width = 0.6) +
+  geom_text(aes(label = sprintf("%.1f%%", Probability * 100)),
+            position = position_dodge(width = 0.6), vjust = -0.3, size = 4) +
+  scale_fill_manual(values = c("Prior" = "#00A1DF", "Posterior\n(NMR=High)" = "#E24A3F"),
+                    name = "") +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  labs(title = "Belief Updating: Prior vs. Posterior Given NMR = High",
+       subtitle = "All 'bad' states become more likely after observing high mortality",
+       x = NULL, y = "Probability") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top",
+        plot.title = element_text(color = "#005CB9", face = "bold"))
+```
+
+### Full District Diagnosis Workflow
+
+This reusable function accepts a fitted Bayesian network and a list of evidence, then computes posterior probabilities for all root nodes and ranks them by the magnitude of their belief shift. This is the complete diagnostic workflow for a district assessment.
+
+```{r}
+#| label: bn-diagnosis
+#| echo: true
+
+# ---- Full diagnosis workflow for a district ----
+
+diagnose_district <- function(bn, evidence_list, n_samples = 1e6) {
+  # Build evidence string
+  ev_expr <- paste(names(evidence_list), "==",
+                   paste0('"', evidence_list, '"'), collapse = " & ")
+
+  # Query each root node
+  results <- data.frame(
+    Node = c("Staffing", "Equipment", "Training"),
+    Bad_State = c("Low", "Unavailable", "Not_Completed"),
+    Prior = c(0.60, 0.65, 0.50)
+  )
+
+  results$Posterior <- sapply(1:nrow(results), function(i) {
+    cpquery(bn,
+            event = eval(parse(text = paste0(results$Node[i], ' == "',
+                                              results$Bad_State[i], '"'))),
+            evidence = eval(parse(text = ev_expr)),
+            n = n_samples)
+  })
+
+  results$Shift <- results$Posterior - results$Prior
+  results$Priority <- rank(-abs(results$Shift))
+  results[order(results$Priority), ]
+}
+
+# Diagnose District Mwanga (NMR=High)
+cat("=== District Mwanga Diagnosis ===\n")
+mwanga <- diagnose_district(bn_fit, list(NMR = "High"))
+print(mwanga)
+
+# Diagnose with additional evidence (NMR=High, Quality=Poor)
+cat("\n=== With additional evidence: Quality=Poor ===\n")
+mwanga_deep <- diagnose_district(bn_fit,
+                                  list(NMR = "High", Quality = "Poor"))
+print(mwanga_deep)
+```
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Marginal probabilities** tell us baseline expectations. The marginal P(NMR=High) = 45.5% is the starting point before any district-specific evidence.
+
+**Evidence updates beliefs via Bayes' rule.** Observing NMR=High shifts all root causes toward their "bad" states -- with staffing showing the largest shift.
+
+**The three structures determine information flow:** serial and diverging chains are blocked by conditioning on the middle node; converging chains are *activated* by it.
+
+**Explaining away is the most counterintuitive phenomenon.** In a collider, observing the common effect makes independent causes compete -- confirming one reduces belief in the other.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 6 -- Simpson's Paradox and Cost-Effectiveness**, we apply inference to a critical problem:
+
+- **Simpson's Paradox** -- when aggregate data reverses the true causal effect
+- How conditioning on the wrong variable produces misleading cost-effectiveness estimates
+- Why program evaluation in MNH requires causal reasoning, not just data analysis
+- Practical implications for how large MNH programs evaluate their country portfolios

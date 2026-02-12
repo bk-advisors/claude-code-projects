@@ -1,0 +1,1340 @@
+---
+title: "Chapter 2: Qualitative Causal Models"
+subtitle: "Inference and Intervention | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Identify the **four types of nodes** in a causal model and when each is used
+- Assign **signed directed links** ([+]/[-]) to represent qualitative causal relationships
+- Construct **conditional certainty tables** for non-monotonic relationships
+- Recognize the three fundamental **triplet structures**: serial (chain), diverging (fork), converging (collider)
+- Apply **d-separation** criteria to determine when information flows between variables
+- Build a complete **qualitative DAG** for an MNH program's investment model
+:::
+
+
+# From Intuition to Structure {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Why writing down causal beliefs matters</span>
+
+
+## The Problem with Mental Models
+
+Every manager carries **implicit causal beliefs** about how the world works.
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box .red}
+**Implicit Models**
+
+- Vague and inconsistent
+- Resistant to scrutiny
+- Hidden assumptions
+- Two people can disagree without realizing *why*
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**Explicit Models (DAGs)**
+
+- Precise and shareable
+- Open to critique and testing
+- Assumptions are visible
+- Disagreements become *productive*
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box}
+**Core Principle:** A qualitative causal model is a disciplined way of writing down what you believe about how variables in a system relate to one another — before you add any numbers.
+:::
+
+
+## From Whiteboard Sketch to Formal DAG
+
+The process of building a qualitative model:
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;">Identify<br>Variables</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">Classify<br>Node Types</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">Draw<br>Arrows</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #F8A623;">Assign<br>Signs</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">Validate<br>Structure</div>
+</div>
+
+. . .
+
+::: {.example-block}
+[MNH Example]{.example-label}
+
+A program director might say: "I think training midwives improves quality of care, and better quality reduces mortality." This becomes the chain: **Training → Quality → Mortality** with signs [+] and [-].
+:::
+
+. . .
+
+The rest of this chapter teaches you the formal vocabulary and rules for each step.
+
+
+# Nodes {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">The four building blocks of causal diagrams</span>
+
+
+## Node Type 1: Probabilistic Nodes (Ovals)
+
+::: {.definition-box}
+**Probabilistic Node (Oval):** A variable whose state is uncertain and determined by nature or context — not by any agent's deliberate choice. Represented as an **oval** (or circle) in the diagram.
+:::
+
+. . .
+
+::: {.example-block}
+[MNH Examples]{.example-label}
+
+- **Neonatal Mortality Rate (NMR):** States = {High (>25/1000), Low (<=25/1000)}
+- **Baseline Disease Burden:** States = {Severe, Moderate, Low}
+- **Workforce Quality:** States = {Competent, Developing, Inadequate}
+:::
+
+. . .
+
+<table style="width: 60%; margin: 0.3em auto; font-size: 0.6em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node outcome" style="padding: 0.5em 1em;">NMR<br><span style="font-size: 0.7em; font-weight: 400;">{High, Low}</span></div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node" style="padding: 0.5em 1em;">Workforce<br>Quality<br><span style="font-size: 0.7em; font-weight: 400;">{Competent, Developing, Inadequate}</span></div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node confounder" style="padding: 0.5em 1em;">Disease<br>Burden<br><span style="font-size: 0.7em; font-weight: 400;">{Severe, Moderate, Low}</span></div>
+</td>
+</tr>
+</table>
+
+::: {.callout-box}
+**Key rule:** Each probabilistic node must have **MECE states** — Mutually Exclusive and Collectively Exhaustive. The variable must be in exactly one state at any given time.
+:::
+
+
+## Node Type 2: Objective Nodes (Hexagons)
+
+::: {.definition-box}
+**Objective Node (Hexagon):** A variable representing a goal or performance metric that a decision-maker is trying to optimize. Represented as a **hexagon**. Objective nodes are always leaf nodes — nothing flows out of them.
+:::
+
+. . .
+
+::: {.example-block}
+[MNH Examples]{.example-label}
+
+- **Lives Saved:** The program's ultimate objective — saving hundreds of thousands of lives over the program period
+- **Maternal Mortality Ratio (MMR):** Measured in deaths per 100,000 live births
+- **Cost-Effectiveness:** Lives saved per dollar invested
+:::
+
+. . .
+
+<table style="width: 55%; margin: 0.3em auto; font-size: 0.6em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon outcome" style="padding: 0.5em 1em; border-style: double;">Lives<br>Saved</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon outcome" style="padding: 0.5em 1em; border-style: double;">MMR</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon outcome" style="padding: 0.5em 1em; border-style: double;">Cost-<br>Effectiveness</div>
+</td>
+</tr>
+</table>
+
+::: {.callout-box}
+Objective nodes sit at the end of causal chains. They receive arrows but never send them. They answer: **What are we ultimately trying to affect?**
+:::
+
+
+## Node Type 3: Strategic Option Nodes (Rectangles)
+
+::: {.definition-box}
+**Strategic Option Node (Rectangle):** A variable representing a deliberate choice made by a decision-maker. The states are the available options. Represented as a **rectangle**.
+:::
+
+. . .
+
+::: {.example-block}
+[MNH Examples]{.example-label}
+
+- **Budget Allocation:** States = {People-heavy, Products-heavy, Systems-heavy, Balanced}
+- **Training Investment:** States = {Fund, Don't Fund}
+- **Equipment Procurement:** States = {CPAP, PPH Bundle, Ultrasound, Combination}
+:::
+
+. . .
+
+<table style="width: 70%; margin: 0.3em auto; font-size: 0.6em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="padding: 0.5em 1em;">Budget<br>Allocation<br><span style="font-size: 0.7em; font-weight: 400;">{People, Products, Systems, Balanced}</span></div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="padding: 0.5em 1em;">Training<br>Investment<br><span style="font-size: 0.7em; font-weight: 400;">{Fund, Don't Fund}</span></div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="padding: 0.5em 1em;">Equipment<br>Procurement<br><span style="font-size: 0.7em; font-weight: 400;">{CPAP, PPH, Ultrasound, Combo}</span></div>
+</td>
+</tr>
+</table>
+
+::: {.callout-box}
+Strategic option nodes are the **levers** that the MNH program controls. These are root nodes — no causal arrows point into them (except informational links).
+:::
+
+
+## Node Type 4: Function Nodes (Chevrons)
+
+::: {.definition-box}
+**Function Node (Chevron):** A variable whose state is **deterministically determined** by its parents — there is no residual uncertainty. Represented as a **chevron** (or pointed rectangle). If you know all parent states, you know this node's state with certainty.
+:::
+
+. . .
+
+::: {.example-block}
+[MNH Examples]{.example-label}
+
+- **Total Budget Spent** = Workforce spending + Equipment spending + Systems spending (a simple sum)
+- **Coverage Rate** = Facilities equipped / Total facilities (a deterministic ratio)
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+**Probabilistic Node**
+
+Parent states → probability distribution over child states (uncertainty remains)
+:::
+::: {.col}
+**Function Node**
+
+Parent states → exactly one child state (no uncertainty)
+:::
+:::
+
+. . .
+
+::: {.callout-box}
+Function nodes are rare in qualitative models but become important in quantitative models (Ch 4) where they represent accounting identities, formulas, or physical laws.
+:::
+
+
+# Directed Links {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Arrows, signs, and the language of causation</span>
+
+
+## Causal Links with Signs
+
+::: {.definition-box}
+**Directed Link (Arrow):** An arrow from node A to node B means that A is a **direct cause** of B — changing A can change B (holding all other parents of B fixed). The sign **[+]** or **[-]** indicates the direction of effect.
+:::
+
+. . .
+
+| Sign | Meaning | Example |
+|---|---|---|
+| **[+]** | Increasing A increases B (or being in "good" state of A makes "good" state of B more likely) | Training [+] → Quality |
+| **[-]** | Increasing A decreases B (or being in "good" state of A makes "bad" state of B less likely) | Quality [-] → Mortality |
+| **[0]** | A has no effect on B in this combination (used in conditional certainty tables) | — |
+
+. . .
+
+<table style="width: 70%; margin: 0.3em auto; font-size: 0.6em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect">Training<br>Investment</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<span class="dag-arrow positive" style="font-size: 1.8em;">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node">Workforce<br>Quality</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<span class="dag-arrow negative" style="font-size: 1.8em;">→ [-]</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node outcome">Neonatal<br>Mortality</div>
+</td>
+</tr>
+</table>
+
+
+## Parent, Child, and Directed Paths
+
+::: {.definition-box}
+**Parent** — a node at the tail of an arrow. **Child** — a node at the head. A **directed path** is a sequence of arrows all pointing in the same direction from an ancestor to a descendant.
+:::
+
+. . .
+
+<table style="width: 85%; margin: 0.3em auto; font-size: 0.55em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect">Budget<br><span style="font-size: 0.8em; color: #666;">(Root)</span></div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow positive">→ [+]</span></td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node treatment">Training<br><span style="font-size: 0.8em; color: #666;">(Child of Budget)</span></div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow positive">→ [+]</span></td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node">Quality<br><span style="font-size: 0.8em; color: #666;">(Grandchild)</span></div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow negative">→ [-]</span></td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node outcome">NMR<br><span style="font-size: 0.8em; color: #666;">(Leaf)</span></div>
+</td>
+</tr>
+</table>
+
+. . .
+
+::: {.incremental}
+- **Root nodes** have no parents — they are exogenous (Budget, Baseline Burden)
+- **Leaf nodes** have no children — they are terminal outcomes (NMR, MMR)
+- The directed path Budget → Training → Quality → NMR has an **overall sign** of [+] x [+] x [-] = **[-]** (more budget leads to lower mortality)
+:::
+
+
+## Sign Multiplication Along Paths
+
+::: {.callout-box}
+**Sign Rule:** The overall sign of a directed path is the product of individual link signs, where [+] x [+] = [+], [-] x [-] = [+], and [+] x [-] = [-].
+:::
+
+. . .
+
+| Path | Link Signs | Overall Sign | Interpretation |
+|---|---|---|---|
+| Budget → Training → Quality → NMR | [+] x [+] x [-] | **[-]** | More budget reduces NMR |
+| Budget → Equipment → Quality → NMR | [+] x [+] x [-] | **[-]** | Same direction |
+| Disease Burden → Coverage → NMR | [-] x [-] | **[+]** | Higher burden → higher NMR |
+
+. . .
+
+::: {.callout-box .orange}
+**When multiple paths connect two nodes**, the overall effect is ambiguous if paths have different signs. This is one reason we need quantitative models (Ch 4) — qualitative signs alone cannot resolve conflicting path effects.
+:::
+
+
+## Informational Links into Decision Nodes
+
+::: {.definition-box}
+**Informational Link:** A dashed arrow pointing **into** a strategic option node. It represents information available to the decision-maker at the time of the decision — not a causal effect. The decision-maker *knows* the parent's state before choosing.
+:::
+
+. . .
+
+<table style="width: 75%; margin: 0.3em auto; font-size: 0.55em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node confounder">Baseline<br>NMR Data</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<span style="color: #F8A623; font-size: 1.6em;">- - →</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect">Budget<br>Allocation</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow positive" style="font-size: 1.4em;">→ [+]</span></td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node treatment">Workforce<br>Deployment</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+::: {.incremental}
+- The dashed arrow means the program **observes** NMR data before deciding how to allocate the budget
+- This is *not* the same as NMR *causing* the budget — it is an information flow
+- Informational links matter for **decision analysis** (Ch 7): they determine what you know when you decide
+:::
+
+
+# Conditional Certainty Tables {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">When [+] and [-] are not enough</span>
+
+
+## When Relationships Are Not Monotonic
+
+A single [+] or [-] sign assumes the relationship is **monotonic** — more of A always means more (or less) of B. But some causal relationships are more complex.
+
+. . .
+
+::: {.definition-box}
+**Conditional Certainty Table:** A table showing the qualitative sign ([+], [-], or [0]) of a child variable for each **combination** of parent states. Used when the effect of one parent depends on the state of another parent.
+:::
+
+. . .
+
+::: {.example-block}
+[MNH Example: Effect of CPAP Machines on NMR]{.example-label}
+
+The effect of CPAP depends on whether trained staff are available to operate them:
+:::
+
+| | **Staff Trained** | **Staff Not Trained** |
+|---|---|---|
+| **CPAP Available** | [-] (reduces NMR) | [0] (no effect — machines sit idle) |
+| **CPAP Unavailable** | [0] (training alone insufficient) | [0] (no intervention) |
+
+
+## Reading Conditional Certainty Tables
+
+::: {.callout-box}
+**How to read:** Each cell answers the question: "If this parent combination holds, what is the qualitative direction of effect on the child?"
+:::
+
+. . .
+
+A richer example — effect on **Quality of Care**:
+
+| | **Equipment Available** | **Equipment Unavailable** |
+|---|---|---|
+| **Staff Competent** | [+] strong positive | [+] moderate (skill compensates) |
+| **Staff Developing** | [+] moderate (equipment helps) | [0] weak or no effect |
+| **Staff Inadequate** | [0] equipment cannot compensate | [-] active harm risk |
+
+. . .
+
+::: {.callout-box .orange}
+**Key Insight:** Conditional certainty tables reveal **interaction effects** — situations where one input only works when combined with another. For MNH programs, this means **People + Products investments are complements, not substitutes.**
+:::
+
+
+# Serial Triplets (Chain) {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">A → B → C — information flows along the chain</span>
+
+
+## The Serial Triplet Structure
+
+::: {.definition-box}
+**Serial Triplet (Chain):** Three nodes connected as A → B → C. Node B is a **mediator** — it transmits the causal effect of A to C.
+:::
+
+. . .
+
+<table style="width: 70%; margin: 0.5em auto; font-size: 0.65em;">
+<tr>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node treatment" style="padding: 0.5em 1em;">A</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 2em;">→</span>
+</td>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node" style="padding: 0.5em 1em;">B</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 2em;">→</span>
+</td>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node outcome" style="padding: 0.5em 1em;">C</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+**Information flow rules:**
+
+::: {.incremental}
+- **Unconditionally:** Information flows from A to C through B. Learning about A tells you something about C.
+- **Conditioning on B blocks the flow.** If you *know* B's state, then learning A tells you nothing new about C.
+:::
+
+. . .
+
+::: {.callout-box}
+**Intuition:** If I know the mediator's exact value, the upstream cause becomes irrelevant for predicting the downstream effect.
+:::
+
+
+## MNH Example: Training → Competency → Mortality
+
+<table style="width: 80%; margin: 0.4em auto; font-size: 0.6em;">
+<tr>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node decision rect" style="padding: 0.5em 0.8em;">Training<br>Program<br><span style="font-size: 0.75em; font-weight: 400;">{Completed, Not}</span></div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 1.8em;">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node" style="padding: 0.5em 0.8em;">Staff<br>Competency<br><span style="font-size: 0.75em; font-weight: 400;">{Competent, Developing}</span></div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow negative" style="font-size: 1.8em;">→ [-]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node outcome" style="padding: 0.5em 0.8em;">Neonatal<br>Mortality<br><span style="font-size: 0.75em; font-weight: 400;">{High, Low}</span></div>
+</td>
+</tr>
+</table>
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box .green}
+**Not conditioning on Competency:**
+
+Training and Mortality are associated. We can predict lower mortality from knowing training was completed.
+:::
+:::
+
+::: {.col}
+::: {.callout-box .orange}
+**Conditioning on Competency:**
+
+If we *know* a midwife is competent, it no longer matters *how* she became competent (training vs. experience). The path is **blocked**.
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box}
+**For the program:** This tells us that training's value is entirely mediated through competency. If we can measure competency directly, we do not need training data to predict mortality.
+:::
+
+
+## Chain Summary
+
+| Condition | A and C associated? | Why? |
+|---|---|---|
+| **Not conditioning on B** | Yes | Information flows A → B → C |
+| **Conditioning on B** | No | Knowing B blocks the path |
+
+. . .
+
+::: {.example-block}
+[Think of it as a pipeline]{.example-label}
+
+Water flows from the reservoir (A) through the pipe (B) to the tap (C). If you close the valve at B (condition on it), nothing from A reaches C.
+:::
+
+
+# Diverging Triplets (Fork) {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">A ← B → C — the common cause structure</span>
+
+
+## The Diverging Triplet Structure
+
+::: {.definition-box}
+**Diverging Triplet (Fork):** Three nodes connected as A ← B → C. Node B is a **common cause** of both A and C. This creates a **spurious correlation** between A and C.
+:::
+
+. . .
+
+<table style="width: 70%; margin: 0.5em auto; font-size: 0.65em;">
+<tr>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node treatment" style="padding: 0.5em 1em;">A</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 2em;">←</span>
+</td>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node confounder" style="padding: 0.5em 1em;">B</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 2em;">→</span>
+</td>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node outcome" style="padding: 0.5em 1em;">C</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+**Information flow rules:**
+
+::: {.incremental}
+- **Unconditionally:** A and C appear correlated — but only because B drives both. This is **confounding**.
+- **Conditioning on B blocks the flow.** Once you know the common cause, A and C become independent.
+:::
+
+. . .
+
+::: {.callout-box}
+**Intuition:** Ice cream sales (A) and drowning deaths (C) are correlated — but the common cause is summer heat (B). Knowing the temperature eliminates the spurious link.
+:::
+
+
+## MNH Example: PPH Detection ← Workforce Quality → CPAP Usage
+
+<table style="width: 80%; margin: 0.4em auto; font-size: 0.6em;">
+<tr>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node" style="padding: 0.5em 0.8em;">PPH<br>Detection Rate<br><span style="font-size: 0.75em; font-weight: 400;">{High, Low}</span></div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 1.8em;">← [+]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node confounder" style="padding: 0.5em 0.8em;">Workforce<br>Quality<br><span style="font-size: 0.75em; font-weight: 400;">{Competent, Developing}</span></div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 1.8em;">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node" style="padding: 0.5em 0.8em;">Correct CPAP<br>Usage<br><span style="font-size: 0.75em; font-weight: 400;">{Proper, Improper}</span></div>
+</td>
+</tr>
+</table>
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box .red}
+**Naive observation:**
+
+Facilities with high PPH detection also have high CPAP usage. Does detecting PPH *cause* better CPAP use?
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**Causal reality:**
+
+Both are driven by **workforce quality**. Competent staff detect PPH *and* use CPAP correctly. Controlling for workforce quality eliminates the association.
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box}
+**For the program:** If we see a correlation between two program metrics, we must ask — is there a common driver? Investing in PPH protocols will not improve CPAP usage unless we address the underlying workforce quality.
+:::
+
+
+## Fork Summary
+
+| Condition | A and C associated? | Why? |
+|---|---|---|
+| **Not conditioning on B** | Yes | Common cause creates spurious correlation |
+| **Conditioning on B** | No | Controlling for common cause removes confounding |
+
+. . .
+
+::: {.callout-box .orange}
+**This is exactly the confounding trap from Chapter 1!** The fork structure is the formal representation of confounding. The solution is always: **condition on the common cause**.
+:::
+
+
+# Converging Triplets (Collider) {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">A → B ← C — the dangerous exception</span>
+
+
+## The Converging Triplet Structure
+
+::: {.definition-box}
+**Converging Triplet (Collider):** Three nodes connected as A → B ← C. Node B is a **collider** — two causal arrows "collide" at B. This structure behaves **opposite** to chains and forks.
+:::
+
+. . .
+
+<table style="width: 70%; margin: 0.5em auto; font-size: 0.65em;">
+<tr>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node treatment" style="padding: 0.5em 1em;">A</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 2em;">→</span>
+</td>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node" style="padding: 0.5em 1em; border-width: 3px;">B</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 2em;">←</span>
+</td>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node outcome" style="padding: 0.5em 1em;">C</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+**Information flow rules (REVERSED from chain and fork!):**
+
+::: {.incremental}
+- **Unconditionally:** A and C are **independent**. No information flows — the path is naturally **blocked** at the collider.
+- **Conditioning on B (or any descendant of B) OPENS the path.** A and C become associated — this is **collider bias**.
+:::
+
+. . .
+
+::: {.callout-box .red}
+**Warning:** Conditioning on a collider *creates* a spurious association that did not exist before. This is the opposite of what happens with chains and forks!
+:::
+
+
+## MNH Example: Staffing → Quality of Care ← Equipment
+
+<table style="width: 80%; margin: 0.4em auto; font-size: 0.6em;">
+<tr>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node treatment" style="padding: 0.5em 0.8em;">Staffing<br>Level<br><span style="font-size: 0.75em; font-weight: 400;">{Adequate, Low}</span></div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 1.8em;">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node" style="padding: 0.5em 0.8em; border-width: 3px;">Quality<br>of Care<br><span style="font-size: 0.75em; font-weight: 400;">{Good, Poor}</span></div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 1.8em;">← [+]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node treatment" style="padding: 0.5em 0.8em;">Equipment<br>Availability<br><span style="font-size: 0.75em; font-weight: 400;">{Available, Unavailable}</span></div>
+</td>
+</tr>
+</table>
+
+. . .
+
+::: {.example-block}
+[The "Explaining Away" Effect]{.example-label}
+
+Among facilities with **good** quality of care (conditioning on the collider), staffing and equipment become **negatively** associated: if quality is good *despite* low staffing, we infer equipment must be excellent — and vice versa. Each cause "explains away" the other.
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box .green}
+**Not conditioning on Quality:**
+
+Staffing and Equipment are independent (separate investment decisions).
+:::
+:::
+
+::: {.col}
+::: {.callout-box .red}
+**Conditioning on Quality = Good:**
+
+Among good-quality facilities: low staffing → must have good equipment. Creates a spurious *negative* association.
+:::
+:::
+:::
+
+
+## Collider Summary and the "Explain Away" Intuition
+
+| Condition | A and C associated? | Why? |
+|---|---|---|
+| **Not conditioning on B** | No | Path is blocked at the collider |
+| **Conditioning on B** | Yes | Collider bias — "explaining away" |
+
+. . .
+
+::: {.callout-box}
+**The "explain away" intuition:** Imagine you know a student passed an exam (collider). If you then learn the exam was easy, you revise *downward* your belief about the student's talent. The two causes compete to explain the common effect.
+:::
+
+. . .
+
+::: {.key-takeaway}
+**The Three Triplets — One Critical Table**
+
+| Structure | Unconditional | Conditional on middle |
+|---|---|---|
+| Chain: A → B → C | Associated | **Blocked** |
+| Fork: A ← B → C | Associated | **Blocked** |
+| Collider: A → B ← C | **Blocked** | Associated |
+:::
+
+
+# c-Independence and d-Separation {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Formal criteria for when information flows</span>
+
+
+## From Triplets to Full Graphs
+
+In a simple triplet, the rules are straightforward. But real DAGs have **many paths** between any two nodes, and each path may contain multiple triplet structures.
+
+. . .
+
+::: {.definition-box}
+**d-Separation (Directional Separation):** Two nodes X and Y are **d-separated** given a set of conditioning variables Z if **every** path between X and Y is **blocked**. If d-separated, X and Y are conditionally independent given Z.
+:::
+
+. . .
+
+A path between X and Y is **blocked** by conditioning set Z if the path contains:
+
+::: {.incremental}
+- A **chain** (A → B → C) or **fork** (A ← B → C) where the middle node B **is in** Z, OR
+- A **collider** (A → B ← C) where neither B nor any descendant of B **is in** Z
+:::
+
+
+## Applying d-Separation: An Example
+
+Consider this DAG:
+
+<table style="width: 90%; margin: 0.3em auto; font-size: 0.5em;">
+<tr>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node decision rect">Budget</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow positive">→</span></td>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node treatment">Training</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow positive">→</span></td>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node" style="border-width: 3px;">Quality</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow negative">→</span></td>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node outcome">NMR</div>
+</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td style="text-align: center;"><span class="dag-arrow positive">↑</span></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node treatment">Equipment</div>
+</td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+**Q: Is Training d-separated from NMR given Quality?**
+
+Path: Training → Quality → NMR
+
+Quality is in the conditioning set and is a **chain** middle node → **Blocked**.
+
+Answer: **Yes**, d-separated.
+:::
+
+::: {.col}
+**Q: Is Training d-separated from Equipment given Quality?**
+
+Path: Training → Quality ← Equipment
+
+Quality is a **collider** and is in the conditioning set → **Opened**.
+
+Answer: **No**, not d-separated.
+:::
+:::
+
+
+## d-Separation Decision Procedure
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;"><span class="step-number">1</span><br>List all paths<br>between X and Y</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;"><span class="step-number green">2</span><br>For each path, identify<br>every triplet structure</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;"><span class="step-number orange">3</span><br>Check if any triplet<br>blocks the path</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;"><span class="step-number teal">4</span><br>If ALL paths blocked:<br>d-separated</div>
+</div>
+
+. . .
+
+::: {.callout-box}
+**A path is blocked if it contains at least one:**
+
+- Chain or fork with middle node **in** the conditioning set, OR
+- Collider with middle node (and all its descendants) **not in** the conditioning set
+
+**d-Separation holds only if EVERY path is blocked.**
+:::
+
+. . .
+
+::: {.callout-box .green}
+**Why this matters:** d-Separation tells us which conditional independencies our causal model **implies**. These are testable predictions — if the data violates them, our model is wrong.
+:::
+
+
+# MNH Application: Full Qualitative DAG {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Building the MNH program's causal model</span>
+
+
+## Identifying the Variables
+
+Let's build a comprehensive qualitative DAG for the MNH program's theory of change with ~10 key nodes:
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+**Strategic Options (Rectangles)**
+
+- **Budget Allocation** {People, Products, Systems, Balanced}
+
+**Mediating Variables (Ovals)**
+
+- **Workforce** {Adequate, Low}
+- **Training** {Completed, Not}
+- **Equipment** {Available, Unavailable}
+- **Referral System** {Functional, Weak}
+- **Quality of Care** {Good, Poor}
+- **Coverage** {High, Low}
+:::
+
+::: {.col}
+**Contextual Variables (Ovals)**
+
+- **Baseline Burden** {Severe, Moderate, Low}
+
+**Objectives (Hexagons)**
+
+- **NMR** {High >25/1000, Low <=25/1000}
+- **MMR** {High, Low}
+:::
+:::
+
+
+## The Full DAG Structure
+
+<table style="width: 95%; margin: 0.2em auto; font-size: 0.45em;">
+<tr>
+<td colspan="7" style="text-align: center; padding: 0.3em;">
+<div class="dag-node confounder" style="padding: 0.3em 0.6em;">Baseline Burden</div>
+</td>
+</tr>
+<tr><td colspan="7" style="text-align: center; font-size: 1.2em; color: #F8A623;">↓ [+]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓ [+]</td></tr>
+<tr>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node decision rect" style="padding: 0.3em 0.6em;">Budget<br>Allocation</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow positive">→ [+]</span></td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node treatment" style="padding: 0.3em 0.5em; margin-bottom: 0.2em;">Workforce</div><br>
+<div class="dag-node treatment" style="padding: 0.3em 0.5em; margin-bottom: 0.2em;">Equipment</div><br>
+<div class="dag-node treatment" style="padding: 0.3em 0.5em;">Referral Sys</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow positive">→ [+]</span></td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node" style="padding: 0.3em 0.6em;">Quality<br>of Care</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow negative">→ [-]</span></td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node outcome hexagon" style="padding: 0.3em 0.6em; border-style: double;">NMR</div><br><br>
+<div class="dag-node outcome hexagon" style="padding: 0.3em 0.6em; border-style: double;">MMR</div>
+</td>
+</tr>
+<tr>
+<td></td>
+<td style="text-align: center;"><span class="dag-arrow positive">↘ [+]</span></td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node treatment" style="padding: 0.3em 0.5em;">Training</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow positive">→ [+]</span></td>
+<td style="text-align: center; font-size: 1em; color: #83BD00;">↑</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td style="text-align: center;"><span class="dag-arrow positive">↑ [+]</span></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node" style="padding: 0.3em 0.6em;">Coverage</div>
+</td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+
+## Assigning Signs to Every Link
+
+| Link | Sign | Rationale |
+|---|---|---|
+| Budget → Workforce | [+] | More funding enables hiring and retention |
+| Budget → Equipment | [+] | More funding procures CPAP, PPH bundles, ultrasound |
+| Budget → Referral System | [+] | More funding builds transport and data systems |
+| Budget → Training | [+] | More funding enables BEmONC/CEmONC training |
+| Training → Quality | [+] | Trained staff deliver higher quality care |
+| Workforce → Quality | [+] | Adequate staffing prevents burnout, enables protocols |
+| Equipment → Quality | [+] | Available tools enable evidence-based interventions |
+| Referral System → Coverage | [+] | Functional referrals increase service utilization |
+| Coverage → Quality | [+] | Higher coverage enables systematic quality improvement |
+| Quality → NMR | [-] | Better care reduces neonatal mortality |
+| Quality → MMR | [-] | Better care reduces maternal mortality |
+| Baseline Burden → NMR | [+] | Higher burden raises mortality (direct effect) |
+| Baseline Burden → MMR | [+] | Higher burden raises maternal mortality |
+
+
+## Identifying Triplets Within the Model
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box .green}
+**Serial (Chain) Examples**
+
+- Budget → Training → Quality
+- Referral System → Coverage → Quality
+- Budget → Workforce → Quality → NMR
+
+*Conditioning on the mediator blocks the path.*
+:::
+:::
+
+::: {.col}
+::: {.callout-box}
+**Diverging (Fork) Examples**
+
+- Workforce ← Budget → Equipment
+- NMR ← Quality → MMR
+- Training ← Budget → Referral System
+
+*Budget is a common cause. Conditioning on it blocks spurious correlations between its children.*
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box .red}
+**Converging (Collider) Examples**
+
+- Workforce → Quality ← Equipment
+- Training → Quality ← Equipment (via Training → Quality)
+- Coverage → Quality ← Workforce
+
+*Quality is a collider. Conditioning on Quality creates a spurious association between Workforce and Equipment ("explaining away").*
+:::
+
+
+## Testable Implications
+
+Our qualitative DAG implies specific **conditional independencies** that we can test against data:
+
+. . .
+
+::: {.incremental}
+- **Training ⊥ Equipment | Budget** — given budget allocation, training and equipment decisions are independent (fork structure)
+- **Workforce ⊥ Referral System | Budget** — same logic; both are children of budget
+- **Training ⊥ NMR | Quality** — given quality of care, training has no additional direct effect on NMR (chain structure)
+- **Workforce ⊥ Equipment | Quality** — conditioning on the collider *violates* this; they should be dependent!
+:::
+
+. . .
+
+::: {.key-takeaway}
+**If the data violates any implied independence, our model is wrong and must be revised.**
+
+This is how qualitative models generate testable predictions — even without numbers.
+:::
+
+
+# R Code Workshop {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Building and analyzing the MNH DAG in R</span>
+
+
+## R: Define the Full MNH DAG with dagitty
+
+```{r}
+#| label: mnh-dag-define
+#| echo: true
+
+library(dagitty)
+library(ggdag)
+library(ggplot2)
+
+# Define the comprehensive MNH qualitative DAG
+mnh_dag <- dagitty('dag {
+  Budget          [pos="0,1"]
+  Workforce       [pos="1.5,0"]
+  Training        [pos="1.5,1"]
+  Equipment       [pos="1.5,2"]
+  Referral_System [pos="1.5,3"]
+  Coverage        [pos="3,3"]
+  Quality         [pos="3,1"]
+  Baseline_Burden [pos="4,3"]
+  NMR             [pos="4.5,0.5"]
+  MMR             [pos="4.5,1.5"]
+
+  Budget -> Workforce
+  Budget -> Training
+  Budget -> Equipment
+  Budget -> Referral_System
+  Training -> Quality
+  Workforce -> Quality
+  Equipment -> Quality
+  Referral_System -> Coverage
+  Coverage -> Quality
+  Quality -> NMR
+  Quality -> MMR
+  Baseline_Burden -> NMR
+  Baseline_Burden -> MMR
+}')
+
+# Verify it is a valid DAG (acyclic)
+isAcyclic(mnh_dag)
+```
+
+
+## R: Visualize the DAG Color-Coded by Role
+
+```{r}
+#| label: mnh-dag-visualize
+#| echo: true
+#| fig-width: 11
+#| fig-height: 6
+
+# Create a tidy dag object with exposure and outcome
+tidy_dag <- tidy_dagitty(mnh_dag)
+
+# Define node roles for coloring
+node_roles <- data.frame(
+  name = c("Budget", "Workforce", "Training", "Equipment",
+           "Referral_System", "Coverage", "Quality",
+           "Baseline_Burden", "NMR", "MMR"),
+  role = c("Decision", "Mediator", "Mediator", "Mediator",
+           "Mediator", "Mediator", "Mediator",
+           "Context", "Outcome", "Outcome")
+)
+
+# Merge roles into the dag data
+dag_data <- left_join(as.data.frame(tidy_dag), node_roles,
+                      by = "name")
+
+ggdag(mnh_dag) +
+  theme_dag() +
+  labs(title = "MNH Program: Qualitative Causal Model",
+       subtitle = "10-node DAG for MNH investment decisions") +
+  theme(plot.title = element_text(color = "#005CB9", size = 16),
+        plot.subtitle = element_text(color = "#666", size = 12))
+```
+
+::: {.callout-box}
+**Color key:** Blue = Decision node, Green = Mediator, Amber = Context variable, Red = Outcome objective
+:::
+
+
+## R: Test d-Separation
+
+```{r}
+#| label: mnh-dsep-tests
+#| echo: true
+
+# Test 1: Is Training d-separated from NMR given Quality?
+dseparated(mnh_dag, "Training", "NMR", "Quality")
+# Expected: TRUE (chain is blocked)
+
+# Test 2: Is Workforce d-separated from Equipment? (unconditional)
+dseparated(mnh_dag, "Workforce", "Equipment", c())
+# Expected: FALSE (common parent Budget creates fork)
+
+# Test 3: Is Workforce d-separated from Equipment given Budget?
+dseparated(mnh_dag, "Workforce", "Equipment", "Budget")
+# Expected: TRUE (conditioning on common cause blocks fork)
+
+# Test 4: Is Workforce d-separated from Equipment given Quality?
+dseparated(mnh_dag, "Workforce", "Equipment", "Quality")
+# Expected: FALSE (conditioning on collider opens path!)
+
+# Test 5: Is Training d-separated from Baseline_Burden?
+dseparated(mnh_dag, "Training", "Baseline_Burden", c())
+# Expected: TRUE (no connecting path)
+```
+
+::: {.callout-box .green}
+**Interpret each result:** TRUE means conditionally independent; FALSE means information flows between the two variables given the conditioning set.
+:::
+
+
+## R: Enumerate All Paths
+
+```{r}
+#| label: mnh-paths
+#| echo: true
+
+# Find all paths from Budget to NMR
+budget_nmr_paths <- paths(mnh_dag,
+                          from = "Budget",
+                          to = "NMR")
+print(budget_nmr_paths)
+
+# Find all paths from Budget to MMR
+budget_mmr_paths <- paths(mnh_dag,
+                          from = "Budget",
+                          to = "MMR")
+print(budget_mmr_paths)
+
+# Find paths between Workforce and Equipment (through collider)
+workforce_equip_paths <- paths(mnh_dag,
+                               from = "Workforce",
+                               to = "Equipment")
+print(workforce_equip_paths)
+```
+
+::: {.callout-box .orange}
+**Notice:** Budget → NMR has multiple directed paths (through Workforce, Training, Equipment, and Referral System). All carry a negative overall sign, reinforcing the investment logic.
+:::
+
+
+## R: Implied Conditional Independencies
+
+```{r}
+#| label: mnh-implied-ci
+#| echo: true
+
+# List all conditional independencies implied by the DAG
+implied_cis <- impliedConditionalIndependencies(mnh_dag)
+print(implied_cis)
+
+# This tells us every testable prediction of our model.
+# For example, if our model is correct, we should observe:
+#   - Training _||_ Equipment | Budget
+#   - Workforce _||_ Referral_System | Budget
+#   - Training _||_ Baseline_Burden
+#   - NMR _||_ MMR | Quality, Baseline_Burden
+#
+# If DHIS2 data violates any of these, we need to revise the DAG.
+
+# Count total number of implied independencies
+cat("Total implied conditional independencies:", length(implied_cis), "\n")
+```
+
+::: {.key-takeaway}
+**The implied conditional independencies are the model's fingerprint.** Each one is a testable prediction. When we get DHIS2 data (Ch 10), we can check every one.
+:::
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Qualitative causal models are the foundation of rigorous analysis.**
+
+A DAG encodes your causal beliefs explicitly using four node types and signed directed links.
+
+The three triplet structures — **chain**, **fork**, and **collider** — govern all information flow. Chains and forks are blocked by conditioning; colliders are *opened* by conditioning.
+
+**d-Separation** translates graph structure into testable conditional independence predictions.
+
+For MNH programs: the qualitative DAG reveals that People, Products, and Systems investments are **complements** flowing through Quality of Care — and that conditioning on Quality creates collider bias between investment pillars.
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 3 — The Interview Case**
+
+Putting qualitative models to work in a structured case study:
+
+- Building a DAG from stakeholder interviews
+- Translating qualitative beliefs into a causal diagram
+- Identifying key assumptions and disagreements
+- Preparing the model for quantification
+:::
+
+. . .
+
+::: {.callout-box .green}
+**Then: Chapter 4 — Quantitative Causal Models**
+
+Adding numbers to the structure:
+
+- Conditional probability tables (replacing [+]/[-] with actual probabilities)
+- Bayes' rule for updating beliefs with evidence
+- Computing posterior probabilities in the full MNH network
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[Inference and Intervention | Chapter 2: Qualitative Causal Models]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

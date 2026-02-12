@@ -1,0 +1,62 @@
+project:
+  type: website
+  render:
+    - index.qmd
+    - schedule.qmd
+    - r-setup.qmd
+    - references.qmd
+    - chapters/*.qmd
+  output-dir: _site
+
+website:
+  title: "Inference and Intervention"
+  navbar:
+    background: "#005CB9"
+    foreground: "#ffffff"
+    logo: ch01-intro/bka-logo.png
+    left:
+      - text: Home
+        href: index.qmd
+      - text: Schedule
+        href: schedule.qmd
+      - text: R Setup
+        href: r-setup.qmd
+      - text: References
+        href: references.qmd
+  sidebar:
+    style: floating
+    title: "Chapters"
+    contents:
+      - section: "Part I: Foundations"
+        contents:
+          - chapters/ch01.qmd
+          - chapters/ch02.qmd
+          - chapters/ch03.qmd
+      - section: "Part II: Quantitative Analysis"
+        contents:
+          - chapters/ch04.qmd
+          - chapters/ch05.qmd
+          - chapters/ch06.qmd
+      - section: "Part III: Decision & Strategy"
+        contents:
+          - chapters/ch07.qmd
+          - chapters/ch08.qmd
+          - chapters/ch09.qmd
+      - section: "Part IV: Data-Driven Methods"
+        contents:
+          - chapters/ch10.qmd
+  page-footer:
+    center: "Inference and Intervention | BK Advisors"
+
+format:
+  html:
+    theme: [cosmo, styles.scss]
+    toc: true
+    toc-depth: 3
+    code-copy: true
+    code-overflow: wrap
+
+execute:
+  echo: true
+  eval: false
+  warning: false

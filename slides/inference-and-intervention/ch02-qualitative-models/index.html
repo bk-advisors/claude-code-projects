@@ -1,0 +1,2287 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/tabby.min.js"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.8.27">
+
+  <meta name="author" content="BK Advisors">
+  <meta name="dcterms.date" content="2026-02-12">
+  <title>Chapter 2: Qualitative Causal Models</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="index_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="index_files/libs/revealjs/dist/reveal.css">
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; font-weight: bold; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="index_files/libs/revealjs/dist/theme/quarto-afce544662d4c774d79a6cccbbed54ef.css">
+  <link href="index_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="index_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="index_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="index_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section data-background-color="#005CB9" class="quarto-title-block center">
+  <h1 class="title">Chapter 2: Qualitative Causal Models</h1>
+  <p class="subtitle">Inference and Intervention | BK Advisors</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+BK Advisors 
+</div>
+</div>
+</div>
+
+  <p class="date">2026-02-12</p>
+</section>
+<section class="slide level2">
+<h2>Learning Objectives</h2>
+<p>After this chapter, you will be able to:</p>
+<ul>
+<li class="fragment">Identify the <strong>four types of nodes</strong> in a causal model and when each is used</li>
+<li class="fragment">Assign <strong>signed directed links</strong> ([+]/[-]) to represent qualitative causal relationships</li>
+<li class="fragment">Construct <strong>conditional certainty tables</strong> for non-monotonic relationships</li>
+<li class="fragment">Recognize the three fundamental <strong>triplet structures</strong>: serial (chain), diverging (fork), converging (collider)</li>
+<li class="fragment">Apply <strong>d-separation</strong> criteria to determine when information flows between variables</li>
+<li class="fragment">Build a complete <strong>qualitative DAG</strong> for the Meridian Health Alliance’s MNH investment model</li>
+</ul>
+</section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>From Intuition to Structure</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Why writing down causal beliefs matters</span></p>
+</section>
+<section class="slide level2">
+<h2>The Problem with Mental Models</h2>
+<p>Every manager carries <strong>implicit causal beliefs</strong> about how the world works.</p>
+<div class="fragment">
+<div class="columns-equal">
+<div class="col">
+<div class="callout-box red">
+<p><strong>Implicit Models</strong></p>
+<ul>
+<li>Vague and inconsistent</li>
+<li>Resistant to scrutiny</li>
+<li>Hidden assumptions</li>
+<li>Two people can disagree without realizing <em>why</em></li>
+</ul>
+</div>
+</div>
+<div class="col">
+<div class="callout-box green">
+<p><strong>Explicit Models (DAGs)</strong></p>
+<ul>
+<li>Precise and shareable</li>
+<li>Open to critique and testing</li>
+<li>Assumptions are visible</li>
+<li>Disagreements become <em>productive</em></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>Core Principle:</strong> A qualitative causal model is a disciplined way of writing down what you believe about how variables in a system relate to one another — before you add any numbers.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>From Whiteboard Sketch to Formal DAG</h2>
+<p>The process of building a qualitative model:</p>
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;">
+Identify<br>Variables
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">
+Classify<br>Node Types
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">
+Draw<br>Arrows
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item" style="border-left: 4px solid #F8A623;">
+Assign<br>Signs
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">
+Validate<br>Structure
+</div>
+</div>
+<div class="fragment">
+<div class="example-block">
+<p><span class="example-label">MNH Example</span></p>
+<p>A program director might say: “I think training midwives improves quality of care, and better quality reduces mortality.” This becomes the chain: <strong>Training → Quality → Mortality</strong> with signs [+] and [-].</p>
+</div>
+</div>
+<div class="fragment">
+<p>The rest of this chapter teaches you the formal vocabulary and rules for each step.</p>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Nodes</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">The four building blocks of causal diagrams</span></p>
+</section>
+<section class="slide level2">
+<h2>Node Type 1: Probabilistic Nodes (Ovals)</h2>
+<div class="definition-box">
+<p><strong>Probabilistic Node (Oval):</strong> A variable whose state is uncertain and determined by nature or context — not by any agent’s deliberate choice. Represented as an <strong>oval</strong> (or circle) in the diagram.</p>
+</div>
+<div class="fragment">
+<div class="example-block">
+<p><span class="example-label">MNH Examples</span></p>
+<ul>
+<li><strong>Neonatal Mortality Rate (NMR):</strong> States = {High (&gt;25/1000), Low (&lt;=25/1000)}</li>
+<li><strong>Baseline Disease Burden:</strong> States = {Severe, Moderate, Low}</li>
+<li><strong>Workforce Quality:</strong> States = {Competent, Developing, Inadequate}</li>
+</ul>
+</div>
+</div>
+<div class="fragment">
+<table style="width: 60%; margin: 0.3em auto; font-size: 0.6em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node outcome" style="padding: 0.5em 1em;">
+NMR<br><span style="font-size: 0.7em; font-weight: 400;">{High, Low}</span>
+</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node" style="padding: 0.5em 1em;">
+Workforce<br>Quality<br><span style="font-size: 0.7em; font-weight: 400;">{Competent, Developing, Inadequate}</span>
+</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node confounder" style="padding: 0.5em 1em;">
+Disease<br>Burden<br><span style="font-size: 0.7em; font-weight: 400;">{Severe, Moderate, Low}</span>
+</div>
+</td>
+</tr>
+</tbody></table>
+<div class="callout-box">
+<p><strong>Key rule:</strong> Each probabilistic node must have <strong>MECE states</strong> — Mutually Exclusive and Collectively Exhaustive. The variable must be in exactly one state at any given time.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Node Type 2: Objective Nodes (Hexagons)</h2>
+<div class="definition-box">
+<p><strong>Objective Node (Hexagon):</strong> A variable representing a goal or performance metric that a decision-maker is trying to optimize. Represented as a <strong>hexagon</strong>. Objective nodes are always leaf nodes — nothing flows out of them.</p>
+</div>
+<div class="fragment">
+<div class="example-block">
+<p><span class="example-label">MNH Examples</span></p>
+<ul>
+<li><strong>Lives Saved:</strong> The Meridian Health Alliance’s ultimate objective — save 322,000+ lives by 2030</li>
+<li><strong>Maternal Mortality Ratio (MMR):</strong> Measured in deaths per 100,000 live births</li>
+<li><strong>Cost-Effectiveness:</strong> Lives saved per dollar invested</li>
+</ul>
+</div>
+</div>
+<div class="fragment">
+<table style="width: 55%; margin: 0.3em auto; font-size: 0.6em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon outcome" style="padding: 0.5em 1em; border-style: double;">
+Lives<br>Saved
+</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon outcome" style="padding: 0.5em 1em; border-style: double;">
+MMR
+</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon outcome" style="padding: 0.5em 1em; border-style: double;">
+Cost-<br>Effectiveness
+</div>
+</td>
+</tr>
+</tbody></table>
+<div class="callout-box">
+<p>Objective nodes sit at the end of causal chains. They receive arrows but never send them. They answer: <strong>What are we ultimately trying to affect?</strong></p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Node Type 3: Strategic Option Nodes (Rectangles)</h2>
+<div class="definition-box">
+<p><strong>Strategic Option Node (Rectangle):</strong> A variable representing a deliberate choice made by a decision-maker. The states are the available options. Represented as a <strong>rectangle</strong>.</p>
+</div>
+<div class="fragment">
+<div class="example-block">
+<p><span class="example-label">MNH Examples</span></p>
+<ul>
+<li><strong>Budget Allocation:</strong> States = {People-heavy, Products-heavy, Systems-heavy, Balanced}</li>
+<li><strong>Training Investment:</strong> States = {Fund, Don’t Fund}</li>
+<li><strong>Equipment Procurement:</strong> States = {CPAP, PPH Bundle, Ultrasound, Combination}</li>
+</ul>
+</div>
+</div>
+<div class="fragment">
+<table style="width: 70%; margin: 0.3em auto; font-size: 0.6em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="padding: 0.5em 1em;">
+Budget<br>Allocation<br><span style="font-size: 0.7em; font-weight: 400;">{People, Products, Systems, Balanced}</span>
+</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="padding: 0.5em 1em;">
+Training<br>Investment<br><span style="font-size: 0.7em; font-weight: 400;">{Fund, Don’t Fund}</span>
+</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="padding: 0.5em 1em;">
+Equipment<br>Procurement<br><span style="font-size: 0.7em; font-weight: 400;">{CPAP, PPH, Ultrasound, Combo}</span>
+</div>
+</td>
+</tr>
+</tbody></table>
+<div class="callout-box">
+<p>Strategic option nodes are the <strong>levers</strong> that the Meridian Health Alliance controls. These are root nodes — no causal arrows point into them (except informational links).</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Node Type 4: Function Nodes (Chevrons)</h2>
+<div class="definition-box">
+<p><strong>Function Node (Chevron):</strong> A variable whose state is <strong>deterministically determined</strong> by its parents — there is no residual uncertainty. Represented as a <strong>chevron</strong> (or pointed rectangle). If you know all parent states, you know this node’s state with certainty.</p>
+</div>
+<div class="fragment">
+<div class="example-block">
+<p><span class="example-label">MNH Examples</span></p>
+<ul>
+<li><strong>Total Budget Spent</strong> = Workforce spending + Equipment spending + Systems spending (a simple sum)</li>
+<li><strong>Coverage Rate</strong> = Facilities equipped / Total facilities (a deterministic ratio)</li>
+</ul>
+</div>
+</div>
+<div class="fragment">
+<div class="columns-equal">
+<div class="col">
+<p><strong>Probabilistic Node</strong></p>
+<p>Parent states → probability distribution over child states (uncertainty remains)</p>
+</div>
+<div class="col">
+<p><strong>Function Node</strong></p>
+<p>Parent states → exactly one child state (no uncertainty)</p>
+</div>
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box">
+<p>Function nodes are rare in qualitative models but become important in quantitative models (Ch 4) where they represent accounting identities, formulas, or physical laws.</p>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Directed Links</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Arrows, signs, and the language of causation</span></p>
+</section>
+<section class="slide level2">
+<h2>Causal Links with Signs</h2>
+<div class="definition-box">
+<p><strong>Directed Link (Arrow):</strong> An arrow from node A to node B means that A is a <strong>direct cause</strong> of B — changing A can change B (holding all other parents of B fixed). The sign <strong>[+]</strong> or <strong>[-]</strong> indicates the direction of effect.</p>
+</div>
+<div class="fragment">
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Sign</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>[+]</strong></td>
+<td>Increasing A increases B (or being in “good” state of A makes “good” state of B more likely)</td>
+<td>Training [+] → Quality</td>
+</tr>
+<tr class="even">
+<td><strong>[-]</strong></td>
+<td>Increasing A decreases B (or being in “good” state of A makes “bad” state of B less likely)</td>
+<td>Quality [-] → Mortality</td>
+</tr>
+<tr class="odd">
+<td><strong>[0]</strong></td>
+<td>A has no effect on B in this combination (used in conditional certainty tables)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="fragment">
+<table style="width: 70%; margin: 0.3em auto; font-size: 0.6em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect">
+Training<br>Investment
+</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<span class="dag-arrow positive" style="font-size: 1.8em;">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node">
+Workforce<br>Quality
+</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<span class="dag-arrow negative" style="font-size: 1.8em;">→ [-]</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node outcome">
+Neonatal<br>Mortality
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+</section>
+<section class="slide level2">
+<h2>Parent, Child, and Directed Paths</h2>
+<div class="definition-box">
+<p><strong>Parent</strong> — a node at the tail of an arrow. <strong>Child</strong> — a node at the head. A <strong>directed path</strong> is a sequence of arrows all pointing in the same direction from an ancestor to a descendant.</p>
+</div>
+<div class="fragment">
+<table style="width: 85%; margin: 0.3em auto; font-size: 0.55em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect">
+Budget<br><span style="font-size: 0.8em; color: #666;">(Root)</span>
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node treatment">
+Training<br><span style="font-size: 0.8em; color: #666;">(Child of Budget)</span>
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node">
+Quality<br><span style="font-size: 0.8em; color: #666;">(Grandchild)</span>
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow negative">→ [-]</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node outcome">
+NMR<br><span style="font-size: 0.8em; color: #666;">(Leaf)</span>
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="fragment">
+<ul>
+<li class="fragment"><strong>Root nodes</strong> have no parents — they are exogenous (Budget, Baseline Burden)</li>
+<li class="fragment"><strong>Leaf nodes</strong> have no children — they are terminal outcomes (NMR, MMR)</li>
+<li class="fragment">The directed path Budget → Training → Quality → NMR has an <strong>overall sign</strong> of [+] x [+] x [-] = <strong>[-]</strong> (more budget leads to lower mortality)</li>
+</ul>
+</div>
+</section>
+<section class="slide level2">
+<h2>Sign Multiplication Along Paths</h2>
+<div class="callout-box">
+<p><strong>Sign Rule:</strong> The overall sign of a directed path is the product of individual link signs, where [+] x [+] = [+], [-] x [-] = [+], and [+] x [-] = [-].</p>
+</div>
+<div class="fragment">
+<table class="caption-top">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Path</th>
+<th>Link Signs</th>
+<th>Overall Sign</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Budget → Training → Quality → NMR</td>
+<td>[+] x [+] x [-]</td>
+<td><strong>[-]</strong></td>
+<td>More budget reduces NMR</td>
+</tr>
+<tr class="even">
+<td>Budget → Equipment → Quality → NMR</td>
+<td>[+] x [+] x [-]</td>
+<td><strong>[-]</strong></td>
+<td>Same direction</td>
+</tr>
+<tr class="odd">
+<td>Disease Burden → Coverage → NMR</td>
+<td>[-] x [-]</td>
+<td><strong>[+]</strong></td>
+<td>Higher burden → higher NMR</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="fragment">
+<div class="callout-box orange">
+<p><strong>When multiple paths connect two nodes</strong>, the overall effect is ambiguous if paths have different signs. This is one reason we need quantitative models (Ch 4) — qualitative signs alone cannot resolve conflicting path effects.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Informational Links into Decision Nodes</h2>
+<div class="definition-box">
+<p><strong>Informational Link:</strong> A dashed arrow pointing <strong>into</strong> a strategic option node. It represents information available to the decision-maker at the time of the decision — not a causal effect. The decision-maker <em>knows</em> the parent’s state before choosing.</p>
+</div>
+<div class="fragment">
+<table style="width: 75%; margin: 0.3em auto; font-size: 0.55em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node confounder">
+Baseline<br>NMR Data
+</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<span style="color: #F8A623; font-size: 1.6em;">- - →</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect">
+Budget<br>Allocation
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 1.4em;">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node treatment">
+Workforce<br>Deployment
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="fragment">
+<ul>
+<li class="fragment">The dashed arrow means the Alliance <strong>observes</strong> NMR data before deciding how to allocate the budget</li>
+<li class="fragment">This is <em>not</em> the same as NMR <em>causing</em> the budget — it is an information flow</li>
+<li class="fragment">Informational links matter for <strong>decision analysis</strong> (Ch 7): they determine what you know when you decide</li>
+</ul>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Conditional Certainty Tables</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">When [+] and [-] are not enough</span></p>
+</section>
+<section class="slide level2">
+<h2>When Relationships Are Not Monotonic</h2>
+<p>A single [+] or [-] sign assumes the relationship is <strong>monotonic</strong> — more of A always means more (or less) of B. But some causal relationships are more complex.</p>
+<div class="fragment">
+<div class="definition-box">
+<p><strong>Conditional Certainty Table:</strong> A table showing the qualitative sign ([+], [-], or [0]) of a child variable for each <strong>combination</strong> of parent states. Used when the effect of one parent depends on the state of another parent.</p>
+</div>
+</div>
+<div class="fragment">
+<div class="example-block">
+<p><span class="example-label">MNH Example: Effect of CPAP Machines on NMR</span></p>
+<p>The effect of CPAP depends on whether trained staff are available to operate them:</p>
+</div>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Staff Trained</strong></th>
+<th><strong>Staff Not Trained</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>CPAP Available</strong></td>
+<td>[-] (reduces NMR)</td>
+<td>[0] (no effect — machines sit idle)</td>
+</tr>
+<tr class="even">
+<td><strong>CPAP Unavailable</strong></td>
+<td>[0] (training alone insufficient)</td>
+<td>[0] (no intervention)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section class="slide level2">
+<h2>Reading Conditional Certainty Tables</h2>
+<div class="callout-box">
+<p><strong>How to read:</strong> Each cell answers the question: “If this parent combination holds, what is the qualitative direction of effect on the child?”</p>
+</div>
+<div class="fragment">
+<p>A richer example — effect on <strong>Quality of Care</strong>:</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Equipment Available</strong></th>
+<th><strong>Equipment Unavailable</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Staff Competent</strong></td>
+<td>[+] strong positive</td>
+<td>[+] moderate (skill compensates)</td>
+</tr>
+<tr class="even">
+<td><strong>Staff Developing</strong></td>
+<td>[+] moderate (equipment helps)</td>
+<td>[0] weak or no effect</td>
+</tr>
+<tr class="odd">
+<td><strong>Staff Inadequate</strong></td>
+<td>[0] equipment cannot compensate</td>
+<td>[-] active harm risk</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="fragment">
+<div class="callout-box orange">
+<p><strong>Key Insight:</strong> Conditional certainty tables reveal <strong>interaction effects</strong> — situations where one input only works when combined with another. For the Meridian Health Alliance, this means <strong>People + Products investments are complements, not substitutes.</strong></p>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Serial Triplets (Chain)</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">A → B → C — information flows along the chain</span></p>
+</section>
+<section class="slide level2">
+<h2>The Serial Triplet Structure</h2>
+<div class="definition-box">
+<p><strong>Serial Triplet (Chain):</strong> Three nodes connected as A → B → C. Node B is a <strong>mediator</strong> — it transmits the causal effect of A to C.</p>
+</div>
+<div class="fragment">
+<table style="width: 70%; margin: 0.5em auto; font-size: 0.65em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node treatment" style="padding: 0.5em 1em;">
+A
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 2em;">→</span>
+</td>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node" style="padding: 0.5em 1em;">
+B
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 2em;">→</span>
+</td>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node outcome" style="padding: 0.5em 1em;">
+C
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="fragment">
+<p><strong>Information flow rules:</strong></p>
+<ul>
+<li class="fragment"><strong>Unconditionally:</strong> Information flows from A to C through B. Learning about A tells you something about C.</li>
+<li class="fragment"><strong>Conditioning on B blocks the flow.</strong> If you <em>know</em> B’s state, then learning A tells you nothing new about C.</li>
+</ul>
+</div>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>Intuition:</strong> If I know the mediator’s exact value, the upstream cause becomes irrelevant for predicting the downstream effect.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>MNH Example: Training → Competency → Mortality</h2>
+<table style="width: 80%; margin: 0.4em auto; font-size: 0.6em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node decision rect" style="padding: 0.5em 0.8em;">
+Training<br>Program<br><span style="font-size: 0.75em; font-weight: 400;">{Completed, Not}</span>
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 1.8em;">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node" style="padding: 0.5em 0.8em;">
+Staff<br>Competency<br><span style="font-size: 0.75em; font-weight: 400;">{Competent, Developing}</span>
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow negative" style="font-size: 1.8em;">→ [-]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node outcome" style="padding: 0.5em 0.8em;">
+Neonatal<br>Mortality<br><span style="font-size: 0.75em; font-weight: 400;">{High, Low}</span>
+</div>
+</td>
+</tr>
+</tbody></table>
+<div class="fragment">
+<div class="columns-equal">
+<div class="col">
+<div class="callout-box green">
+<p><strong>Not conditioning on Competency:</strong></p>
+<p>Training and Mortality are associated. We can predict lower mortality from knowing training was completed.</p>
+</div>
+</div>
+<div class="col">
+<div class="callout-box orange">
+<p><strong>Conditioning on Competency:</strong></p>
+<p>If we <em>know</em> a midwife is competent, it no longer matters <em>how</em> she became competent (training vs.&nbsp;experience). The path is <strong>blocked</strong>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>For the Meridian Health Alliance:</strong> This tells us that training’s value is entirely mediated through competency. If we can measure competency directly, we do not need training data to predict mortality.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Chain Summary</h2>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Condition</th>
+<th>A and C associated?</th>
+<th>Why?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Not conditioning on B</strong></td>
+<td>Yes</td>
+<td>Information flows A → B → C</td>
+</tr>
+<tr class="even">
+<td><strong>Conditioning on B</strong></td>
+<td>No</td>
+<td>Knowing B blocks the path</td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<div class="example-block">
+<p><span class="example-label">Think of it as a pipeline</span></p>
+<p>Water flows from the reservoir (A) through the pipe (B) to the tap (C). If you close the valve at B (condition on it), nothing from A reaches C.</p>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Diverging Triplets (Fork)</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">A ← B → C — the common cause structure</span></p>
+</section>
+<section class="slide level2">
+<h2>The Diverging Triplet Structure</h2>
+<div class="definition-box">
+<p><strong>Diverging Triplet (Fork):</strong> Three nodes connected as A ← B → C. Node B is a <strong>common cause</strong> of both A and C. This creates a <strong>spurious correlation</strong> between A and C.</p>
+</div>
+<div class="fragment">
+<table style="width: 70%; margin: 0.5em auto; font-size: 0.65em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node treatment" style="padding: 0.5em 1em;">
+A
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 2em;">←</span>
+</td>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node confounder" style="padding: 0.5em 1em;">
+B
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 2em;">→</span>
+</td>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node outcome" style="padding: 0.5em 1em;">
+C
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="fragment">
+<p><strong>Information flow rules:</strong></p>
+<ul>
+<li class="fragment"><strong>Unconditionally:</strong> A and C appear correlated — but only because B drives both. This is <strong>confounding</strong>.</li>
+<li class="fragment"><strong>Conditioning on B blocks the flow.</strong> Once you know the common cause, A and C become independent.</li>
+</ul>
+</div>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>Intuition:</strong> Ice cream sales (A) and drowning deaths (C) are correlated — but the common cause is summer heat (B). Knowing the temperature eliminates the spurious link.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>MNH Example: PPH Detection ← Workforce Quality → CPAP Usage</h2>
+<table style="width: 80%; margin: 0.4em auto; font-size: 0.6em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node" style="padding: 0.5em 0.8em;">
+PPH<br>Detection Rate<br><span style="font-size: 0.75em; font-weight: 400;">{High, Low}</span>
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 1.8em;">← [+]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node confounder" style="padding: 0.5em 0.8em;">
+Workforce<br>Quality<br><span style="font-size: 0.75em; font-weight: 400;">{Competent, Developing}</span>
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 1.8em;">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node" style="padding: 0.5em 0.8em;">
+Correct CPAP<br>Usage<br><span style="font-size: 0.75em; font-weight: 400;">{Proper, Improper}</span>
+</div>
+</td>
+</tr>
+</tbody></table>
+<div class="fragment">
+<div class="columns-equal">
+<div class="col">
+<div class="callout-box red">
+<p><strong>Naive observation:</strong></p>
+<p>Facilities with high PPH detection also have high CPAP usage. Does detecting PPH <em>cause</em> better CPAP use?</p>
+</div>
+</div>
+<div class="col">
+<div class="callout-box green">
+<p><strong>Causal reality:</strong></p>
+<p>Both are driven by <strong>workforce quality</strong>. Competent staff detect PPH <em>and</em> use CPAP correctly. Controlling for workforce quality eliminates the association.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>For the Meridian Health Alliance:</strong> If we see a correlation between two program metrics, we must ask — is there a common driver? Investing in PPH protocols will not improve CPAP usage unless we address the underlying workforce quality.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Fork Summary</h2>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Condition</th>
+<th>A and C associated?</th>
+<th>Why?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Not conditioning on B</strong></td>
+<td>Yes</td>
+<td>Common cause creates spurious correlation</td>
+</tr>
+<tr class="even">
+<td><strong>Conditioning on B</strong></td>
+<td>No</td>
+<td>Controlling for common cause removes confounding</td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<div class="callout-box orange">
+<p><strong>This is exactly the confounding trap from Chapter 1!</strong> The fork structure is the formal representation of confounding. The solution is always: <strong>condition on the common cause</strong>.</p>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Converging Triplets (Collider)</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">A → B ← C — the dangerous exception</span></p>
+</section>
+<section class="slide level2">
+<h2>The Converging Triplet Structure</h2>
+<div class="definition-box">
+<p><strong>Converging Triplet (Collider):</strong> Three nodes connected as A → B ← C. Node B is a <strong>collider</strong> — two causal arrows “collide” at B. This structure behaves <strong>opposite</strong> to chains and forks.</p>
+</div>
+<div class="fragment">
+<table style="width: 70%; margin: 0.5em auto; font-size: 0.65em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node treatment" style="padding: 0.5em 1em;">
+A
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 2em;">→</span>
+</td>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node" style="padding: 0.5em 1em; border-width: 3px;">
+B
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 2em;">←</span>
+</td>
+<td style="text-align: center; padding: 0.8em;">
+<div class="dag-node outcome" style="padding: 0.5em 1em;">
+C
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="fragment">
+<p><strong>Information flow rules (REVERSED from chain and fork!):</strong></p>
+<ul>
+<li class="fragment"><strong>Unconditionally:</strong> A and C are <strong>independent</strong>. No information flows — the path is naturally <strong>blocked</strong> at the collider.</li>
+<li class="fragment"><strong>Conditioning on B (or any descendant of B) OPENS the path.</strong> A and C become associated — this is <strong>collider bias</strong>.</li>
+</ul>
+</div>
+<div class="fragment">
+<div class="callout-box red">
+<p><strong>Warning:</strong> Conditioning on a collider <em>creates</em> a spurious association that did not exist before. This is the opposite of what happens with chains and forks!</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>MNH Example: Staffing → Quality of Care ← Equipment</h2>
+<table style="width: 80%; margin: 0.4em auto; font-size: 0.6em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node treatment" style="padding: 0.5em 0.8em;">
+Staffing<br>Level<br><span style="font-size: 0.75em; font-weight: 400;">{Adequate, Low}</span>
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 1.8em;">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node" style="padding: 0.5em 0.8em; border-width: 3px;">
+Quality<br>of Care<br><span style="font-size: 0.75em; font-weight: 400;">{Good, Poor}</span>
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 1.8em;">← [+]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node treatment" style="padding: 0.5em 0.8em;">
+Equipment<br>Availability<br><span style="font-size: 0.75em; font-weight: 400;">{Available, Unavailable}</span>
+</div>
+</td>
+</tr>
+</tbody></table>
+<div class="fragment">
+<div class="example-block">
+<p><span class="example-label">The “Explaining Away” Effect</span></p>
+<p>Among facilities with <strong>good</strong> quality of care (conditioning on the collider), staffing and equipment become <strong>negatively</strong> associated: if quality is good <em>despite</em> low staffing, we infer equipment must be excellent — and vice versa. Each cause “explains away” the other.</p>
+</div>
+</div>
+<div class="fragment">
+<div class="columns-equal">
+<div class="col">
+<div class="callout-box green">
+<p><strong>Not conditioning on Quality:</strong></p>
+<p>Staffing and Equipment are independent (separate investment decisions).</p>
+</div>
+</div>
+<div class="col">
+<div class="callout-box red">
+<p><strong>Conditioning on Quality = Good:</strong></p>
+<p>Among good-quality facilities: low staffing → must have good equipment. Creates a spurious <em>negative</em> association.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Collider Summary and the “Explain Away” Intuition</h2>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Condition</th>
+<th>A and C associated?</th>
+<th>Why?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Not conditioning on B</strong></td>
+<td>No</td>
+<td>Path is blocked at the collider</td>
+</tr>
+<tr class="even">
+<td><strong>Conditioning on B</strong></td>
+<td>Yes</td>
+<td>Collider bias — “explaining away”</td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>The “explain away” intuition:</strong> Imagine you know a student passed an exam (collider). If you then learn the exam was easy, you revise <em>downward</em> your belief about the student’s talent. The two causes compete to explain the common effect.</p>
+</div>
+</div>
+<div class="fragment">
+<div class="key-takeaway">
+<p><strong>The Three Triplets — One Critical Table</strong></p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Structure</th>
+<th>Unconditional</th>
+<th>Conditional on middle</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Chain: A → B → C</td>
+<td>Associated</td>
+<td><strong>Blocked</strong></td>
+</tr>
+<tr class="even">
+<td>Fork: A ← B → C</td>
+<td>Associated</td>
+<td><strong>Blocked</strong></td>
+</tr>
+<tr class="odd">
+<td>Collider: A → B ← C</td>
+<td><strong>Blocked</strong></td>
+<td>Associated</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>c-Independence and d-Separation</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Formal criteria for when information flows</span></p>
+</section>
+<section class="slide level2">
+<h2>From Triplets to Full Graphs</h2>
+<p>In a simple triplet, the rules are straightforward. But real DAGs have <strong>many paths</strong> between any two nodes, and each path may contain multiple triplet structures.</p>
+<div class="fragment">
+<div class="definition-box">
+<p><strong>d-Separation (Directional Separation):</strong> Two nodes X and Y are <strong>d-separated</strong> given a set of conditioning variables Z if <strong>every</strong> path between X and Y is <strong>blocked</strong>. If d-separated, X and Y are conditionally independent given Z.</p>
+</div>
+</div>
+<div class="fragment">
+<p>A path between X and Y is <strong>blocked</strong> by conditioning set Z if the path contains:</p>
+<ul>
+<li class="fragment">A <strong>chain</strong> (A → B → C) or <strong>fork</strong> (A ← B → C) where the middle node B <strong>is in</strong> Z, OR</li>
+<li class="fragment">A <strong>collider</strong> (A → B ← C) where neither B nor any descendant of B <strong>is in</strong> Z</li>
+</ul>
+</div>
+</section>
+<section class="slide level2">
+<h2>Applying d-Separation: An Example</h2>
+<p>Consider this DAG:</p>
+<table style="width: 90%; margin: 0.3em auto; font-size: 0.5em;">
+<tbody><tr>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node decision rect">
+Budget
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive">→</span>
+</td>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node treatment">
+Training
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive">→</span>
+</td>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node" style="border-width: 3px;">
+Quality
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow negative">→</span>
+</td>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node outcome">
+NMR
+</div>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive">↑</span>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node treatment">
+Equipment
+</div>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+</tbody></table>
+<div class="fragment">
+<div class="columns-equal">
+<div class="col">
+<p><strong>Q: Is Training d-separated from NMR given Quality?</strong></p>
+<p>Path: Training → Quality → NMR</p>
+<p>Quality is in the conditioning set and is a <strong>chain</strong> middle node → <strong>Blocked</strong>.</p>
+<p>Answer: <strong>Yes</strong>, d-separated.</p>
+</div>
+<div class="col">
+<p><strong>Q: Is Training d-separated from Equipment given Quality?</strong></p>
+<p>Path: Training → Quality ← Equipment</p>
+<p>Quality is a <strong>collider</strong> and is in the conditioning set → <strong>Opened</strong>.</p>
+<p>Answer: <strong>No</strong>, not d-separated.</p>
+</div>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>d-Separation Decision Procedure</h2>
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;">
+<span class="step-number">1</span><br>List all paths<br>between X and Y
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">
+<span class="step-number green">2</span><br>For each path, identify<br>every triplet structure
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">
+<span class="step-number orange">3</span><br>Check if any triplet<br>blocks the path
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">
+<span class="step-number teal">4</span><br>If ALL paths blocked:<br>d-separated
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>A path is blocked if it contains at least one:</strong></p>
+<ul>
+<li>Chain or fork with middle node <strong>in</strong> the conditioning set, OR</li>
+<li>Collider with middle node (and all its descendants) <strong>not in</strong> the conditioning set</li>
+</ul>
+<p><strong>d-Separation holds only if EVERY path is blocked.</strong></p>
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box green">
+<p><strong>Why this matters:</strong> d-Separation tells us which conditional independencies our causal model <strong>implies</strong>. These are testable predictions — if the data violates them, our model is wrong.</p>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>MNH Application: Full Qualitative DAG</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Building the Meridian Health Alliance causal model</span></p>
+</section>
+<section class="slide level2">
+<h2>Identifying the Variables</h2>
+<p>Let’s build a comprehensive qualitative DAG for the Meridian Health Alliance’s theory of change with ~10 key nodes:</p>
+<div class="fragment">
+<div class="columns-equal">
+<div class="col">
+<p><strong>Strategic Options (Rectangles)</strong></p>
+<ul>
+<li><strong>Budget Allocation</strong> {People, Products, Systems, Balanced}</li>
+</ul>
+<p><strong>Mediating Variables (Ovals)</strong></p>
+<ul>
+<li><strong>Workforce</strong> {Adequate, Low}</li>
+<li><strong>Training</strong> {Completed, Not}</li>
+<li><strong>Equipment</strong> {Available, Unavailable}</li>
+<li><strong>Referral System</strong> {Functional, Weak}</li>
+<li><strong>Quality of Care</strong> {Good, Poor}</li>
+<li><strong>Coverage</strong> {High, Low}</li>
+</ul>
+</div>
+<div class="col">
+<p><strong>Contextual Variables (Ovals)</strong></p>
+<ul>
+<li><strong>Baseline Burden</strong> {Severe, Moderate, Low}</li>
+</ul>
+<p><strong>Objectives (Hexagons)</strong></p>
+<ul>
+<li><strong>NMR</strong> {High &gt;25/1000, Low &lt;=25/1000}</li>
+<li><strong>MMR</strong> {High, Low}</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>The Full DAG Structure</h2>
+<table style="width: 95%; margin: 0.2em auto; font-size: 0.45em;">
+<tbody><tr>
+<td colspan="7" style="text-align: center; padding: 0.3em;">
+<div class="dag-node confounder" style="padding: 0.3em 0.6em;">
+Baseline Burden
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="7" style="text-align: center; font-size: 1.2em; color: #F8A623;">
+↓ [+]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓ [+]
+</td>
+</tr>
+<tr>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node decision rect" style="padding: 0.3em 0.6em;">
+Budget<br>Allocation
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node treatment" style="padding: 0.3em 0.5em; margin-bottom: 0.2em;">
+Workforce
+</div>
+<br>
+<div class="dag-node treatment" style="padding: 0.3em 0.5em; margin-bottom: 0.2em;">
+Equipment
+</div>
+<br>
+<div class="dag-node treatment" style="padding: 0.3em 0.5em;">
+Referral Sys
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node" style="padding: 0.3em 0.6em;">
+Quality<br>of Care
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow negative">→ [-]</span>
+</td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node outcome hexagon" style="padding: 0.3em 0.6em; border-style: double;">
+NMR
+</div>
+<br><br>
+<div class="dag-node outcome hexagon" style="padding: 0.3em 0.6em; border-style: double;">
+MMR
+</div>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive">↘ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node treatment" style="padding: 0.3em 0.5em;">
+Training
+</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive">→ [+]</span>
+</td>
+<td style="text-align: center; font-size: 1em; color: #83BD00;">
+↑
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive">↑ [+]</span>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td style="text-align: center; padding: 0.3em;">
+<div class="dag-node" style="padding: 0.3em 0.6em;">
+Coverage
+</div>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+</tbody></table>
+</section>
+<section class="slide level2">
+<h2>Assigning Signs to Every Link</h2>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Link</th>
+<th>Sign</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Budget → Workforce</td>
+<td>[+]</td>
+<td>More funding enables hiring and retention</td>
+</tr>
+<tr class="even">
+<td>Budget → Equipment</td>
+<td>[+]</td>
+<td>More funding procures CPAP, PPH bundles, ultrasound</td>
+</tr>
+<tr class="odd">
+<td>Budget → Referral System</td>
+<td>[+]</td>
+<td>More funding builds transport and data systems</td>
+</tr>
+<tr class="even">
+<td>Budget → Training</td>
+<td>[+]</td>
+<td>More funding enables BEmONC/CEmONC training</td>
+</tr>
+<tr class="odd">
+<td>Training → Quality</td>
+<td>[+]</td>
+<td>Trained staff deliver higher quality care</td>
+</tr>
+<tr class="even">
+<td>Workforce → Quality</td>
+<td>[+]</td>
+<td>Adequate staffing prevents burnout, enables protocols</td>
+</tr>
+<tr class="odd">
+<td>Equipment → Quality</td>
+<td>[+]</td>
+<td>Available tools enable evidence-based interventions</td>
+</tr>
+<tr class="even">
+<td>Referral System → Coverage</td>
+<td>[+]</td>
+<td>Functional referrals increase service utilization</td>
+</tr>
+<tr class="odd">
+<td>Coverage → Quality</td>
+<td>[+]</td>
+<td>Higher coverage enables systematic quality improvement</td>
+</tr>
+<tr class="even">
+<td>Quality → NMR</td>
+<td>[-]</td>
+<td>Better care reduces neonatal mortality</td>
+</tr>
+<tr class="odd">
+<td>Quality → MMR</td>
+<td>[-]</td>
+<td>Better care reduces maternal mortality</td>
+</tr>
+<tr class="even">
+<td>Baseline Burden → NMR</td>
+<td>[+]</td>
+<td>Higher burden raises mortality (direct effect)</td>
+</tr>
+<tr class="odd">
+<td>Baseline Burden → MMR</td>
+<td>[+]</td>
+<td>Higher burden raises maternal mortality</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section class="slide level2">
+<h2>Identifying Triplets Within the Model</h2>
+<div class="columns-equal">
+<div class="col">
+<div class="callout-box green">
+<p><strong>Serial (Chain) Examples</strong></p>
+<ul>
+<li>Budget → Training → Quality</li>
+<li>Referral System → Coverage → Quality</li>
+<li>Budget → Workforce → Quality → NMR</li>
+</ul>
+<p><em>Conditioning on the mediator blocks the path.</em></p>
+</div>
+</div>
+<div class="col">
+<div class="callout-box">
+<p><strong>Diverging (Fork) Examples</strong></p>
+<ul>
+<li>Workforce ← Budget → Equipment</li>
+<li>NMR ← Quality → MMR</li>
+<li>Training ← Budget → Referral System</li>
+</ul>
+<p><em>Budget is a common cause. Conditioning on it blocks spurious correlations between its children.</em></p>
+</div>
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box red">
+<p><strong>Converging (Collider) Examples</strong></p>
+<ul>
+<li>Workforce → Quality ← Equipment</li>
+<li>Training → Quality ← Equipment (via Training → Quality)</li>
+<li>Coverage → Quality ← Workforce</li>
+</ul>
+<p><em>Quality is a collider. Conditioning on Quality creates a spurious association between Workforce and Equipment (“explaining away”).</em></p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Testable Implications</h2>
+<p>Our qualitative DAG implies specific <strong>conditional independencies</strong> that we can test against data:</p>
+<div class="fragment">
+<ul>
+<li class="fragment"><strong>Training ⊥ Equipment | Budget</strong> — given budget allocation, training and equipment decisions are independent (fork structure)</li>
+<li class="fragment"><strong>Workforce ⊥ Referral System | Budget</strong> — same logic; both are children of budget</li>
+<li class="fragment"><strong>Training ⊥ NMR | Quality</strong> — given quality of care, training has no additional direct effect on NMR (chain structure)</li>
+<li class="fragment"><strong>Workforce ⊥ Equipment | Quality</strong> — conditioning on the collider <em>violates</em> this; they should be dependent!</li>
+</ul>
+</div>
+<div class="fragment">
+<div class="key-takeaway">
+<p><strong>If the data violates any implied independence, our model is wrong and must be revised.</strong></p>
+<p>This is how qualitative models generate testable predictions — even without numbers.</p>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>R Code Workshop</h1>
+<p><span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Building and analyzing the MNH DAG in R</span></p>
+</section>
+<section class="slide level2">
+<h2>R: Define the Full MNH DAG with dagitty</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a><span class="fu">library</span>(dagitty)</span>
+<span id="cb1-2"><a href=""></a><span class="fu">library</span>(ggdag)</span>
+<span id="cb1-3"><a href=""></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-4"><a href=""></a></span>
+<span id="cb1-5"><a href=""></a><span class="co"># Define the comprehensive MNH qualitative DAG</span></span>
+<span id="cb1-6"><a href=""></a>mnh_dag <span class="ot">&lt;-</span> <span class="fu">dagitty</span>(<span class="st">'dag {</span></span>
+<span id="cb1-7"><a href=""></a><span class="st">  Budget          [pos="0,1"]</span></span>
+<span id="cb1-8"><a href=""></a><span class="st">  Workforce       [pos="1.5,0"]</span></span>
+<span id="cb1-9"><a href=""></a><span class="st">  Training        [pos="1.5,1"]</span></span>
+<span id="cb1-10"><a href=""></a><span class="st">  Equipment       [pos="1.5,2"]</span></span>
+<span id="cb1-11"><a href=""></a><span class="st">  Referral_System [pos="1.5,3"]</span></span>
+<span id="cb1-12"><a href=""></a><span class="st">  Coverage        [pos="3,3"]</span></span>
+<span id="cb1-13"><a href=""></a><span class="st">  Quality         [pos="3,1"]</span></span>
+<span id="cb1-14"><a href=""></a><span class="st">  Baseline_Burden [pos="4,3"]</span></span>
+<span id="cb1-15"><a href=""></a><span class="st">  NMR             [pos="4.5,0.5"]</span></span>
+<span id="cb1-16"><a href=""></a><span class="st">  MMR             [pos="4.5,1.5"]</span></span>
+<span id="cb1-17"><a href=""></a></span>
+<span id="cb1-18"><a href=""></a><span class="st">  Budget -&gt; Workforce</span></span>
+<span id="cb1-19"><a href=""></a><span class="st">  Budget -&gt; Training</span></span>
+<span id="cb1-20"><a href=""></a><span class="st">  Budget -&gt; Equipment</span></span>
+<span id="cb1-21"><a href=""></a><span class="st">  Budget -&gt; Referral_System</span></span>
+<span id="cb1-22"><a href=""></a><span class="st">  Training -&gt; Quality</span></span>
+<span id="cb1-23"><a href=""></a><span class="st">  Workforce -&gt; Quality</span></span>
+<span id="cb1-24"><a href=""></a><span class="st">  Equipment -&gt; Quality</span></span>
+<span id="cb1-25"><a href=""></a><span class="st">  Referral_System -&gt; Coverage</span></span>
+<span id="cb1-26"><a href=""></a><span class="st">  Coverage -&gt; Quality</span></span>
+<span id="cb1-27"><a href=""></a><span class="st">  Quality -&gt; NMR</span></span>
+<span id="cb1-28"><a href=""></a><span class="st">  Quality -&gt; MMR</span></span>
+<span id="cb1-29"><a href=""></a><span class="st">  Baseline_Burden -&gt; NMR</span></span>
+<span id="cb1-30"><a href=""></a><span class="st">  Baseline_Burden -&gt; MMR</span></span>
+<span id="cb1-31"><a href=""></a><span class="st">}'</span>)</span>
+<span id="cb1-32"><a href=""></a></span>
+<span id="cb1-33"><a href=""></a><span class="co"># Verify it is a valid DAG (acyclic)</span></span>
+<span id="cb1-34"><a href=""></a><span class="fu">isAcyclic</span>(mnh_dag)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section class="slide level2">
+<h2>R: Visualize the DAG Color-Coded by Role</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href=""></a><span class="co"># Create a tidy dag object with exposure and outcome</span></span>
+<span id="cb2-2"><a href=""></a>tidy_dag <span class="ot">&lt;-</span> <span class="fu">tidy_dagitty</span>(mnh_dag)</span>
+<span id="cb2-3"><a href=""></a></span>
+<span id="cb2-4"><a href=""></a><span class="co"># Define node roles for coloring</span></span>
+<span id="cb2-5"><a href=""></a>node_roles <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb2-6"><a href=""></a>  <span class="at">name =</span> <span class="fu">c</span>(<span class="st">"Budget"</span>, <span class="st">"Workforce"</span>, <span class="st">"Training"</span>, <span class="st">"Equipment"</span>,</span>
+<span id="cb2-7"><a href=""></a>           <span class="st">"Referral_System"</span>, <span class="st">"Coverage"</span>, <span class="st">"Quality"</span>,</span>
+<span id="cb2-8"><a href=""></a>           <span class="st">"Baseline_Burden"</span>, <span class="st">"NMR"</span>, <span class="st">"MMR"</span>),</span>
+<span id="cb2-9"><a href=""></a>  <span class="at">role =</span> <span class="fu">c</span>(<span class="st">"Decision"</span>, <span class="st">"Mediator"</span>, <span class="st">"Mediator"</span>, <span class="st">"Mediator"</span>,</span>
+<span id="cb2-10"><a href=""></a>           <span class="st">"Mediator"</span>, <span class="st">"Mediator"</span>, <span class="st">"Mediator"</span>,</span>
+<span id="cb2-11"><a href=""></a>           <span class="st">"Context"</span>, <span class="st">"Outcome"</span>, <span class="st">"Outcome"</span>)</span>
+<span id="cb2-12"><a href=""></a>)</span>
+<span id="cb2-13"><a href=""></a></span>
+<span id="cb2-14"><a href=""></a><span class="co"># Merge roles into the dag data</span></span>
+<span id="cb2-15"><a href=""></a>dag_data <span class="ot">&lt;-</span> <span class="fu">left_join</span>(<span class="fu">as.data.frame</span>(tidy_dag), node_roles,</span>
+<span id="cb2-16"><a href=""></a>                      <span class="at">by =</span> <span class="st">"name"</span>)</span>
+<span id="cb2-17"><a href=""></a></span>
+<span id="cb2-18"><a href=""></a><span class="fu">ggdag</span>(mnh_dag) <span class="sc">+</span></span>
+<span id="cb2-19"><a href=""></a>  <span class="fu">theme_dag</span>() <span class="sc">+</span></span>
+<span id="cb2-20"><a href=""></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Meridian Health Alliance: Qualitative Causal Model"</span>,</span>
+<span id="cb2-21"><a href=""></a>       <span class="at">subtitle =</span> <span class="st">"10-node DAG for MNH investment decisions"</span>) <span class="sc">+</span></span>
+<span id="cb2-22"><a href=""></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">"#005CB9"</span>, <span class="at">size =</span> <span class="dv">16</span>),</span>
+<span id="cb2-23"><a href=""></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">"#666"</span>, <span class="at">size =</span> <span class="dv">12</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="callout-box">
+<p><strong>Color key:</strong> Blue = Decision node, Green = Mediator, Amber = Context variable, Red = Outcome objective</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>R: Test d-Separation</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href=""></a><span class="co"># Test 1: Is Training d-separated from NMR given Quality?</span></span>
+<span id="cb3-2"><a href=""></a><span class="fu">dseparated</span>(mnh_dag, <span class="st">"Training"</span>, <span class="st">"NMR"</span>, <span class="st">"Quality"</span>)</span>
+<span id="cb3-3"><a href=""></a><span class="co"># Expected: TRUE (chain is blocked)</span></span>
+<span id="cb3-4"><a href=""></a></span>
+<span id="cb3-5"><a href=""></a><span class="co"># Test 2: Is Workforce d-separated from Equipment? (unconditional)</span></span>
+<span id="cb3-6"><a href=""></a><span class="fu">dseparated</span>(mnh_dag, <span class="st">"Workforce"</span>, <span class="st">"Equipment"</span>, <span class="fu">c</span>())</span>
+<span id="cb3-7"><a href=""></a><span class="co"># Expected: FALSE (common parent Budget creates fork)</span></span>
+<span id="cb3-8"><a href=""></a></span>
+<span id="cb3-9"><a href=""></a><span class="co"># Test 3: Is Workforce d-separated from Equipment given Budget?</span></span>
+<span id="cb3-10"><a href=""></a><span class="fu">dseparated</span>(mnh_dag, <span class="st">"Workforce"</span>, <span class="st">"Equipment"</span>, <span class="st">"Budget"</span>)</span>
+<span id="cb3-11"><a href=""></a><span class="co"># Expected: TRUE (conditioning on common cause blocks fork)</span></span>
+<span id="cb3-12"><a href=""></a></span>
+<span id="cb3-13"><a href=""></a><span class="co"># Test 4: Is Workforce d-separated from Equipment given Quality?</span></span>
+<span id="cb3-14"><a href=""></a><span class="fu">dseparated</span>(mnh_dag, <span class="st">"Workforce"</span>, <span class="st">"Equipment"</span>, <span class="st">"Quality"</span>)</span>
+<span id="cb3-15"><a href=""></a><span class="co"># Expected: FALSE (conditioning on collider opens path!)</span></span>
+<span id="cb3-16"><a href=""></a></span>
+<span id="cb3-17"><a href=""></a><span class="co"># Test 5: Is Training d-separated from Baseline_Burden?</span></span>
+<span id="cb3-18"><a href=""></a><span class="fu">dseparated</span>(mnh_dag, <span class="st">"Training"</span>, <span class="st">"Baseline_Burden"</span>, <span class="fu">c</span>())</span>
+<span id="cb3-19"><a href=""></a><span class="co"># Expected: TRUE (no connecting path)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="callout-box green">
+<p><strong>Interpret each result:</strong> TRUE means conditionally independent; FALSE means information flows between the two variables given the conditioning set.</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>R: Enumerate All Paths</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href=""></a><span class="co"># Find all paths from Budget to NMR</span></span>
+<span id="cb4-2"><a href=""></a>budget_nmr_paths <span class="ot">&lt;-</span> <span class="fu">paths</span>(mnh_dag,</span>
+<span id="cb4-3"><a href=""></a>                          <span class="at">from =</span> <span class="st">"Budget"</span>,</span>
+<span id="cb4-4"><a href=""></a>                          <span class="at">to =</span> <span class="st">"NMR"</span>)</span>
+<span id="cb4-5"><a href=""></a><span class="fu">print</span>(budget_nmr_paths)</span>
+<span id="cb4-6"><a href=""></a></span>
+<span id="cb4-7"><a href=""></a><span class="co"># Find all paths from Budget to MMR</span></span>
+<span id="cb4-8"><a href=""></a>budget_mmr_paths <span class="ot">&lt;-</span> <span class="fu">paths</span>(mnh_dag,</span>
+<span id="cb4-9"><a href=""></a>                          <span class="at">from =</span> <span class="st">"Budget"</span>,</span>
+<span id="cb4-10"><a href=""></a>                          <span class="at">to =</span> <span class="st">"MMR"</span>)</span>
+<span id="cb4-11"><a href=""></a><span class="fu">print</span>(budget_mmr_paths)</span>
+<span id="cb4-12"><a href=""></a></span>
+<span id="cb4-13"><a href=""></a><span class="co"># Find paths between Workforce and Equipment (through collider)</span></span>
+<span id="cb4-14"><a href=""></a>workforce_equip_paths <span class="ot">&lt;-</span> <span class="fu">paths</span>(mnh_dag,</span>
+<span id="cb4-15"><a href=""></a>                               <span class="at">from =</span> <span class="st">"Workforce"</span>,</span>
+<span id="cb4-16"><a href=""></a>                               <span class="at">to =</span> <span class="st">"Equipment"</span>)</span>
+<span id="cb4-17"><a href=""></a><span class="fu">print</span>(workforce_equip_paths)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="callout-box orange">
+<p><strong>Notice:</strong> Budget → NMR has multiple directed paths (through Workforce, Training, Equipment, and Referral System). All carry a negative overall sign, reinforcing the investment logic.</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>R: Implied Conditional Independencies</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href=""></a><span class="co"># List all conditional independencies implied by the DAG</span></span>
+<span id="cb5-2"><a href=""></a>implied_cis <span class="ot">&lt;-</span> <span class="fu">impliedConditionalIndependencies</span>(mnh_dag)</span>
+<span id="cb5-3"><a href=""></a><span class="fu">print</span>(implied_cis)</span>
+<span id="cb5-4"><a href=""></a></span>
+<span id="cb5-5"><a href=""></a><span class="co"># This tells us every testable prediction of our model.</span></span>
+<span id="cb5-6"><a href=""></a><span class="co"># For example, if our model is correct, we should observe:</span></span>
+<span id="cb5-7"><a href=""></a><span class="co">#   - Training _||_ Equipment | Budget</span></span>
+<span id="cb5-8"><a href=""></a><span class="co">#   - Workforce _||_ Referral_System | Budget</span></span>
+<span id="cb5-9"><a href=""></a><span class="co">#   - Training _||_ Baseline_Burden</span></span>
+<span id="cb5-10"><a href=""></a><span class="co">#   - NMR _||_ MMR | Quality, Baseline_Burden</span></span>
+<span id="cb5-11"><a href=""></a><span class="co">#</span></span>
+<span id="cb5-12"><a href=""></a><span class="co"># If DHIS2 data violates any of these, we need to revise the DAG.</span></span>
+<span id="cb5-13"><a href=""></a></span>
+<span id="cb5-14"><a href=""></a><span class="co"># Count total number of implied independencies</span></span>
+<span id="cb5-15"><a href=""></a><span class="fu">cat</span>(<span class="st">"Total implied conditional independencies:"</span>, <span class="fu">length</span>(implied_cis), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="key-takeaway">
+<p><strong>The implied conditional independencies are the model’s fingerprint.</strong> Each one is a testable prediction. When we get DHIS2 data (Ch 10), we can check every one.</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>Key Takeaways</h2>
+<div class="key-takeaway">
+<p><strong>Qualitative causal models are the foundation of rigorous analysis.</strong></p>
+<p>A DAG encodes your causal beliefs explicitly using four node types and signed directed links.</p>
+<p>The three triplet structures — <strong>chain</strong>, <strong>fork</strong>, and <strong>collider</strong> — govern all information flow. Chains and forks are blocked by conditioning; colliders are <em>opened</em> by conditioning.</p>
+<p><strong>d-Separation</strong> translates graph structure into testable conditional independence predictions.</p>
+<p>For the Meridian Health Alliance: the qualitative DAG reveals that People, Products, and Systems investments are <strong>complements</strong> flowing through Quality of Care — and that conditioning on Quality creates collider bias between investment pillars.</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>Looking Ahead</h2>
+<div class="callout-box">
+<p><strong>Next: Chapter 3 — The Interview Case</strong></p>
+<p>Putting qualitative models to work in a structured case study:</p>
+<ul>
+<li>Building a DAG from stakeholder interviews</li>
+<li>Translating qualitative beliefs into a causal diagram</li>
+<li>Identifying key assumptions and disagreements</li>
+<li>Preparing the model for quantification</li>
+</ul>
+</div>
+<div class="fragment">
+<div class="callout-box green">
+<p><strong>Then: Chapter 4 — Quantitative Causal Models</strong></p>
+<p>Adding numbers to the structure:</p>
+<ul>
+<li>Conditional probability tables (replacing [+]/[-] with actual probabilities)</li>
+<li>Bayes’ rule for updating beliefs with evidence</li>
+<li>Computing posterior probabilities in the full MNH network</li>
+</ul>
+</div>
+</div>
+</section>
+<section class="slide level2" data-background-color="white">
+<h2></h2>
+<p><br><br><br></p>
+<div style="text-align: center;">
+<p><img data-src="bka-logo.png" width="250"></p>
+<p><br></p>
+<p><span style="color: #005CB9; font-size: 0.6em;">Inference and Intervention | Chapter 2: Qualitative Causal Models</span></p>
+<p><span style="color: #666; font-size: 0.5em;">BK Advisors</span></p>
+</div>
+
+</section></section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<p><img src="bka-logo.png" class="slide-logo"></p>
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="index_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="index_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="index_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="index_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="index_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="index_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="index_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="index_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="index_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="index_files/libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'fade',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'slide',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1280,
+
+        height: 720,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    
+
+    <script>
+
+      // htmlwidgets need to know to resize themselves when slides are shown/hidden.
+
+      // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
+
+      // slide changes (different for each slide format).
+
+      (function () {
+
+        // dispatch for htmlwidgets
+
+        function fireSlideEnter() {
+
+          const event = window.document.createEvent("Event");
+
+          event.initEvent("slideenter", true, true);
+
+          window.document.dispatchEvent(event);
+
+        }
+
+    
+
+        function fireSlideChanged(previousSlide, currentSlide) {
+
+          fireSlideEnter();
+
+    
+
+          // dispatch for shiny
+
+          if (window.jQuery) {
+
+            if (previousSlide) {
+
+              window.jQuery(previousSlide).trigger("hidden");
+
+            }
+
+            if (currentSlide) {
+
+              window.jQuery(currentSlide).trigger("shown");
+
+            }
+
+          }
+
+        }
+
+    
+
+        // hookup for slidy
+
+        if (window.w3c_slidy) {
+
+          window.w3c_slidy.add_observer(function (slide_num) {
+
+            // slide_num starts at position 1
+
+            fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
+
+          });
+
+        }
+
+    
+
+      })();
+
+    </script>
+
+    
+
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

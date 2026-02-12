@@ -1,0 +1,717 @@
+---
+title: "Chapter 1: Introduction to Causal Analysis"
+subtitle: "Inference and Intervention | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Distinguish between **situational assessment** and **managerial intervention**
+- Explain why **correlation does not imply causation** with real MNH examples
+- Identify three classic causal thinking traps: confounding, reverse causation, and selection bias
+- Describe the basic elements of a **causal model** (nodes, arrows, directed graphs)
+- Articulate why causal thinking is essential for large-scale pooled investment decisions in maternal and newborn health programs
+:::
+
+## Chapter Overview
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;">Situational<br>Assessment</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">Managerial<br>Intervention</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #E24A3F;">Correlation<br>≠ Causation</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">Causal Model<br>Framework</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">MNH<br>Application</div>
+</div>
+
+. . .
+
+::: {.callout-box}
+**Core Insight:** In a world of resource scarcity, a decision about *which* program elements to control or change must precede any decision on *how* to control or change them. Understanding causality is crucial to making effective interventions.
+:::
+
+
+# Situational Assessment {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">What is happening? What are the causes?</span>
+
+
+## The Manager's Two Questions
+
+Every manager faces two fundamental questions:
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Question 1: What is happening?**
+
+*Situational Assessment* — understanding the current state by gathering evidence and reasoning about causes.
+
+"Why is neonatal mortality still high in District X despite our investments?"
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**Question 2: What should I do?**
+
+*Managerial Intervention* — choosing which levers to pull to change outcomes.
+
+"Should we invest in more CPAP machines or in training more midwives?"
+:::
+:::
+:::
+
+
+## Situational Assessment in Practice
+
+::: {.definition-box}
+**Situational Assessment:** Using evidence to reason about the current state of a system — determining which variables are in which states, and why.
+:::
+
+. . .
+
+::: {.incremental}
+- A police inspector assessing cause of death: What evidence points to which explanation?
+- A technical advisor diagnosing an organization's declining health outcomes: Which factors are driving the problem?
+- A **program director** in a large MNH initiative asking: Why is a country's NMR not declining?
+:::
+
+. . .
+
+::: {.callout-box}
+Causal models help us **incorporate multiple sources of evidence** and reason systematically about what they imply.
+:::
+
+
+## The Maxwell Example (from the Book)
+
+Ryall & Bramson open with a compelling example:
+
+. . .
+
+**Robert Maxwell** — media tycoon found dead off his yacht in 1991.
+
+::: {.incremental}
+- McKinsey's issue tree approach: break down "How did he die?" into MECE categories
+- But this misses the *causal* question: What **caused** each possibility?
+- Causal thinking leads us both **up** the chain (what caused X?) and **down** (what evidence would X produce?)
+:::
+
+. . .
+
+::: {.callout-box .orange}
+**Key Insight:** Framing analysis in causal terms points us toward useful sources of information *and* allows us to incorporate evidence in useful ways.
+:::
+
+
+# Managerial Intervention {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">What should I do? Which levers should I pull?</span>
+
+
+## Managers Manage Scarce Resources
+
+::: {.definition-box}
+**Managerial Intervention:** A decision about which objects to control or change — the choice of *what* to act on, before deciding *how* to act.
+:::
+
+. . .
+
+::: {.incremental}
+- Resources are always limited — money, time, personnel, equipment
+- Every intervention involves **trade-offs**: investing in CPAP means *not* investing in workforce
+- Constraints imply choices, and choices require understanding of **what causes what**
+:::
+
+. . .
+
+::: {.callout-box}
+A large-scale MNH initiative may deploy **pooled investments** across **multiple countries in sub-Saharan Africa**. Every dollar spent on one intervention is a dollar not spent on another. **Which interventions will *cause* the greatest reduction in maternal and newborn mortality?**
+:::
+
+
+## The Feather Touch Cautionary Tale
+
+The book's centerpiece example (adapted to our MNH context):
+
+. . .
+
+**The Setup:** A consulting organization (TruSmartz) analyzes data on an MNH program across multiple countries. They find:
+
+::: {.incremental}
+- Countries with **more demand generation** for health services show **lower** service utilization
+- Countries that run **subsidy programs** also show **lower** utilization
+- The regression model predicts: *stop demand generation to increase utilization!*
+:::
+
+. . .
+
+::: {.callout-box .red}
+**What went wrong?** The regression captured *correlations in the data*, not *causal effects*. Demand generation and subsidies were substitutes in program managers' decision-making — creating a spurious negative correlation.
+:::
+
+
+## The Causal Truth
+
+The true causal model reveals a different story:
+
+<table style="width: 90%; margin: 0.4em auto; font-size: 0.55em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect">Demand Generation<br>Decision</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<span class="dag-arrow negative">→ [−]</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect">Subsidy<br>Decision</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<span class="dag-arrow positive">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node">Care-Seeking<br>Behavior</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<span class="dag-arrow positive">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node outcome">Service<br>Utilization</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+::: {.incremental}
+- Program managers only run subsidies when they are **not** doing demand generation (substitutes!)
+- Subsidies drive care-seeking behavior (service uptake) — but they're underused
+- **Correct intervention:** Run subsidies *alongside* demand generation, not as a replacement
+- The single-stage regression gets the sign wrong; the causal model gets it right
+:::
+
+
+## Regression vs. Causal Model: The Numbers
+
+| Approach | Stop Subsidies | Stop Demand Generation | Run Both |
+|---|---|---|---|
+| **Single-stage regression** | +73 impact units | +282 impact units | — |
+| **Multi-stage (causal) regression** | −783 impact units | −57 impact units | **+544 impact units** |
+| **True causal effect** | −832 impact units | +38 impact units | **+816 impact units** |
+
+. . .
+
+::: {.key-takeaway}
+**The regression without causal structure recommends the worst option.**
+
+A causal model correctly identifies the best intervention.
+:::
+
+
+# Correlation ≠ Causation {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">The three traps of causal reasoning</span>
+
+
+## Trap 1: Confounding
+
+::: {.definition-box}
+**Confounding** occurs when a third variable influences both the supposed cause and effect, creating a spurious association.
+:::
+
+. . .
+
+::: {.example-block}
+[MNH Example]{.example-label}
+
+**Observation:** Countries with more health workers deployed have *higher* neonatal mortality rates.
+
+**Naive conclusion:** Health workers cause deaths?!
+
+**Reality:** More health workers are deployed *to sicker areas* (high-burden districts). **Disease burden** is the confounder — it drives both worker deployment and mortality.
+:::
+
+<table style="margin: 0.3em auto; font-size: 0.55em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;"><div class="dag-node treatment">Health Worker<br>Deployment</div></td>
+<td style="text-align: center; padding: 0.5em;"><span class="dag-arrow">←</span></td>
+<td style="text-align: center; padding: 0.5em;"><div class="dag-node confounder">Disease<br>Burden</div></td>
+<td style="text-align: center; padding: 0.5em;"><span class="dag-arrow">→</span></td>
+<td style="text-align: center; padding: 0.5em;"><div class="dag-node outcome">Neonatal<br>Mortality</div></td>
+</tr>
+</table>
+
+
+## Trap 2: Reverse Causation
+
+::: {.definition-box}
+**Reverse Causation** occurs when the supposed effect actually causes the supposed cause.
+:::
+
+. . .
+
+::: {.example-block}
+[MNH Example]{.example-label}
+
+**Observation:** Countries receiving more **donor funding** have *higher* mortality rates.
+
+**Naive conclusion:** Donor funding increases mortality?
+
+**Reality:** High mortality **attracts** donor funding. The causal arrow runs in the opposite direction.
+:::
+
+::: {.columns-equal}
+::: {.col}
+[Assumed model:]{.bad-example}
+
+Donor Funding → Higher Mortality
+:::
+::: {.col}
+[Actual model:]{.good-example}
+
+Higher Mortality → More Donor Funding
+:::
+:::
+
+
+## Trap 3: Selection Bias
+
+::: {.definition-box}
+**Selection Bias** occurs when the data sample is not representative of the population, because selection into the sample is related to both cause and effect.
+:::
+
+. . .
+
+::: {.example-block}
+[MNH Example]{.example-label}
+
+**Observation:** Among hospitals that report data to DHIS2, CPAP usage appears unrelated to neonatal outcomes.
+
+**Problem:** Only well-resourced hospitals report to DHIS2. These hospitals *already* have better outcomes — the data misses the facilities where CPAP would make the biggest difference.
+
+**Selection mechanism:** Hospital capacity → {DHIS2 Reporting, Outcomes}
+:::
+
+
+## Three Traps Summary
+
+| Trap | What Happens | MNH Example |
+|---|---|---|
+| **Confounding** | Third variable drives both X and Y | Disease burden drives both worker deployment and mortality |
+| **Reverse Causation** | Y causes X, not X causes Y | Mortality attracts funding, not vice versa |
+| **Selection Bias** | Non-random sample distorts relationship | Only high-capacity hospitals report data |
+
+. . .
+
+::: {.key-takeaway}
+**All three traps create statistical associations that look like causal effects but aren't.**
+
+The antidote is explicit causal modeling.
+:::
+
+
+# The Causal Model Framework {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Nodes, arrows, and directed graphs</span>
+
+
+## Elements of a Causal Model
+
+A **causal model** is a directed graph consisting of:
+
+::: {.incremental}
+- **Nodes** — variables in the system (represented by shapes)
+- **Directed links (arrows)** — causal relationships from one variable to another
+- **Signs** — [+] or [−] indicating the direction of effect
+:::
+
+. . .
+
+::: {.callout-box}
+**The key rule:** An arrow from A to B means that changing A can change B, but changing B does *not* change A.
+:::
+
+. . .
+
+::: {.definition-box}
+**Directed Acyclic Graph (DAG):** A causal diagram with no cycles — you cannot follow arrows from any node back to itself. This is the mathematical foundation of causal modeling.
+:::
+
+
+## A Simple MNH Causal Model
+
+<table style="width: 85%; margin: 0.5em auto; font-size: 0.6em;">
+<tr>
+<td style="text-align: center; padding: 1em;">
+<div class="dag-node treatment" style="padding: 0.5em 0.8em;">Investment<br>($M)</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 1.8em;">→ [+]</span>
+</td>
+<td style="text-align: center; padding: 1em;">
+<div class="dag-node" style="padding: 0.5em 0.8em;">Intervention<br>Coverage (%)</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow negative" style="font-size: 1.8em;">→ [−]</span>
+</td>
+<td style="text-align: center; padding: 1em;">
+<div class="dag-node outcome" style="padding: 0.5em 0.8em;">Neonatal<br>Mortality Rate</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+::: {.incremental}
+- **Investment → Coverage [+]:** More funding increases the percentage of facilities with key interventions
+- **Coverage → NMR [−]:** Higher intervention coverage reduces neonatal mortality
+- This is a *serial chain* — investment has an indirect effect on mortality through coverage
+:::
+
+. . .
+
+But this model is too simple! What about confounders, competing causes, feedback?
+
+**That's what the rest of the book is about.**
+
+
+## Preview: What's Coming
+
+| Chapter | What You'll Learn |
+|---|---|
+| **Ch 2** | Building qualitative causal models — nodes, links, triplets |
+| **Ch 3** | Application: The MNH consulting case study |
+| **Ch 4** | Adding numbers — probability tables, Bayes' rule |
+| **Ch 5** | Situational analysis — updating beliefs with evidence |
+| **Ch 6** | Application: Simpson's Paradox in MNH cost-effectiveness |
+| **Ch 7** | Decision analysis — choosing optimal interventions |
+| **Ch 8** | Application: Allocating resources across multiple countries |
+| **Ch 9** | Game theory — strategic interactions between donors & governments |
+| **Ch 10** | Learning causal structure from DHIS2 data |
+
+
+# MNH Application: The Investment Question {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Causal thinking for MNH program design</span>
+
+
+## The MNH Investment Challenge
+
+::: {.callout-box .green}
+Consider a **large-scale MNH initiative** — a multi-country philanthropic program pooling resources from multiple global health foundations to accelerate maternal and newborn survival across sub-Saharan Africa.
+:::
+
+. . .
+
+**The scale of the problem:**
+
+| Metric | Annual Deaths in Sub-Saharan Africa |
+|---|---|
+| Maternal deaths | 182,000 (70% of global total) |
+| Newborn deaths | 950,000 (47% of global total) |
+| Stillbirths | 1.2 million (48% of global total) |
+
+. . .
+
+**Target:** Save **hundreds of thousands of lives** over the program period across multiple countries.
+
+
+## The Causal Investment Question
+
+Such an initiative typically invests in three pillars:
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;"><strong>People</strong><br>Health workforce</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;"><strong>Products</strong><br>MNH innovations</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;"><strong>Systems</strong><br>Data & referrals</div>
+</div>
+
+. . .
+
+::: {.callout-box .orange}
+**The fundamental question is causal:** Which combination of investments across these three pillars will *cause* the greatest reduction in mortality?
+
+This is *not* a question that correlation analysis can answer.
+:::
+
+
+## Why Naive Data Analysis Fails
+
+Suppose we compare spending vs. outcomes across the target countries:
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.example-block}
+[Naive Correlation]{.example-label .bad-example}
+
+Country A receives the most funding and has the highest absolute deaths.
+
+"More spending = more deaths!"
+
+This ignores that Country A is invested in *because* it has the highest burden.
+:::
+:::
+
+::: {.col}
+::: {.example-block}
+[Causal Reasoning]{.example-label .good-example}
+
+Country A has the highest burden *and* the greatest potential for lives saved.
+
+The investment is targeted at the cause of mortality, not correlated with it.
+:::
+:::
+:::
+
+
+## Building a Richer Causal Model
+
+A more realistic model of the MNH initiative's theory of change:
+
+<table style="width: 95%; margin: 0.3em auto; font-size: 0.5em;">
+<tr>
+<td style="vertical-align: middle; text-align: center; padding: 0.4em;">
+<div class="dag-node decision rect" style="min-width: 80px;">Budget<br>Allocation</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow">→</span></td>
+<td style="vertical-align: top; text-align: center; padding: 0.4em;">
+<div class="dag-node" style="min-width: 80px; margin-bottom: 0.3em;">Workforce<br>Training</div><br>
+<div class="dag-node" style="min-width: 80px; margin-bottom: 0.3em;">Equipment<br>Supply</div><br>
+<div class="dag-node" style="min-width: 80px;">Data<br>Systems</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow">→</span></td>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node" style="min-width: 80px;">Quality<br>of Care</div>
+</td>
+<td style="text-align: center;"><span class="dag-arrow">→</span></td>
+<td style="text-align: center; padding: 0.4em;">
+<div class="dag-node outcome" style="min-width: 80px;">Mortality<br>Reduction</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+::: {.incremental}
+- Budget allocation is a **decision node** (rectangle) — we control it
+- Workforce, equipment, and data are **mediators** through which investment works
+- Quality of care is the proximate driver of outcomes
+- **Confounders** not shown: baseline disease burden, government capacity, political stability
+:::
+
+
+# R Workshop: Your First Causal Diagrams {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Using dagitty and ggdag in R</span>
+
+
+## Setting Up the R Environment
+
+```{r}
+#| label: setup
+#| echo: true
+
+# Install packages (run once)
+# install.packages(c("dagitty", "ggdag", "ggplot2", "bnlearn"))
+
+# Load packages
+library(dagitty)    # DAG specification and analysis
+library(ggdag)      # DAG visualization with ggplot2
+library(ggplot2)    # General plotting
+```
+
+::: {.callout-box}
+These packages form our core toolkit throughout the course:
+
+- **dagitty** — specify and analyze DAGs (d-separation, adjustment sets)
+- **ggdag** — beautiful DAG visualizations using ggplot2
+- **bnlearn** — Bayesian network structure learning and inference (Ch 4+)
+:::
+
+
+## R: A Simple MNH Causal Model
+
+```{r}
+#| label: simple-dag
+#| echo: true
+#| fig-width: 8
+#| fig-height: 4
+
+# Define a simple 3-node DAG
+mnh_simple <- dagitty('dag {
+  Investment [pos="0,0"]
+  Coverage [pos="1,0"]
+  NMR [pos="2,0"]
+
+  Investment -> Coverage
+  Coverage -> NMR
+}')
+
+# Visualize
+ggdag(mnh_simple) +
+  theme_dag() +
+  labs(title = "Simple MNH Causal Model",
+       subtitle = "Investment → Coverage → Neonatal Mortality Rate")
+```
+
+
+## R: A Confounded Model
+
+```{r}
+#| label: confounded-dag
+#| echo: true
+#| fig-width: 9
+#| fig-height: 5
+
+# Hospital delivery and mortality: confounded by complication severity
+confounded_dag <- dagitty('dag {
+  Complication_Severity [pos="1,0"]
+  Hospital_Delivery [pos="0,1"]
+  Neonatal_Mortality [pos="2,1"]
+
+  Complication_Severity -> Hospital_Delivery
+  Complication_Severity -> Neonatal_Mortality
+  Hospital_Delivery -> Neonatal_Mortality
+}')
+
+# Visualize with exposure and outcome
+ggdag_status(confounded_dag,
+             exposure = "Hospital_Delivery",
+             outcome = "Neonatal_Mortality") +
+  theme_dag() +
+  scale_color_manual(values = c("exposure" = "#83BD00",
+                                "outcome" = "#E24A3F",
+                                "other" = "#F8A623")) +
+  labs(title = "Confounding in Hospital Delivery Data")
+```
+
+
+## R: Finding Adjustment Sets
+
+```{r}
+#| label: adjustment-sets
+#| echo: true
+
+# What must we control for to estimate the causal effect
+# of hospital delivery on mortality?
+adjustmentSets(confounded_dag,
+               exposure = "Hospital_Delivery",
+               outcome = "Neonatal_Mortality")
+# Returns: { Complication_Severity }
+```
+
+. . .
+
+::: {.callout-box .green}
+**Interpretation:** To estimate the true causal effect of hospital delivery on neonatal mortality, we must **control for complication severity**. Without this adjustment, the correlation between hospital delivery and mortality is biased by confounding.
+:::
+
+
+## R: A Richer MNH Model
+
+```{r}
+#| label: rich-dag
+#| echo: true
+#| fig-width: 10
+#| fig-height: 6
+
+# MNH initiative theory of change
+mnh_toc <- dagitty('dag {
+  Budget [pos="0,1"]
+  Workforce [pos="1,0"]
+  Equipment [pos="1,1"]
+  Data_Systems [pos="1,2"]
+  Quality [pos="2,1"]
+  NMR [pos="3,1"]
+  Baseline_Burden [pos="1.5,2.5"]
+
+  Budget -> Workforce
+  Budget -> Equipment
+  Budget -> Data_Systems
+  Workforce -> Quality
+  Equipment -> Quality
+  Data_Systems -> Quality
+  Quality -> NMR
+  Baseline_Burden -> NMR
+  Baseline_Burden -> Budget
+}')
+
+# Identify the adjustment set for Budget → NMR
+adjustmentSets(mnh_toc,
+               exposure = "Budget",
+               outcome = "NMR")
+
+# Visualize
+ggdag(mnh_toc) +
+  theme_dag() +
+  labs(title = "MNH Initiative: Theory of Change as a DAG")
+```
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Causal modeling serves two purposes:** situational assessment (What is happening?) and managerial intervention (What should I do?).
+
+**Correlation ≠ causation.** Confounding, reverse causation, and selection bias all create misleading associations.
+
+**A causal model** makes your assumptions explicit, testable, and actionable — essential for allocating large-scale program funding effectively.
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 2 — Qualitative Causal Models**
+
+We'll learn the formal language of causal diagrams:
+
+- Four types of nodes (probabilistic, objective, strategic option, function)
+- Directed links with [+] and [−] signs
+- The three fundamental triplet structures: serial, diverging, and converging
+- How to determine whether two variables are causally independent
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[Inference and Intervention | Chapter 1: Introduction to Causal Analysis]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

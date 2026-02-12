@@ -1,0 +1,318 @@
+---
+title: "Chapter 10: Structure Learning from Observational Data"
+subtitle: "Markov equivalence, constraint-based and score-based structure learning, instrumental variables, and causal regression"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Distinguish between **causal models** and **probabilistic models** (and why it matters)
+- Explain **Markov equivalence** and **observational indistinguishability**
+- Apply **constraint-based** (PC algorithm) and **score-based** structure learning
+- Use **instrumental variables** to identify causal effects from observational data
+- Avoid common regression pitfalls: **bad controls**, **collider bias**, and **mediator adjustment**
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### Markov Equivalence and Observational Indistinguishability
+
+Multiple causal structures (DAGs) can produce the same joint probability distribution. If two DAGs encode the same set of conditional independencies, no amount of observational data can distinguish them. They belong to the same Markov equivalence class, represented by a CPDAG (Completed Partially Directed Acyclic Graph) where directed edges indicate consensus on direction and undirected edges indicate ambiguity.
+:::
+
+::: {.key-concept .green}
+#### Structure Learning Algorithms
+
+Two main approaches discover candidate DAGs from data. The **constraint-based** approach (PC algorithm) tests conditional independencies to build a skeleton, then orients edges using collider rules. The **score-based** approach (hill climbing with BIC) searches over DAG space to optimize a scoring function that balances fit and parsimony. Both assume causal sufficiency, faithfulness, and sufficient sample size.
+:::
+
+::: {.key-concept .orange}
+#### Instrumental Variables (IV)
+
+A variable Z that is correlated with the treatment (relevance), affects the outcome only through the treatment (exclusion), and is independent of confounders (independence). Two-Stage Least Squares (2SLS) uses the instrument to extract exogenous variation in the treatment, yielding an unbiased causal effect estimate even when confounders are unobserved.
+:::
+
+::: {.key-concept .red}
+#### Good Controls vs. Bad Controls
+
+Not all control variables improve a regression estimate. Controlling for **confounders** (common causes of treatment and outcome) removes bias. Controlling for **mediators** (variables on the causal path) blocks the causal effect and underestimates the total effect. Controlling for **colliders** (common effects of treatment and outcome) opens spurious paths and creates bias. The DAG must guide variable selection.
+:::
+
+::: {.key-concept .teal}
+#### The MNH Data-Driven Workflow
+
+A five-step process: (1) learn the DAG skeleton from DHIS2 data using PC or hill-climbing algorithms, (2) orient ambiguous edges using expert knowledge and temporal ordering, (3) validate implied independencies against the data, (4) estimate causal effects using IV or adjusted regression, and (5) use the model for intervention decisions. This workflow integrates data-driven discovery with the expert-driven causal modeling of earlier chapters.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch10-data-driven/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch10-data-driven/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This chapter implements structure learning from simulated DHIS2 data, compares constraint-based and score-based algorithms, demonstrates instrumental variable estimation, and illustrates good-control versus bad-control pitfalls.
+
+### Simulating DHIS2-Like Data
+
+We create a dataset with a known causal structure (8 variables reflecting facility staffing, equipment, training, drug availability, delivery patterns, and neonatal outcomes) so that we can evaluate how well structure learning algorithms recover the true DAG.
+
+```{r}
+#| label: simulate-dhis2
+#| echo: true
+#| eval: false
+
+library(bnlearn)
+library(tidyverse)
+
+set.seed(42)
+n <- 3000  # facilities
+
+# True causal structure (known to us, not the algorithm)
+true_dag <- model2network(paste0(
+  "[Training][DrugAvail][Equipment]",
+  "[Staffing|Training]",
+  "[CSection|Staffing:DrugAvail:Equipment]",
+  "[Referral|Staffing:Equipment]",
+  "[Volume|Staffing:Equipment]",
+  "[NMR|CSection:Referral:Staffing:DrugAvail]"
+))
+
+# Simulate from known structure with realistic parameters
+training    <- rbinom(n, 1, 0.6)
+drug_avail  <- rbinom(n, 1, 0.7)
+equipment   <- rnorm(n, 0.5, 0.15) |> pmin(1) |> pmax(0)
+staffing    <- rbinom(n, 1, 0.4 + 0.3 * training)
+csection    <- 5 + 8 * staffing + 3 * drug_avail + 4 * equipment + rnorm(n, 0, 3)
+referral    <- 15 - 5 * staffing - 3 * equipment + rnorm(n, 0, 4)
+volume      <- 50 + 30 * staffing + 20 * equipment + rnorm(n, 0, 15)
+nmr         <- 35 - 8 * staffing - 4 * drug_avail - 3 * (csection > 10) -
+               2 * (referral < 10) + rnorm(n, 0, 5)
+
+dhis2 <- tibble(
+  Training = factor(training, labels = c("No", "Yes")),
+  DrugAvail = factor(drug_avail, labels = c("Stockout", "Available")),
+  Equipment = equipment,
+  Staffing = factor(staffing, labels = c("Low", "Adequate")),
+  CSection = csection,
+  Referral = referral,
+  Volume = volume,
+  NMR = nmr
+)
+
+head(dhis2)
+```
+
+### PC Algorithm -- Learning Structure from Data
+
+The PC algorithm uses conditional independence tests to discover edges. It returns a CPDAG (partially directed graph) reflecting the Markov equivalence class that is consistent with the observed data.
+
+```{r}
+#| label: pc-algorithm
+#| echo: true
+#| eval: false
+
+# Constraint-based structure learning: PC algorithm (stable version)
+# Uses conditional independence tests to discover edges
+
+learned_pc <- pc.stable(dhis2, test = "mi-cg", alpha = 0.05)
+# "mi-cg" = mutual information test for conditional Gaussian (mixed data)
+
+# Compare learned vs. true structure
+cat("True DAG edges:\n")
+print(arcs(true_dag))
+
+cat("\nLearned CPDAG edges:\n")
+print(arcs(learned_pc))
+
+# Structural Hamming Distance (SHD) — lower is better
+shd_score <- shd(learned_pc, true_dag)
+cat("\nStructural Hamming Distance:", shd_score, "\n")
+
+# Which edges were correctly identified?
+true_arcs <- arcs(true_dag)
+learned_arcs <- arcs(learned_pc)
+cat("\nTrue positives:", nrow(merge(true_arcs, learned_arcs)), "\n")
+cat("False positives:", nrow(learned_arcs) - nrow(merge(true_arcs, learned_arcs)), "\n")
+cat("False negatives:", nrow(true_arcs) - nrow(merge(true_arcs, learned_arcs)), "\n")
+```
+
+### Score-Based Learning (Hill Climbing)
+
+Hill climbing with BIC optimizes a score that balances fit and complexity. We compare the structures recovered by both approaches against the true DAG.
+
+```{r}
+#| label: hill-climbing
+#| echo: true
+#| eval: false
+
+# Score-based structure learning: Hill Climbing with BIC
+learned_hc <- hc(dhis2, score = "bic-cg")
+# "bic-cg" = BIC for conditional Gaussian networks
+
+# Compare all three structures
+cat("=== Structure Comparison ===\n\n")
+
+cat("PC algorithm edges:", nrow(arcs(learned_pc)), "\n")
+cat("Hill climbing edges:", nrow(arcs(learned_hc)), "\n")
+cat("True DAG edges:", nrow(arcs(true_dag)), "\n\n")
+
+cat("SHD (PC vs. true):", shd(learned_pc, true_dag), "\n")
+cat("SHD (HC vs. true):", shd(learned_hc, true_dag), "\n")
+
+# Visualize all three
+par(mfrow = c(1, 3))
+graphviz.plot(true_dag, main = "True DAG", shape = "ellipse",
+              highlight = list(nodes = "NMR", fill = "#E24A3F", col = "#E24A3F"))
+graphviz.plot(learned_pc, main = "PC Algorithm (CPDAG)", shape = "ellipse",
+              highlight = list(nodes = "NMR", fill = "#E24A3F", col = "#E24A3F"))
+graphviz.plot(learned_hc, main = "Hill Climbing (BIC)", shape = "ellipse",
+              highlight = list(nodes = "NMR", fill = "#E24A3F", col = "#E24A3F"))
+```
+
+### Instrumental Variable Estimation
+
+We simulate an IV scenario where district wealth confounds the relationship between midwife density and NMR. Distance to the nearest training college serves as an instrument that affects midwife density but not NMR directly. Two-stage least squares (2SLS) recovers the true causal effect.
+
+```{r}
+#| label: iv-estimation
+#| echo: true
+#| eval: false
+
+library(ivreg)  # for 2SLS estimation
+
+# Does midwife density cause lower NMR?
+# Instrument: distance to nearest training college
+
+set.seed(123)
+n_districts <- 500
+
+# Simulate IV scenario
+wealth        <- rnorm(n_districts, 50, 15)           # confounder
+distance      <- runif(n_districts, 5, 200)            # instrument
+midwife_density <- 20 - 0.05 * distance + 0.3 * wealth + rnorm(n_districts, 0, 3)
+nmr_district  <- 40 - 0.4 * midwife_density - 0.2 * wealth + rnorm(n_districts, 0, 5)
+
+iv_data <- tibble(
+  NMR = nmr_district,
+  Midwife = midwife_density,
+  Distance = distance,
+  Wealth = wealth
+)
+
+# Naive OLS (biased — omits wealth)
+ols_naive <- lm(NMR ~ Midwife, data = iv_data)
+
+# OLS with control (correct if we observe wealth)
+ols_controlled <- lm(NMR ~ Midwife + Wealth, data = iv_data)
+
+# 2SLS IV estimation (doesn't need wealth)
+iv_est <- ivreg(NMR ~ Midwife | Distance, data = iv_data)
+
+# Compare all three
+cat("=== Causal Effect of Midwife Density on NMR ===\n")
+cat("True effect:        -0.40\n")
+cat("Naive OLS:         ", round(coef(ols_naive)["Midwife"], 3), "\n")
+cat("Controlled OLS:    ", round(coef(ols_controlled)["Midwife"], 3), "\n")
+cat("IV (2SLS):         ", round(coef(iv_est)["Midwife"], 3), "\n")
+
+# First-stage F-statistic (test instrument strength)
+first_stage <- lm(Midwife ~ Distance, data = iv_data)
+cat("\nFirst-stage F-stat:", summary(first_stage)$fstatistic[1] |> round(1), "\n")
+cat("(Rule of thumb: F > 10 for strong instrument)\n")
+```
+
+### Good vs. Bad Controls in Regression
+
+Two demonstrations: (1) controlling for a mediator underestimates the total effect of training on NMR, and (2) conditioning on a collider (quality rating) creates a spurious negative association between staffing and equipment.
+
+```{r}
+#| label: good-bad-controls
+#| echo: true
+#| eval: false
+
+# Demonstrate: controlling for a mediator UNDERESTIMATES the total effect
+# Demonstrate: controlling for a collider CREATES spurious association
+
+set.seed(456)
+n <- 2000
+
+# --- Mediator example ---
+# True DAG: Training → Competency → NMR
+training_m   <- rbinom(n, 1, 0.5)
+competency   <- 0.3 + 0.4 * training_m + rnorm(n, 0, 0.15)
+nmr_m        <- 35 - 15 * competency + rnorm(n, 0, 4)
+
+# Total effect of training (correct)
+cat("=== Mediator Example ===\n")
+cat("Total effect (no mediator control):",
+    round(coef(lm(nmr_m ~ training_m))["training_m"], 2), "\n")
+# Controlled direct effect (blocks causal path!)
+cat("Direct effect (controlling mediator):",
+    round(coef(lm(nmr_m ~ training_m + competency))["training_m"], 2), "\n")
+cat("True total effect: -6.0\n\n")
+
+# --- Collider example ---
+# True DAG: Staffing → Quality ← Equipment; Staffing ⊥ Equipment
+staffing_c   <- rbinom(n, 1, 0.5)
+equipment_c  <- rnorm(n, 0.5, 0.2)
+quality      <- 0.3 * staffing_c + 0.4 * equipment_c + rnorm(n, 0, 0.1)
+
+cat("=== Collider Example ===\n")
+cat("Staffing-Equipment correlation (unconditional):",
+    round(cor(staffing_c, equipment_c), 3), "\n")
+
+# Condition on collider — creates spurious association
+high_quality <- quality > median(quality)
+cat("Staffing-Equipment correlation (among high-quality):",
+    round(cor(staffing_c[high_quality], equipment_c[high_quality]), 3), "\n")
+cat("Expected: ~0 unconditional, negative conditional (collider bias)\n")
+
+# Visualize collider bias
+tibble(Staffing = staffing_c, Equipment = equipment_c,
+       Quality = ifelse(quality > median(quality), "High", "Low")) |>
+  ggplot(aes(x = factor(Staffing), y = Equipment, fill = Quality)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = c("High" = "#83BD00", "Low" = "#E24A3F")) +
+  labs(title = "Collider Bias: Conditioning on Quality of Care",
+       subtitle = "Among high-quality facilities, staffing and equipment appear negatively correlated",
+       x = "Staffing (0 = Low, 1 = Adequate)", y = "Equipment Index") +
+  theme_minimal(base_size = 14)
+```
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Data alone cannot determine causation.** Markov equivalence means multiple DAGs fit the same data. Domain knowledge is essential to resolve ambiguity.
+
+**Structure learning discovers candidate DAGs.** The PC algorithm (constraint-based) and hill climbing (score-based) recover the skeleton; colliders are the key to orientation.
+
+**Instrumental variables overcome confounding.** When you cannot control for confounders, a valid instrument recovers the causal effect via 2SLS.
+
+**Not all controls are good controls.** Controlling for mediators underestimates effects; controlling for colliders creates bias. Let the DAG guide your regression specification.
+:::
+
+## Course Summary
+
+This chapter closes the loop on the complete **Inference and Intervention** toolkit:
+
+| Chapter | Tool |
+|---------|------|
+| 1--3 | Qualitative DAGs |
+| 4--5 | Bayesian networks and inference |
+| 6 | Causal reasoning pitfalls (Simpson's Paradox, Prosecutor's Fallacy) |
+| 7 | Decision analysis and do-calculus |
+| 8 | Resource allocation under uncertainty |
+| 9 | Multi-agent game theory |
+| **10** | **Data-driven discovery** |
+
+The MNH program analyst's workflow brings all these pieces together: build a DAG from expert interviews (Chapters 2--3), quantify it with DHIS2 data (Chapters 4--5, 10), avoid causal reasoning traps (Chapter 6), make allocation decisions (Chapters 7--8), anticipate strategic responses (Chapter 9), and validate and refine with new data (Chapter 10).
+
+Causal models are not just academic abstractions -- they are practical tools for answering the questions that matter most in global health: Where should we invest? What should we do? How do we know it will work?

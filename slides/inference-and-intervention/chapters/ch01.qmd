@@ -1,0 +1,201 @@
+---
+title: "Chapter 1: Introduction to Causal Analysis"
+subtitle: "Situational assessment, managerial intervention, and why correlation ≠ causation"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Distinguish between **situational assessment** and **managerial intervention**
+- Explain why **correlation does not imply causation** with real MNH examples
+- Identify three classic causal thinking traps: confounding, reverse causation, and selection bias
+- Describe the basic elements of a **causal model** (nodes, arrows, directed graphs)
+- Articulate why causal thinking is essential for large-scale pooled investment decisions in maternal and newborn health programs
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### Situational Assessment
+Using evidence to reason about the current state of a system — determining which variables are in which states, and why. This is the "What is happening?" question every manager faces.
+:::
+
+::: {.key-concept .green}
+#### Managerial Intervention
+A decision about which objects to control or change — the choice of *what* to act on, before deciding *how* to act. Resources are always limited, so every intervention involves trade-offs.
+:::
+
+::: {.key-concept .red}
+#### The Three Causal Thinking Traps
+
+| Trap | What Happens | MNH Example |
+|---|---|---|
+| **Confounding** | Third variable drives both X and Y | Disease burden drives both worker deployment and mortality |
+| **Reverse Causation** | Y causes X, not X causes Y | Mortality attracts funding, not vice versa |
+| **Selection Bias** | Non-random sample distorts relationship | Only high-capacity hospitals report data |
+:::
+
+::: {.key-concept .teal}
+#### Directed Acyclic Graph (DAG)
+A causal diagram with no cycles — you cannot follow arrows from any node back to itself. An arrow from A to B means that changing A can change B, but changing B does *not* change A. This is the mathematical foundation of causal modeling.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch01-intro/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch01-intro/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This chapter introduces the core R packages for causal analysis: `dagitty` for DAG specification and analysis, `ggdag` for visualization, and `ggplot2` for general plotting.
+
+### Setting Up the Environment
+
+```{r}
+#| label: setup
+#| echo: true
+
+# Install packages (run once)
+# install.packages(c("dagitty", "ggdag", "ggplot2", "bnlearn"))
+
+# Load packages
+library(dagitty)    # DAG specification and analysis
+library(ggdag)      # DAG visualization with ggplot2
+library(ggplot2)    # General plotting
+```
+
+### A Simple MNH Causal Model
+
+```{r}
+#| label: simple-dag
+#| echo: true
+#| fig-width: 8
+#| fig-height: 4
+
+# Define a simple 3-node DAG
+mnh_simple <- dagitty('dag {
+  Investment [pos="0,0"]
+  Coverage [pos="1,0"]
+  NMR [pos="2,0"]
+
+  Investment -> Coverage
+  Coverage -> NMR
+}')
+
+# Visualize
+ggdag(mnh_simple) +
+  theme_dag() +
+  labs(title = "Simple MNH Causal Model",
+       subtitle = "Investment → Coverage → Neonatal Mortality Rate")
+```
+
+### A Confounded Model
+
+```{r}
+#| label: confounded-dag
+#| echo: true
+#| fig-width: 9
+#| fig-height: 5
+
+# Hospital delivery and mortality: confounded by complication severity
+confounded_dag <- dagitty('dag {
+  Complication_Severity [pos="1,0"]
+  Hospital_Delivery [pos="0,1"]
+  Neonatal_Mortality [pos="2,1"]
+
+  Complication_Severity -> Hospital_Delivery
+  Complication_Severity -> Neonatal_Mortality
+  Hospital_Delivery -> Neonatal_Mortality
+}')
+
+# Visualize with exposure and outcome
+ggdag_status(confounded_dag,
+             exposure = "Hospital_Delivery",
+             outcome = "Neonatal_Mortality") +
+  theme_dag() +
+  scale_color_manual(values = c("exposure" = "#83BD00",
+                                "outcome" = "#E24A3F",
+                                "other" = "#F8A623")) +
+  labs(title = "Confounding in Hospital Delivery Data")
+```
+
+### Finding Adjustment Sets
+
+```{r}
+#| label: adjustment-sets
+#| echo: true
+
+# What must we control for to estimate the causal effect
+# of hospital delivery on mortality?
+adjustmentSets(confounded_dag,
+               exposure = "Hospital_Delivery",
+               outcome = "Neonatal_Mortality")
+# Returns: { Complication_Severity }
+```
+
+To estimate the true causal effect of hospital delivery on neonatal mortality, we must **control for complication severity**. Without this adjustment, the correlation between hospital delivery and mortality is biased by confounding.
+
+### A Richer MNH Model
+
+```{r}
+#| label: rich-dag
+#| echo: true
+#| fig-width: 10
+#| fig-height: 6
+
+# MNH initiative theory of change
+mnh_toc <- dagitty('dag {
+  Budget [pos="0,1"]
+  Workforce [pos="1,0"]
+  Equipment [pos="1,1"]
+  Data_Systems [pos="1,2"]
+  Quality [pos="2,1"]
+  NMR [pos="3,1"]
+  Baseline_Burden [pos="1.5,2.5"]
+
+  Budget -> Workforce
+  Budget -> Equipment
+  Budget -> Data_Systems
+  Workforce -> Quality
+  Equipment -> Quality
+  Data_Systems -> Quality
+  Quality -> NMR
+  Baseline_Burden -> NMR
+  Baseline_Burden -> Budget
+}')
+
+# Identify the adjustment set for Budget → NMR
+adjustmentSets(mnh_toc,
+               exposure = "Budget",
+               outcome = "NMR")
+
+# Visualize
+ggdag(mnh_toc) +
+  theme_dag() +
+  labs(title = "MNH Initiative: Theory of Change as a DAG")
+```
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Causal modeling serves two purposes:** situational assessment (What is happening?) and managerial intervention (What should I do?).
+
+**Correlation ≠ causation.** Confounding, reverse causation, and selection bias all create misleading associations.
+
+**A causal model** makes your assumptions explicit, testable, and actionable — essential for allocating large-scale program funding effectively.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 2 — Qualitative Causal Models**, we learn the formal language of causal diagrams:
+
+- Four types of nodes (probabilistic, objective, strategic option, function)
+- Directed links with [+] and [−] signs
+- The three fundamental triplet structures: serial, diverging, and converging
+- How to determine whether two variables are causally independent (d-separation)

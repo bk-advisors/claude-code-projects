@@ -1,0 +1,121 @@
+---
+title: "R Environment Setup"
+subtitle: "Installing R, RStudio, and the required packages for this course"
+---
+
+## Required Software
+
+| Software | Version | Download |
+|----------|---------|----------|
+| **R** | 4.3 or later | [r-project.org](https://www.r-project.org/) |
+| **RStudio** (recommended IDE) | Latest | [posit.co/downloads](https://posit.co/download/rstudio-desktop/) |
+| **Quarto** (for rendering slides) | 1.8 or later | [quarto.org](https://quarto.org/docs/get-started/) |
+
+::: {.callout-box}
+**Note:** The slide decks and this website use `eval: false` for all R code blocks, meaning R code is displayed but not executed during rendering. You do **not** need R installed to view the slides or website. However, to run the workshop exercises interactively, you will need R and the packages below.
+:::
+
+## Package Installation
+
+Run this once in your R console to install all packages used across the 10 chapters:
+
+```{r}
+#| label: install-all
+#| eval: false
+
+install.packages(c(
+  "dagitty",   # DAG specification and analysis
+  "ggdag",     # DAG visualization with ggplot2
+  "bnlearn",   # Bayesian network structure and parameter learning
+  "ggplot2",   # Data visualization
+  "ivreg",     # Instrumental variable regression (2SLS)
+  "tidyr",     # Data reshaping (pivot_longer)
+  "gRain"      # Exact inference in Bayesian networks (junction tree)
+))
+```
+
+## Packages by Chapter
+
+| Package | Purpose | Chapters Used |
+|---------|---------|---------------|
+| `dagitty` | Define and analyze DAGs, d-separation, adjustment sets | 1, 2, 3, 4, 5, 10 |
+| `ggdag` | Visualize DAGs using ggplot2 | 1, 2, 3, 10 |
+| `bnlearn` | Bayesian network structure and parameter learning | 4, 5, 7, 10 |
+| `ggplot2` | All data visualizations | 4, 5, 6, 7, 8, 9, 10 |
+| `gRain` | Exact inference via junction trees (companion to bnlearn) | 4, 5 |
+| `ivreg` | Instrumental variable regression (two-stage least squares) | 10 |
+| `tidyr` | Data reshaping (`pivot_longer`) | 8 |
+
+## Verification Script
+
+After installing, run this script to verify all packages load correctly:
+
+```{r}
+#| label: verify-packages
+#| eval: false
+
+# Verification: load each package and print version
+packages <- c("dagitty", "ggdag", "bnlearn", "ggplot2", "ivreg", "tidyr", "gRain")
+
+for (pkg in packages) {
+  if (requireNamespace(pkg, quietly = TRUE)) {
+    cat(sprintf("✓ %s %s\n", pkg, packageVersion(pkg)))
+  } else {
+    cat(sprintf("✗ %s — NOT INSTALLED\n", pkg))
+  }
+}
+```
+
+Expected output (version numbers may vary):
+
+```
+✓ dagitty 0.3-4
+✓ ggdag 0.2.12
+✓ bnlearn 4.9.4
+✓ ggplot2 3.5.1
+✓ ivreg 0.6-3
+✓ tidyr 1.3.1
+✓ gRain 1.4.3
+```
+
+## Troubleshooting
+
+### bnlearn installation issues on Windows
+
+`bnlearn` requires compilation. If you encounter errors:
+
+1. Install [Rtools](https://cran.r-project.org/bin/windows/Rtools/) (match the version to your R version)
+2. Restart R and try `install.packages("bnlearn")` again
+
+### gRain dependency issues
+
+`gRain` depends on Bioconductor packages. If `install.packages("gRain")` fails:
+
+```{r}
+#| label: install-grain
+#| eval: false
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("RBGL")
+BiocManager::install("Rgraphviz")
+install.packages("gRain")
+```
+
+### dagitty on older R versions
+
+If `dagitty` installation fails, ensure your R version is 4.3 or later. The package uses features not available in older versions.
+
+## Consistent MNH Variables
+
+These variable names are used consistently across chapters in the R code workshops:
+
+| Variable | Values | R Name |
+|----------|--------|--------|
+| Staffing | Adequate / Low | `Staffing` |
+| Equipment (CPAP) | Available / Unavailable | `Equipment` or `CPAP` |
+| Training | Completed / Not Completed | `Training` |
+| Quality of Care | Good / Poor | `Quality` |
+| Neonatal Mortality Rate | High (>25/1000) / Low (≤25/1000) | `NMR` |
+| Maternal Mortality Ratio | High (>300/100K) / Low (≤300/100K) | `MMR` |
+| Coverage | >80% / ≤80% | `Coverage` |

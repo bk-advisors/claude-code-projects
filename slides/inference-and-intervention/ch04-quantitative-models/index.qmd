@@ -1,0 +1,1140 @@
+---
+title: "Chapter 4: Quantitative Causal Models"
+subtitle: "Inference and Intervention | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Define **probability distributions** over discrete variable states and apply the basic axioms
+- Compute **conditional probabilities** and construct **Conditional Probability Tables (CPTs)**
+- Apply **Bayes' rule** to update beliefs when new evidence arrives
+- Explain the **Causal Markov Condition** and how a DAG factorizes a joint distribution
+- Build a **quantitative Bayesian network** in R using `bnlearn` and query it for MNH policy decisions
+:::
+
+
+# From Qualitative to Quantitative {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Structure alone is not enough -- we need numbers</span>
+
+
+## Why Structure Alone Is Not Enough
+
+In Chapters 2 and 3, we built **qualitative** causal models -- DAGs with nodes, arrows, and signs.
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**What qualitative models tell us:**
+
+- Which variables influence which
+- The direction of causal effects ([+] or [-])
+- Which paths are open or blocked (d-separation)
+:::
+:::
+
+::: {.col}
+::: {.callout-box .orange}
+**What qualitative models cannot tell us:**
+
+- *How much* does Staffing affect Quality of Care?
+- *How likely* is high NMR given equipment shortages?
+- *Which intervention* has the largest expected impact?
+:::
+:::
+:::
+
+. . .
+
+::: {.key-takeaway}
+**To make decisions, we need to quantify uncertainty.**
+
+Quantitative causal models attach probability distributions to every node in the DAG.
+:::
+
+
+## The Quantitative Upgrade
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;">Qualitative DAG<br>(Ch 2-3)</div>
+<div class="step-arrow">+</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">Probability<br>Tables</div>
+<div class="step-arrow">=</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">Bayesian<br>Network</div>
+</div>
+
+. . .
+
+::: {.example-block}
+[MNH Example]{.example-label}
+
+**Qualitative:** Staffing --> Quality of Care --> Neonatal Mortality Rate
+
+**Quantitative:** *If* P(Staffing = Adequate) = 0.40, *and* P(Quality = Good | Staffing = Adequate) = 0.80, *then* what is P(NMR = High)?
+
+Now we can **compute** the answer, not just reason about direction.
+:::
+
+. . .
+
+::: {.callout-box .green}
+A **Bayesian network** = a DAG + a conditional probability table (CPT) for every node. This chapter teaches you how to build and query one.
+:::
+
+
+# Probability Fundamentals {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">The language of quantitative uncertainty</span>
+
+
+## Variable States
+
+Every variable in our causal model takes on a set of **states** (values).
+
+. . .
+
+::: {.definition-box}
+**States** must be **discrete** and **MECE** (Mutually Exclusive, Collectively Exhaustive) -- every observation falls into exactly one state.
+:::
+
+. . .
+
+| Variable | States | MECE? |
+|---|---|---|
+| **Staffing** | {Adequate, Low} | Yes -- every facility is one or the other |
+| **CPAP Available** | {Available, Unavailable} | Yes |
+| **Quality of Care** | {Good, Poor} | Yes |
+| **NMR** | {High (>25/1000), Low ($\leq$25/1000)} | Yes |
+
+. . .
+
+::: {.callout-box}
+**Why discrete?** Continuous variables (exact NMR = 27.3/1000) require density functions. We discretize for tractability -- a common and effective practice in applied Bayesian networks.
+:::
+
+
+## Events: Sets of States
+
+::: {.definition-box}
+An **event** is any subset of states for one or more variables. Events can be combined using set operations.
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+**Simple events:**
+
+- $A$ = {Staffing = Adequate}
+- $B$ = {CPAP = Available}
+- $C$ = {NMR = High}
+:::
+
+::: {.col}
+**Compound events:**
+
+- $A \cap B$ = Adequate staffing **AND** CPAP available
+- $A \cup C$ = Adequate staffing **OR** high NMR
+- $\bar{A}$ = Staffing is **NOT** adequate (i.e., Low)
+:::
+:::
+
+. . .
+
+::: {.callout-box}
+For binary variables, knowing one state determines the other: if P(Staffing = Adequate) = 0.40, then P(Staffing = Low) = 1 - 0.40 = 0.60.
+:::
+
+
+## Probability Axioms
+
+The three axioms that all probabilities must satisfy:
+
+. . .
+
+::: {.math-block}
+**Axiom 1 (Non-negativity):** $P(A) \geq 0$ for any event $A$
+:::
+
+::: {.math-block}
+**Axiom 2 (Normalization):** $P(\Omega) = 1$ where $\Omega$ is the entire sample space
+:::
+
+::: {.math-block}
+**Axiom 3 (Additivity):** If $A \cap B = \emptyset$, then $P(A \cup B) = P(A) + P(B)$
+:::
+
+. . .
+
+**Immediate consequences:**
+
+::: {.incremental}
+- $P(\bar{A}) = 1 - P(A)$ (complement rule)
+- $0 \leq P(A) \leq 1$ (probabilities are bounded)
+- For a variable with states $\{s_1, s_2, \ldots, s_k\}$: $\sum_{i=1}^{k} P(s_i) = 1$
+:::
+
+
+## Frequency vs. Subjective Probability
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Frequentist interpretation:**
+
+Probability = long-run relative frequency.
+
+"40% of facilities have adequate staffing" means: if we visit many facilities, about 40% will be adequately staffed.
+
+Based on **data** (e.g., facility surveys).
+:::
+:::
+
+::: {.col}
+::: {.callout-box .orange}
+**Subjective (Bayesian) interpretation:**
+
+Probability = degree of belief.
+
+"I believe there's a 70% chance this district will reduce NMR by 2030" -- an expert judgment.
+
+Based on **evidence + reasoning**.
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box .green}
+**In practice, we use both.** CPTs combine survey data where available with expert judgment where data is sparse. Large-scale MNH programs often operate in data-limited settings -- subjective priors are unavoidable and valuable.
+:::
+
+
+## MNH Example: Marginal vs. Conditional Probability
+
+Consider neonatal mortality and preterm birth in sub-Saharan Africa:
+
+. . .
+
+::: {.math-block}
+**Marginal probability:** $P(\text{Neonatal Death}) \approx 0.025$ (25 per 1,000 live births)
+:::
+
+::: {.math-block}
+**Conditional probability:** $P(\text{Neonatal Death} \mid \text{Preterm}) \approx 0.10$ (100 per 1,000 preterm births)
+:::
+
+. . .
+
+::: {.example-block}
+[Key Insight]{.example-label}
+
+The probability of neonatal death is **4 times higher** for preterm births than for the general population. This tells us that preterm birth is a strong **risk factor** -- but is it a *cause*?
+
+To answer that, we need a causal model that separates the direct effect of prematurity from confounders like maternal health, facility quality, and access to care.
+:::
+
+
+# Conditional Probability {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">P(A|B): The foundation of Bayesian networks</span>
+
+
+## Definition and Interpretation
+
+::: {.definition-box}
+**Conditional Probability:** The probability of event $A$ given that event $B$ has occurred (or is known to be true):
+
+$$P(A \mid B) = \frac{P(A \cap B)}{P(B)}, \quad P(B) > 0$$
+:::
+
+. . .
+
+::: {.example-block}
+[Intuition]{.example-label}
+
+$P(A \mid B)$ answers: "Among the cases where $B$ is true, what fraction also have $A$?"
+
+$P(\text{NMR=High} \mid \text{Staffing=Low})$ = "Among facilities with low staffing, what fraction have high neonatal mortality?"
+:::
+
+. . .
+
+**Crucial distinction:**
+
+- $P(\text{NMR=High} \mid \text{Staffing=Low}) = 0.55$ -- 55% of under-staffed facilities have high NMR
+- $P(\text{Staffing=Low} \mid \text{NMR=High}) = 0.75$ -- 75% of high-NMR facilities are under-staffed
+
+These are **not the same** -- confusing them is a common and costly error.
+
+
+## Stochastic Independence
+
+::: {.definition-box}
+Two events $A$ and $B$ are **stochastically independent** if and only if:
+
+$$P(A \mid B) = P(A)$$
+
+Equivalently: $P(A \cap B) = P(A) \times P(B)$
+:::
+
+. . .
+
+**What independence means:** Knowing $B$ tells you **nothing** about $A$.
+
+. . .
+
+::: {.example-block}
+[MNH Test]{.example-label}
+
+Is Staffing independent of NMR? We check:
+
+- $P(\text{NMR=High}) = 0.35$ (overall)
+- $P(\text{NMR=High} \mid \text{Staffing=Adequate}) = 0.15$
+- $P(\text{NMR=High} \mid \text{Staffing=Low}) = 0.55$
+
+Since $0.15 \neq 0.35$ and $0.55 \neq 0.35$, Staffing and NMR are **not independent**. Staffing is informative about mortality.
+:::
+
+
+## Conditional Probability Tables (CPTs)
+
+::: {.definition-box}
+A **Conditional Probability Table (CPT)** lists $P(\text{Child} \mid \text{Parents})$ for every combination of parent and child states. Every row sums to 1.
+:::
+
+. . .
+
+**CPT for Quality of Care** given Staffing and CPAP:
+
+| Staffing | CPAP Available | P(Quality=Good) | P(Quality=Poor) |
+|---|---|---|---|
+| Adequate | Available | 0.85 | 0.15 |
+| Adequate | Unavailable | 0.55 | 0.45 |
+| Low | Available | 0.50 | 0.50 |
+| Low | Unavailable | 0.20 | 0.80 |
+
+. . .
+
+::: {.callout-box}
+Each row defines a **conditional distribution** over Quality of Care. The table encodes four scenarios -- the core of what the Bayesian network "knows."
+:::
+
+
+## MNH CPT: Neonatal Outcome Given CPAP and Training
+
+A CPT for neonatal outcome given equipment and workforce readiness:
+
+. . .
+
+| CPAP Available | Staff Trained | P(Outcome=Survival) | P(Outcome=Death) |
+|---|---|---|---|
+| Available | Completed | 0.96 | 0.04 |
+| Available | Not Completed | 0.88 | 0.12 |
+| Unavailable | Completed | 0.82 | 0.18 |
+| Unavailable | Not Completed | 0.70 | 0.30 |
+
+. . .
+
+::: {.callout-box .green}
+**Reading the table:** When both CPAP is available and staff are trained, neonatal survival is 96%. When neither is present, survival drops to 70% -- a **26 percentage point** gap. This quantifies the combined effect of equipment and training.
+:::
+
+. . .
+
+::: {.callout-box .orange}
+**Note:** These probabilities are illustrative but grounded in the literature on neonatal care in low-resource settings. In practice, CPTs are estimated from facility-level data, expert elicitation, or both.
+:::
+
+
+# Joint Probabilities {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">P(X, Y): The full picture of how variables co-occur</span>
+
+
+## The Factoring Rule
+
+::: {.definition-box}
+The **joint probability** of two events is computed by the product (chain) rule:
+
+$$P(X, Y) = P(X \mid Y) \times P(Y)$$
+
+This generalizes to any number of variables:
+
+$$P(X_1, X_2, \ldots, X_n) = \prod_{i=1}^{n} P(X_i \mid X_1, \ldots, X_{i-1})$$
+:::
+
+. . .
+
+::: {.example-block}
+[Simple Example]{.example-label}
+
+$P(\text{Staffing=Low, Quality=Poor})$
+
+$= P(\text{Quality=Poor} \mid \text{Staffing=Low}) \times P(\text{Staffing=Low})$
+
+$= 0.65 \times 0.60 = 0.39$
+
+About 39% of facilities are *both* under-staffed *and* deliver poor quality care.
+:::
+
+
+## Joint Probability Tables
+
+A **joint probability table** shows $P(X, Y)$ for every combination of states:
+
+. . .
+
+| | Staffing = Adequate | Staffing = Low | **Row Total** |
+|---|---|---|---|
+| **Quality = Good** | 0.28 | 0.21 | 0.49 |
+| **Quality = Poor** | 0.12 | 0.39 | 0.51 |
+| **Column Total** | 0.40 | 0.60 | **1.00** |
+
+. . .
+
+::: {.incremental}
+- **Cell values** = joint probabilities: P(Quality=Good, Staffing=Adequate) = 0.28
+- **Row totals** = marginal probabilities of Quality: P(Quality=Good) = 0.49
+- **Column totals** = marginal probabilities of Staffing: P(Staffing=Adequate) = 0.40
+- **Grand total** must equal 1.00 (normalization)
+:::
+
+
+## Computing Joint Distributions from CPTs
+
+Given a Bayesian network's CPTs, we can compute any joint distribution:
+
+. . .
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;"><span class="step-number">1</span><br>Start with marginals<br>P(Staffing)</div>
+<div class="step-arrow">--></div>
+<div class="step-item" style="border-left: 4px solid #83BD00;"><span class="step-number green">2</span><br>Apply CPTs<br>P(Quality | Staffing)</div>
+<div class="step-arrow">--></div>
+<div class="step-item" style="border-left: 4px solid #FA7650;"><span class="step-number orange">3</span><br>Multiply<br>P(Staffing, Quality)</div>
+</div>
+
+. . .
+
+::: {.math-block}
+$$P(\text{Staffing=Adequate, Quality=Good}) = P(\text{Quality=Good} \mid \text{Staffing=Adequate}) \times P(\text{Staffing=Adequate})$$
+$$= 0.70 \times 0.40 = 0.28$$
+:::
+
+::: {.callout-box}
+This "forward" computation -- multiplying marginals by CPTs -- is the engine of Bayesian network inference. Software automates it, but understanding the mechanics is essential.
+:::
+
+
+## MNH Example: Three-Variable Joint Distribution
+
+Compute the joint distribution across Training, Competency, and Outcome:
+
+. . .
+
+**Given:**
+
+- $P(\text{Training=Completed}) = 0.45$, $P(\text{Training=Not}) = 0.55$
+- CPT for Competency | Training and CPT for Outcome | Competency
+
+| Training | Competency | P(Outcome=Survival) | Joint P |
+|---|---|---|---|
+| Completed | High (P=0.80) | 0.96 | $0.45 \times 0.80 \times 0.96 = 0.346$ |
+| Completed | Low (P=0.20) | 0.78 | $0.45 \times 0.20 \times 0.78 = 0.070$ |
+| Not | High (P=0.30) | 0.96 | $0.55 \times 0.30 \times 0.96 = 0.158$ |
+| Not | Low (P=0.70) | 0.78 | $0.55 \times 0.70 \times 0.78 = 0.300$ |
+
+. . .
+
+::: {.callout-box .green}
+**Overall P(Survival)** = 0.346 + 0.070 + 0.158 + 0.300 = **0.874** (87.4%)
+
+If training coverage increased from 45% to 80%, P(Survival) rises to **0.914** -- an additional 40 lives saved per 1,000 births.
+:::
+
+
+# Bayes' Rule {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Reversing the arrow: from evidence to cause</span>
+
+
+## Derivation from Conditional Probability
+
+Bayes' rule follows directly from the definition of conditional probability:
+
+. . .
+
+::: {.math-block}
+We know: $P(A \mid B) = \frac{P(A \cap B)}{P(B)}$ and $P(B \mid A) = \frac{P(A \cap B)}{P(A)}$
+
+Both have $P(A \cap B)$ in the numerator, so:
+
+$$\boxed{P(A \mid B) = \frac{P(B \mid A) \times P(A)}{P(B)}}$$
+:::
+
+. . .
+
+::: {.callout-box}
+**What Bayes' rule does:** It lets us "flip" the conditioning. If we know $P(\text{Evidence} \mid \text{Cause})$, Bayes' rule gives us $P(\text{Cause} \mid \text{Evidence})$.
+
+This is the fundamental operation of **situational assessment** -- reasoning backward from what we observe to what is likely true.
+:::
+
+
+## The Terminology of Bayes' Rule
+
+$$P(\underbrace{A}_{\text{hypothesis}} \mid \underbrace{B}_{\text{evidence}}) = \frac{\overbrace{P(B \mid A)}^{\text{likelihood}} \times \overbrace{P(A)}^{\text{prior}}}{\underbrace{P(B)}_{\text{marginal likelihood}}}$$
+
+. . .
+
+| Term | Symbol | Meaning |
+|---|---|---|
+| **Prior** | $P(A)$ | What we believed *before* seeing evidence |
+| **Likelihood** | $P(B \mid A)$ | How probable the evidence is *if* the hypothesis is true |
+| **Posterior** | $P(A \mid B)$ | Updated belief *after* incorporating evidence |
+| **Marginal likelihood** | $P(B)$ | Total probability of the evidence across all hypotheses |
+
+. . .
+
+::: {.key-takeaway}
+**Posterior $\propto$ Likelihood $\times$ Prior**
+
+Evidence updates our beliefs. Strong evidence (high likelihood ratio) shifts the posterior far from the prior.
+:::
+
+
+## Computing P(B): The Law of Total Probability
+
+The denominator of Bayes' rule requires **marginalizing** over all hypotheses:
+
+. . .
+
+::: {.math-block}
+$$P(B) = \sum_{\text{all } a} P(B \mid A=a) \times P(A=a)$$
+:::
+
+. . .
+
+::: {.example-block}
+[Example with binary hypothesis]{.example-label}
+
+If $A$ has states {Yes, No}:
+
+$P(B) = P(B \mid A=\text{Yes}) \times P(A=\text{Yes}) + P(B \mid A=\text{No}) \times P(A=\text{No})$
+
+This is a **weighted average** of the likelihoods, weighted by the priors.
+:::
+
+. . .
+
+::: {.callout-box}
+The denominator ensures the posterior sums to 1 across all hypotheses. It acts as a normalizing constant.
+:::
+
+
+## MNH Bayes' Rule: Diagnosing Facility Gaps
+
+**Question:** A neonatal death has occurred. What is the probability the facility lacked CPAP?
+
+. . .
+
+**Given:**
+
+- $P(\text{CPAP=Unavailable}) = 0.65$ (prior: 65% of facilities lack CPAP)
+- $P(\text{Death} \mid \text{CPAP=Unavailable}) = 0.05$ (5% mortality without CPAP)
+- $P(\text{Death} \mid \text{CPAP=Available}) = 0.015$ (1.5% mortality with CPAP)
+
+. . .
+
+::: {.math-block}
+**Step 1: Compute** $P(\text{Death})$
+
+$P(\text{Death}) = 0.05 \times 0.65 + 0.015 \times 0.35 = 0.0325 + 0.00525 = 0.03775$
+:::
+
+. . .
+
+::: {.math-block}
+**Step 2: Apply Bayes' rule**
+
+$$P(\text{CPAP=Unavailable} \mid \text{Death}) = \frac{0.05 \times 0.65}{0.03775} = \frac{0.0325}{0.03775} = 0.861$$
+:::
+
+
+## MNH Bayes' Rule: Interpreting the Result
+
+::: {.math-block}
+$$P(\text{CPAP=Unavailable} \mid \text{Death}) = 0.861$$
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Prior:** P(No CPAP) = 0.65
+
+Before learning about the death, we estimated a 65% chance the facility lacked CPAP.
+:::
+:::
+
+::: {.col}
+::: {.callout-box .red}
+**Posterior:** P(No CPAP | Death) = 0.86
+
+After learning of the death, the probability the facility lacked CPAP rises to 86%.
+:::
+:::
+:::
+
+. . .
+
+::: {.key-takeaway}
+**The evidence shifted our belief by 21 percentage points.**
+
+Observing a neonatal death is strong evidence of CPAP absence. This is the logic behind mortality audits -- deaths are diagnostic signals that help us identify facility-level gaps.
+:::
+
+. . .
+
+::: {.callout-box .green}
+**Policy implication:** Mortality audit data can be used to prioritize CPAP distribution -- target facilities where deaths are occurring, since Bayes' rule tells us these are disproportionately the facilities lacking equipment.
+:::
+
+
+# Factorization & the Causal Markov Condition {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">How DAGs simplify probability</span>
+
+
+## DAG Implies Factorization
+
+::: {.definition-box}
+**Causal Markov Condition:** Each variable in a DAG is conditionally independent of its non-descendants, given its parents.
+:::
+
+. . .
+
+This means the full joint distribution **factorizes** according to the DAG:
+
+::: {.math-block}
+$$P(X_1, X_2, \ldots, X_n) = \prod_{i=1}^{n} P(X_i \mid \text{Parents}(X_i))$$
+:::
+
+. . .
+
+::: {.example-block}
+[Illustration]{.example-label}
+
+For the DAG: Staffing --> Quality --> NMR
+
+$P(\text{Staffing, Quality, NMR}) = P(\text{Staffing}) \times P(\text{Quality} \mid \text{Staffing}) \times P(\text{NMR} \mid \text{Quality})$
+
+Note: NMR depends on Quality **only**, not directly on Staffing. The DAG tells us Staffing's effect on NMR is fully mediated by Quality.
+:::
+
+
+## Why Factorization Matters
+
+**Without the DAG** (brute-force joint distribution):
+
+- 4 binary variables = $2^4 = 16$ entries in the joint table
+- 10 binary variables = $2^{10} = 1{,}024$ entries
+- 20 binary variables = $2^{20} = 1{,}048{,}576$ entries
+
+. . .
+
+**With the DAG** (factorized CPTs):
+
+- Each node only needs a CPT conditioned on its **parents** (typically 1--3 variables)
+- 20 binary variables with max 3 parents each = at most $20 \times 2^3 = 160$ parameters
+
+. . .
+
+::: {.key-takeaway}
+**The DAG reduces complexity exponentially.**
+
+Instead of specifying a million probabilities, the causal structure tells us most variables are conditionally independent, letting us specify just a few hundred. This is why causal models are *computationally tractable*.
+:::
+
+
+## Independence from the DAG
+
+The Causal Markov Condition gives us testable independence predictions:
+
+. . .
+
+<table style="width: 90%; margin: 0.4em auto; font-size: 0.55em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node treatment" style="padding: 0.4em 0.7em;">Staffing</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive" style="font-size: 1.6em;">--></span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node" style="padding: 0.4em 0.7em;">Quality<br>of Care</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow negative" style="font-size: 1.6em;">--></span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node outcome" style="padding: 0.4em 0.7em;">NMR</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+| Statement | True? | Why? |
+|---|---|---|
+| Staffing $\perp$ NMR | No | Connected via open path through Quality |
+| Staffing $\perp$ NMR $\mid$ Quality | **Yes** | Conditioning on Quality blocks the only path |
+
+. . .
+
+::: {.callout-box}
+**Implication:** Once we know Quality of Care, learning about Staffing tells us nothing additional about NMR. The DAG encodes this independence, and the CPTs respect it -- $P(\text{NMR} \mid \text{Quality})$ has no Staffing column.
+:::
+
+
+# MNH Application: Quantifying the Model {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Adding numbers to the MNH causal model</span>
+
+
+## The Quantified MNH DAG
+
+We take the qualitative model from Ch 2 and attach CPTs to each node:
+
+<table style="width: 85%; margin: 0.4em auto; font-size: 0.5em;">
+<tr>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node treatment rect" style="padding: 0.5em 0.8em;">Staffing<br><small>P(Adequate)=0.40</small></div>
+</td>
+<td></td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node decision rect" style="padding: 0.5em 0.8em;">Equipment<br><small>P(Available)=0.35</small></div>
+</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td style="text-align: center;"><span class="dag-arrow positive">|</span></td>
+<td></td>
+<td style="text-align: center;"><span class="dag-arrow positive">|</span></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="3" style="text-align: center; padding: 0.6em;">
+<div class="dag-node" style="padding: 0.5em 0.8em;">Quality of Care<br><small>CPT: 4 rows</small></div>
+</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td style="text-align: center;"><span class="dag-arrow negative">|</span></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node outcome" style="padding: 0.5em 0.8em;">NMR<br><small>CPT: 2 rows</small></div>
+</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+. . .
+
+::: {.callout-box}
+**Four nodes, three CPTs** (root nodes only need marginals). This compact representation encodes the full joint distribution over $2^4 = 16$ combinations of states.
+:::
+
+
+## Full CPTs for the MNH Model
+
+**Root nodes (marginal distributions):**
+
+| Variable | P(Adequate/Available) | P(Low/Unavailable) |
+|---|---|---|
+| **Staffing** | 0.40 | 0.60 |
+| **Equipment** | 0.35 | 0.65 |
+
+. . .
+
+**Quality of Care | Staffing, Equipment:**
+
+| Staffing | Equipment | P(Good) | P(Poor) |
+|---|---|---|---|
+| Adequate | Available | 0.85 | 0.15 |
+| Adequate | Unavailable | 0.55 | 0.45 |
+| Low | Available | 0.50 | 0.50 |
+| Low | Unavailable | 0.20 | 0.80 |
+
+. . .
+
+**NMR | Quality of Care:**
+
+| Quality | P(NMR=Low) | P(NMR=High) |
+|---|---|---|
+| Good | 0.85 | 0.15 |
+| Poor | 0.40 | 0.60 |
+
+
+## Querying the Model: Best vs. Worst Case
+
+**Best case:** Staffing = Adequate, Equipment = Available
+
+::: {.math-block}
+$P(\text{Quality=Good} \mid \text{Adequate, Available}) = 0.85$
+
+$P(\text{NMR=High}) = P(\text{High} \mid \text{Good}) \times 0.85 + P(\text{High} \mid \text{Poor}) \times 0.15$
+$= 0.15 \times 0.85 + 0.60 \times 0.15 = 0.1275 + 0.09 = \mathbf{0.2175}$
+:::
+
+. . .
+
+**Worst case:** Staffing = Low, Equipment = Unavailable
+
+::: {.math-block}
+$P(\text{Quality=Good} \mid \text{Low, Unavailable}) = 0.20$
+
+$P(\text{NMR=High}) = 0.15 \times 0.20 + 0.60 \times 0.80 = 0.03 + 0.48 = \mathbf{0.51}$
+:::
+
+. . .
+
+::: {.key-takeaway}
+**P(NMR=High) ranges from 21.8% (best case) to 51.0% (worst case).**
+
+The combined effect of adequate staffing and available equipment reduces the probability of high NMR by **29.2 percentage points**.
+:::
+
+
+## Sensitivity Analysis: Which Parent Matters More?
+
+We isolate each parent's effect by varying one while holding the other at its less favorable level:
+
+. . .
+
+| Scenario | P(NMR=High) | Change vs. Worst Case |
+|---|---|---|
+| **Worst:** Low Staff, No Equipment | 0.510 | -- |
+| **Fix Staffing only:** Adequate Staff, No Equipment | 0.333 | -0.177 |
+| **Fix Equipment only:** Low Staff, Has Equipment | 0.375 | -0.135 |
+| **Best:** Adequate Staff, Has Equipment | 0.218 | -0.293 |
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box .green}
+**Staffing has the larger marginal effect** (-17.7 pp) compared to Equipment (-13.5 pp). In resource-constrained settings, investing in workforce may yield greater returns.
+:::
+:::
+
+::: {.col}
+::: {.callout-box .orange}
+**But the effects are synergistic:** fixing both produces a 29.3 pp reduction -- greater than the sum of the individual effects (17.7 + 13.5 = 31.2 pp, but there is overlap).
+:::
+:::
+:::
+
+
+## Exercise: Compute the Probabilities
+
+::: {.callout-box}
+**Your turn:** Using the CPTs from the previous slides, compute:
+
+1. $P(\text{Quality=Good})$ -- the marginal probability of good quality across all facilities
+
+2. $P(\text{NMR=High})$ -- the overall probability of high NMR
+
+3. $P(\text{Staffing=Low} \mid \text{NMR=High})$ -- using Bayes' rule, the probability that a high-NMR facility has low staffing
+:::
+
+. . .
+
+**Hints:**
+
+::: {.incremental}
+- For (1): Marginalize over all 4 combinations of Staffing $\times$ Equipment
+- For (2): Use your answer to (1) and the NMR|Quality CPT
+- For (3): Apply Bayes' rule -- you'll need P(NMR=High | Staffing=Low), P(Staffing=Low), and P(NMR=High) from parts (1) and (2)
+:::
+
+. . .
+
+::: {.callout-box .green}
+**Answers will be revealed in the R workshop section below!**
+:::
+
+
+# R Code Workshop {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Building and querying a Bayesian network in R</span>
+
+
+## R Block 1: Define the Network Structure
+
+```{r}
+#| label: bn-structure
+#| echo: true
+
+library(bnlearn)
+
+# Define the DAG structure using bnlearn's model string syntax
+# [Node] means no parents; [Node|Parent1:Parent2] means conditional on parents
+dag <- model2network(
+  "[Staffing][Equipment][Quality|Staffing:Equipment][NMR|Quality]"
+)
+
+# Inspect the structure
+dag
+nodes(dag)    # "Staffing" "Equipment" "Quality" "NMR"
+arcs(dag)     # Shows the 3 directed edges
+```
+
+. . .
+
+::: {.callout-box}
+**Reading the model string:**
+
+- `[Staffing]` -- root node, no parents
+- `[Equipment]` -- root node, no parents
+- `[Quality|Staffing:Equipment]` -- Quality depends on both Staffing and Equipment
+- `[NMR|Quality]` -- NMR depends on Quality only
+:::
+
+
+## R Block 2: Specify CPTs
+
+```{r}
+#| label: bn-cpts
+#| echo: true
+
+# Define CPTs using arrays (states must match exactly)
+cpt_staffing <- array(c(0.40, 0.60), dim = 2,
+  dimnames = list(Staffing = c("Adequate", "Low")))
+
+cpt_equipment <- array(c(0.35, 0.65), dim = 2,
+  dimnames = list(Equipment = c("Available", "Unavailable")))
+
+cpt_quality <- array(
+  c(0.85, 0.15,  # Adequate + Available
+    0.50, 0.50,  # Low + Available
+    0.55, 0.45,  # Adequate + Unavailable
+    0.20, 0.80), # Low + Unavailable
+  dim = c(2, 2, 2),
+  dimnames = list(
+    Quality   = c("Good", "Poor"),
+    Staffing  = c("Adequate", "Low"),
+    Equipment = c("Available", "Unavailable")))
+
+cpt_nmr <- array(
+  c(0.85, 0.15,  # Good quality
+    0.40, 0.60), # Poor quality
+  dim = c(2, 2),
+  dimnames = list(NMR = c("Low", "High"), Quality = c("Good", "Poor")))
+
+# Combine into a fitted BN
+bn_mnh <- custom.fit(dag, list(
+  Staffing = cpt_staffing, Equipment = cpt_equipment,
+  Quality = cpt_quality, NMR = cpt_nmr))
+```
+
+
+## R Block 3: Query the Network
+
+```{r}
+#| label: bn-query
+#| echo: true
+
+# Query: P(NMR = High | Staffing = Low)
+cpquery(bn_mnh,
+  event  = (NMR == "High"),
+  evidence = (Staffing == "Low"),
+  n = 1e6)
+# Expected: ~0.44
+
+# Query: P(NMR = High | Staffing = Adequate, Equipment = Available)
+cpquery(bn_mnh,
+  event  = (NMR == "High"),
+  evidence = (Staffing == "Adequate" & Equipment == "Available"),
+  n = 1e6)
+# Expected: ~0.22
+
+# Exact inference using grain (junction tree)
+library(gRain)
+bn_grain <- as.grain(bn_mnh)
+querygrain(bn_grain, nodes = "NMR")
+# Returns marginal P(NMR) across all facilities
+```
+
+. . .
+
+::: {.callout-box .green}
+**Answer to Exercise Q2:** `querygrain()` returns P(NMR=High) $\approx$ 0.393 -- about 39% of facilities have high NMR under current conditions.
+:::
+
+
+## R Block 4: Visualize the Network
+
+```{r}
+#| label: bn-visualize
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+# Option 1: bnlearn's built-in plot (uses Rgraphviz)
+graphviz.plot(bn_mnh, main = "MNH Bayesian Network",
+  shape = "rectangle",
+  highlight = list(nodes = "NMR", col = "#E24A3F", fill = "#E24A3F"))
+
+# Option 2: ggdag for publication-quality figures
+library(ggdag)
+library(dagitty)
+
+mnh_dag <- dagitty('dag {
+  Staffing [pos="0,0"]
+  Equipment [pos="2,0"]
+  Quality [pos="1,1"]
+  NMR [pos="1,2"]
+  Staffing -> Quality
+  Equipment -> Quality
+  Quality -> NMR
+}')
+
+ggdag(mnh_dag) +
+  theme_dag() +
+  labs(title = "MNH Causal Model (4 Nodes)")
+```
+
+
+## R Block 5: Interventional Queries
+
+```{r}
+#| label: bn-intervention
+#| echo: true
+
+# Simulate do(Staffing = Adequate) by mutilating the network
+bn_do_adequate <- mutilated(bn_mnh, evidence = list(Staffing = "Adequate"))
+
+# P(NMR | do(Staffing = Adequate))
+querygrain(as.grain(bn_do_adequate), nodes = "NMR")
+
+# Compare scenarios
+scenarios <- data.frame(
+  Scenario = c("Status Quo", "do(Staff=Adequate)",
+               "do(Equip=Available)", "do(Both)"),
+  P_NMR_High = c(
+    querygrain(as.grain(bn_mnh),
+               nodes = "NMR")$NMR["High"],
+    querygrain(as.grain(
+      mutilated(bn_mnh, list(Staffing = "Adequate"))),
+               nodes = "NMR")$NMR["High"],
+    querygrain(as.grain(
+      mutilated(bn_mnh, list(Equipment = "Available"))),
+               nodes = "NMR")$NMR["High"],
+    querygrain(as.grain(
+      mutilated(bn_mnh, list(Staffing = "Adequate",
+                              Equipment = "Available"))),
+               nodes = "NMR")$NMR["High"]))
+
+# Display comparison
+scenarios$Reduction <- scenarios$P_NMR_High[1] - scenarios$P_NMR_High
+print(scenarios)
+```
+
+. . .
+
+::: {.callout-box .green}
+**This is the payoff of quantitative causal modeling.** The `mutilated()` function implements the **do-operator** from Ch 2 -- it severs incoming arrows to the intervention variable and sets it to a fixed value, giving us the *causal* effect rather than a mere correlation.
+:::
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Quantitative causal models = DAG + CPTs = Bayesian Network.**
+
+They allow us to compute exact probabilities, update beliefs with Bayes' rule, and compare interventions using the do-operator.
+:::
+
+. . .
+
+::: {.incremental}
+- **Probability fundamentals:** States must be MECE; probabilities must sum to 1
+- **Conditional probability tables** encode the quantitative relationships in the DAG
+- **Bayes' rule** lets us reason backward from evidence to causes -- essential for situational assessment
+- **The Causal Markov Condition** simplifies computation from exponential to manageable
+- **R + bnlearn** provides a complete toolkit for building, querying, and visualizing Bayesian networks
+- **Sensitivity analysis** reveals which interventions have the largest expected impact
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 5 -- Situational Analysis**
+
+Now that we can build and query quantitative causal models, we turn to their first major application:
+
+- **Updating beliefs with multiple evidence streams** -- combining DHIS2 data, facility surveys, and expert judgment
+- **Diagnostic inference** -- given observed outcomes, which upstream causes are most likely?
+- **Explaining away** -- how one piece of evidence changes the relevance of another
+- **MNH application** -- analyzing why NMR remains high in a specific country using real-world data patterns
+:::
+
+. . .
+
+::: {.callout-box .green}
+**From Ch 4 to Ch 5:** We built the engine (Bayesian network). Now we learn to drive it -- using evidence to diagnose problems before prescribing interventions.
+:::
+
+
+## {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[Inference and Intervention | Chapter 4: Quantitative Causal Models]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

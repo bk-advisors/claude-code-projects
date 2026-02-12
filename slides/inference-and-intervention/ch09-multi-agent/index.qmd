@@ -1,0 +1,1166 @@
+---
+title: "Chapter 9: Multi-Agent Interventions"
+subtitle: "Inference and Intervention | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Define **games** with players, strategies, and payoffs in the context of global health
+- Find **Nash equilibria** in normal-form (matrix) games
+- Analyze **sequential (extensive-form) games** using backward induction
+- Represent multi-agent problems as **causal-form games** and strategy tables
+- Apply game theory to **donor-government interactions** in an MNH program portfolio
+:::
+
+
+## Chapter Overview
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;">Game Theory<br>Foundations</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">Nash<br>Equilibrium</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #F8A623;">Extensive<br>Form Games</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">Causal Form<br>& Strategy</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">Workforce<br>Absorption Game</div>
+</div>
+
+. . .
+
+::: {.callout-box}
+**The shift:** Chapter 7 assumed a single decision-maker (the donor organization) choosing against nature. Chapter 8 optimized resource allocation. Now **other agents act strategically** — governments, donors, and implementing partners each pursue their own objectives. We need game theory.
+:::
+
+
+# Why Multiple Agents Matter {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">When the world pushes back</span>
+
+
+## The Single-Agent Assumption Breaks Down
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Chapters 7–8: Single-Agent View**
+
+- The donor organization chooses an intervention
+- Nature rolls the dice (chance nodes)
+- We compute expected value and optimize
+
+*Implicit assumption:* other actors are part of the "environment" — they don't respond strategically to our choices.
+:::
+:::
+
+::: {.col}
+::: {.callout-box .orange}
+**Reality: Multi-Agent World**
+
+- The donor organization commits high funding
+- The government **observes** this and reduces its own co-financing
+- Implementing partners adjust effort based on monitoring intensity
+
+*The environment is not passive.* Other agents optimize their own payoffs.
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box .red}
+**The free-rider problem:** When a donor organization increases salary support for health workers, governments may *decrease* their own budget allocation for the same line item. Ignoring this strategic response leads to overestimating program impact.
+:::
+
+
+## Strategic Actors in MNH
+
+In a typical MNH program portfolio, at least **four strategic agents** interact:
+
+| Agent | Objective | Key Decision |
+|---|---|---|
+| **Donor Organization** | Maximize lives saved per dollar | Funding level, duration, conditions |
+| **National Government** | Balance health outcomes with fiscal constraints | Co-financing, staff absorption, policy reform |
+| **Implementing Partners** | Deliver results, sustain program operations | Effort allocation, reporting accuracy |
+| **Other Donors** | Maximize own impact metrics | Complementary vs. duplicative funding |
+
+. . .
+
+::: {.callout-box .green}
+**Game theory** gives us the formal tools to model these interactions — predicting what each agent will do and designing incentive-compatible contracts and commitments.
+:::
+
+
+# Game Theory Foundations {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Players, strategies, and payoffs</span>
+
+
+## The Three Elements of a Game
+
+::: {.definition-box}
+**Game:** A formal model of strategic interaction among rational decision-makers. Every game has three elements: **players**, **strategies**, and **payoffs**.
+:::
+
+. . .
+
+| Element | Definition | MNH Example |
+|---|---|---|
+| **Players** | The agents making decisions | Donor Organization, Government |
+| **Strategies** | The set of actions available to each player | {High Funding, Low Funding}, {High Co-financing, Low Co-financing} |
+| **Payoffs** | The outcome value for each player under each strategy combination | Lives saved, cost burden, political capital |
+
+. . .
+
+::: {.callout-box}
+**Key assumption:** Each player is *rational* — choosing the strategy that maximizes their own payoff, given beliefs about what others will do. This doesn't mean selfish; payoffs can include altruistic goals.
+:::
+
+
+## Normal Form: The Payoff Matrix
+
+::: {.definition-box}
+**Normal-form game:** A game represented as a matrix where rows are one player's strategies, columns are the other's, and each cell contains the payoffs for both players.
+:::
+
+. . .
+
+**The Co-financing Game (payoffs: Donor, Government)**
+
+|  | Gov: High Co-financing | Gov: Low Co-financing |
+|---|---|---|
+| **Donor: High Funding** | (2400 lives, High cost) | (1400 lives, Very high cost) |
+| **Donor: Low Funding** | (1800 lives, Low cost) | (800 lives, Moderate cost) |
+
+. . .
+
+::: {.callout-box}
+**Reading the matrix:** Each cell shows *(Donor's payoff, Government's payoff)*. The Donor cares about lives saved; the Government cares about lives saved too, but weighs them against fiscal cost. Negative cost = burden on that player.
+:::
+
+
+## Payoffs Capture Competing Priorities
+
+Let us assign **utility scores** that blend lives saved and cost:
+
+. . .
+
+**Donor utility** = Lives saved (values impact)
+
+**Government utility** = Lives saved $-$ 50 $\times$ Cost in $M (fiscal pressure)
+
+. . .
+
+|  | Gov: High Co-finance | Gov: Low Co-finance |
+|---|---|---|
+| **Donor: High Funding** | D: **2400**, G: 2400 - 50(30) = **900** | D: **1400**, G: 1400 - 50(10) = **900** |
+| **Donor: Low Funding** | D: **1800**, G: 1800 - 50(25) = **550** | D: **800**, G: 800 - 50(5) = **550** |
+
+. . .
+
+::: {.callout-box .orange}
+**Notice:** The Government gets the *same* utility from (High Fund, High Co-fin) and (High Fund, Low Co-fin) = 900 in this stylized example. The exact numbers depend on cost-sharing assumptions. Let's refine this.
+:::
+
+
+## Refined Payoff Matrix
+
+A more realistic model where the Government bears **different costs** depending on its co-financing choice:
+
+|  | Gov: High Co-finance | Gov: Low Co-finance |
+|---|---|---|
+| **Donor: High Funding** | D: **2400**, G: **1200** | D: **1400**, G: **1100** |
+| **Donor: Low Funding** | D: **1800**, G: **800** | D: **800**, G: **600** |
+
+. . .
+
+::: {.callout-box .green}
+**Interpretation:**
+
+- **Best collective outcome:** (High, High) = 2400 + 1200 = **3600** total utility
+- **Government prefers:** High Co-finance when Donor funds are High (1200 > 1100)
+- **Donor always prefers:** High Funding (2400 > 1800, 1400 > 800)
+- But what happens when the Government suspects the Donor will fund regardless?
+:::
+
+
+## Dominant Strategies
+
+::: {.definition-box}
+**Dominant Strategy:** A strategy that gives a player a higher payoff than any alternative, *regardless* of what the other player does.
+:::
+
+. . .
+
+Check for the **Donor:**
+
+- If Gov plays High: High Funding (2400) > Low Funding (1800)
+- If Gov plays Low: High Funding (1400) > Low Funding (800)
+
+**High Funding is dominant for the Donor.**
+
+. . .
+
+Check for the **Government:**
+
+- If Donor plays High: High Co-finance (1200) > Low Co-finance (1100)
+- If Donor plays Low: High Co-finance (800) > Low Co-finance (600)
+
+**High Co-financing is dominant for the Government.**
+
+. . .
+
+::: {.key-takeaway}
+Both players have dominant strategies. The outcome **(High, High)** is a **dominant-strategy equilibrium** — the best-case scenario where incentives are aligned.
+:::
+
+
+# Nash Equilibrium {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">When no player can improve by changing alone</span>
+
+
+## Definition of Nash Equilibrium
+
+::: {.definition-box}
+**Nash Equilibrium (NE):** A strategy profile where **no player can improve their payoff** by unilaterally changing their strategy, holding all other players' strategies fixed.
+:::
+
+. . .
+
+**Finding NE in a 2x2 game — the underline method:**
+
+1. For each column (Government's strategy), underline the Donor's best response
+2. For each row (Donor's strategy), underline the Government's best response
+3. Any cell where **both** payoffs are underlined is a Nash Equilibrium
+
+. . .
+
+|  | Gov: High Co-finance | Gov: Low Co-finance |
+|---|---|---|
+| **Donor: High Funding** | D: [**2400**]{style="text-decoration: underline;"}, G: [**1200**]{style="text-decoration: underline;"} | D: [**1400**]{style="text-decoration: underline;"}, G: 1100 |
+| **Donor: Low Funding** | D: 1800, G: [**800**]{style="text-decoration: underline;"} | D: 800, G: 600 |
+
+**(High Funding, High Co-financing)** is the unique Nash Equilibrium.
+
+
+## When Incentives Misalign: A Harder Game
+
+Now suppose the Government faces **high political costs** for co-financing (diverting funds from visible infrastructure projects):
+
+|  | Gov: High Co-finance | Gov: Low Co-finance |
+|---|---|---|
+| **Donor: High Funding** | D: **2400**, G: **700** | D: **1400**, G: **1100** |
+| **Donor: Low Funding** | D: **1800**, G: **500** | D: **800**, G: **600** |
+
+. . .
+
+Check Government's best responses:
+
+- If Donor plays High: Low Co-finance (1100) > High Co-finance (700)
+- If Donor plays Low: Low Co-finance (600) > High Co-finance (500)
+
+. . .
+
+::: {.callout-box .red}
+**Low Co-financing is now dominant for the Government.** The Nash Equilibrium shifts to **(High Funding, Low Co-financing)** — the Donor funds generously, the Government free-rides. Total utility drops from 3100 to 2500.
+:::
+
+
+## The Prisoner's Dilemma in Health Funding
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Classic Prisoner's Dilemma**
+
+|  | Cooperate | Defect |
+|---|---|---|
+| **Cooperate** | 3, 3 | 1, 4 |
+| **Defect** | 4, 1 | **2, 2** |
+
+NE: (Defect, Defect) — both worse off than (Cooperate, Cooperate).
+:::
+:::
+
+::: {.col}
+::: {.callout-box .orange}
+**MNH Funding Dilemma**
+
+|  | Gov: Co-finance | Gov: Free-ride |
+|---|---|---|
+| **Donor: Fund** | 2400, 700 | 1400, 1100 |
+| **Donor: Withdraw** | 1800, 500 | **800, 600** |
+
+NE: (Fund, Free-ride) — Donor's dominant strategy keeps funding flowing, Government free-rides.
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box .green}
+**The structural similarity:** Both players would prefer mutual cooperation (High, High) but individual incentives push toward a suboptimal equilibrium. The solution requires **commitment devices** — contracts, conditionalities, or repeated interaction.
+:::
+
+
+## Multiple Equilibria and Coordination
+
+Some games have **multiple Nash equilibria**, creating a coordination problem:
+
+|  | Gov: Midwives | Gov: CHWs |
+|---|---|---|
+| **Donor: Midwives** | D: **2000**, G: **1500** | D: 400, G: 300 |
+| **Donor: CHWs** | D: 300, G: 400 | D: **1200**, G: **1000** |
+
+. . .
+
+::: {.incremental}
+- **(Midwives, Midwives)** is a NE — neither player wants to deviate
+- **(CHWs, CHWs)** is also a NE — neither player wants to deviate alone
+- **(Midwives, CHWs)** and **(CHWs, Midwives)** are NOT equilibria — miscoordination wastes resources
+- Both players prefer (Midwives, Midwives) but without communication, they might end up miscoordinated
+:::
+
+. . .
+
+::: {.key-takeaway}
+**Coordination games** explain why joint planning between donors and governments is essential. The issue is not conflicting interests — it's ensuring both sides invest in the **same** cadre.
+:::
+
+
+## Escaping Bad Equilibria
+
+How can a donor organization move from a free-riding equilibrium to cooperation?
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+**Mechanism Design Approaches:**
+
+::: {.incremental}
+1. **Conditional funding:** "We fund high *only if* you co-finance $\geq$ 30%"
+2. **Repeated interaction:** Build reputation over multiple funding cycles
+3. **Binding contracts:** MoU with milestone-triggered disbursements
+4. **Third-party enforcement:** World Bank or Global Fund conditionalities
+:::
+:::
+
+::: {.col}
+::: {.example-block}
+[MNH Example]{.example-label}
+
+The donor organization structures its subsequent-phase agreements with a **co-financing escalator**: government contribution must increase by 5 percentage points per year. If the government misses a milestone, the next tranche is reduced by 50%.
+
+This changes the payoff matrix: free-riding now costs the government future funding.
+:::
+:::
+:::
+
+
+# Extensive Form Games {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Sequential moves and backward induction</span>
+
+
+## Game Trees
+
+::: {.definition-box}
+**Extensive-form game:** A game represented as a **tree** showing the sequence of moves, information available at each decision point, and payoffs at terminal nodes.
+:::
+
+. . .
+
+**MNH Sequential Game: Donor Commits First**
+
+<table style="width: 90%; margin: 0.4em auto; font-size: 0.5em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="padding: 0.4em 0.6em;">Donor:<br>High or Low?</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→ High →</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="border-color: #F8A623; color: #F8A623; padding: 0.4em 0.6em;">Gov:<br>High or Low?</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center; padding: 0.5em; font-size: 0.9em;">
+(High, High): **2400, 700**<br>
+(High, Low): **1400, 1100**
+</td>
+</tr>
+<tr>
+<td></td>
+<td style="text-align: center;">
+<span class="dag-arrow">→ Low →</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="border-color: #F8A623; color: #F8A623; padding: 0.4em 0.6em;">Gov:<br>High or Low?</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center; padding: 0.5em; font-size: 0.9em;">
+(Low, High): **1800, 500**<br>
+(Low, Low): **800, 600**
+</td>
+</tr>
+</table>
+
+
+## Backward Induction
+
+::: {.definition-box}
+**Backward Induction:** Solve the game by starting at the **terminal nodes** and working backward. At each decision node, the player chooses their best response.
+:::
+
+. . .
+
+**Step 1:** Government's optimal response (last mover):
+
+- If Donor chose **High**: Gov picks Low Co-finance (1100 > 700)
+- If Donor chose **Low**: Gov picks Low Co-finance (600 > 500)
+
+. . .
+
+**Step 2:** Donor anticipates Government's response (first mover):
+
+- If Donor chooses High → Gov plays Low → Donor gets **1400**
+- If Donor chooses Low → Gov plays Low → Donor gets **800**
+
+. . .
+
+::: {.key-takeaway}
+**Backward induction outcome:** (High Funding, Low Co-financing) with payoffs (1400, 1100). The Donor funds generously knowing the Government will free-ride — but still prefers this to the alternative.
+:::
+
+
+## First-Mover Advantage in Donor Commitments
+
+::: {.callout-box}
+**Key insight:** The *order of moves* changes the outcome. When the Donor commits first without conditions, the Government can observe and free-ride. But if the Donor can **commit conditionally**, the game changes.
+:::
+
+. . .
+
+**Modified game: Donor commits to conditional funding**
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;"><strong>Donor</strong><br>Announces:<br>"High if Gov ≥ 30%"</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #F8A623;"><strong>Government</strong><br>Chooses:<br>High or Low?</div>
+<div class="step-arrow">→</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;"><strong>Outcome</strong><br>Funding level<br>determined</div>
+</div>
+
+. . .
+
+Now the Government faces:
+
+- High Co-finance → triggers High Donor Funding → Gov payoff: **700**
+- Low Co-finance → triggers Low Donor Funding → Gov payoff: **600**
+
+Government chooses **High Co-financing**. Conditionality restores cooperation.
+
+. . .
+
+::: {.callout-box .green}
+**Commitment power transforms the game.** By credibly restricting its own future choices, the Donor can induce better behavior from the Government. This is the logic behind milestone-based disbursements.
+:::
+
+
+## Subgame Perfect Equilibrium
+
+::: {.definition-box}
+**Subgame Perfect Equilibrium (SPE):** A Nash equilibrium where the players' strategies constitute a Nash equilibrium in **every subgame** of the extensive-form game. Found by backward induction.
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Without conditionality:**
+
+SPE: (High Funding, Always Low Co-finance)
+
+Government's strategy "Always Low" is credible — it is optimal at every decision node.
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**With conditionality:**
+
+SPE: (Conditional High, High Co-finance)
+
+Now "High Co-finance" is the Government's best response at the relevant subgame because Low triggers reduced funding.
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box .orange}
+**Non-credible threats:** "We'll withdraw all funding if you don't co-finance" is not subgame perfect if the Donor would never actually withdraw (e.g., due to political commitments). Only **credible** conditionalities work.
+:::
+
+
+# Causal Form Games {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">The book's innovation: games as influence diagrams</span>
+
+
+## Games as Causal Models
+
+::: {.definition-box}
+**Causal-form game:** A multi-agent influence diagram where each player has their own **decision node** and **objective node**, and the causal structure shows how decisions interact to produce outcomes.
+:::
+
+. . .
+
+<table style="width: 90%; margin: 0.5em auto; font-size: 0.5em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="padding: 0.4em 0.6em;">Donor<br>Funding</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td rowspan="3" style="text-align: center; padding: 0.5em;">
+<div class="dag-node" style="padding: 0.4em 0.6em;">Health<br>Outcomes</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon" style="border-color: #3E9B6E; color: #3E9B6E; padding: 0.4em 0.6em;">Donor<br>Utility</div>
+</td>
+</tr>
+<tr><td></td><td></td><td></td><td></td></tr>
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="border-color: #F8A623; color: #F8A623; padding: 0.4em 0.6em;">Gov<br>Co-finance</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow">→</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon" style="border-color: #F8A623; color: #F8A623; padding: 0.4em 0.6em;">Gov<br>Utility</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+::: {.callout-box}
+**Advantage of causal form:** It makes the **causal pathways** explicit. Both decisions flow through Health Outcomes, but each player evaluates the result with their own utility function. We can also add chance nodes (e.g., disease burden, political stability).
+:::
+
+
+## Converting Between Game Representations
+
+| Representation | Shows | Best for |
+|---|---|---|
+| **Normal form** (matrix) | All strategy combinations and payoffs simultaneously | Finding Nash equilibria in small games |
+| **Extensive form** (tree) | Sequential structure, information sets | Analyzing timing, commitment, credibility |
+| **Causal form** (DAG) | Causal mechanisms connecting decisions to outcomes | Understanding *why* payoffs have their values |
+
+. . .
+
+::: {.example-block}
+[MNH Example]{.example-label}
+
+The payoff of (High Funding, Low Co-finance) = (1400, 1100) in the matrix. The causal form reveals **why**: High Funding increases equipment and training, but Low Co-finance means inadequate staffing for sustainability. The 1400 lives saved reflects the short-term gain that erodes without government support.
+:::
+
+. . .
+
+::: {.callout-box .green}
+**The causal form connects game theory to Chapters 1–6.** The DAG structure behind the payoff matrix is the same kind of causal model we built for inference. Now we layer strategic decisions on top.
+:::
+
+
+## Adding Chance Nodes
+
+The causal form naturally incorporates **uncertainty** alongside strategic interaction:
+
+<table style="width: 95%; margin: 0.4em auto; font-size: 0.45em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="padding: 0.4em 0.6em;">Donor<br>Funding</div>
+</td>
+<td rowspan="3" style="text-align: center;">
+<span class="dag-arrow" style="font-size: 2em;">→</span>
+</td>
+<td rowspan="3" style="text-align: center; padding: 0.5em;">
+<div class="dag-node" style="padding: 0.4em 0.6em;">Service<br>Delivery</div>
+</td>
+<td rowspan="3" style="text-align: center;">
+<span class="dag-arrow" style="font-size: 2em;">→</span>
+</td>
+<td rowspan="3" style="text-align: center; padding: 0.5em;">
+<div class="dag-node" style="padding: 0.4em 0.6em;">NMR<br>Reduction</div>
+</td>
+<td rowspan="3" style="text-align: center;">
+<span class="dag-arrow" style="font-size: 2em;">→</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon" style="border-color: #3E9B6E; color: #3E9B6E; padding: 0.3em 0.5em;">Donor<br>Obj.</div>
+</td>
+</tr>
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node confounder" style="padding: 0.4em 0.6em;">Political<br>Stability</div>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node hexagon" style="border-color: #F8A623; color: #F8A623; padding: 0.3em 0.5em;">Gov<br>Obj.</div>
+</td>
+</tr>
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node decision rect" style="border-color: #F8A623; color: #F8A623; padding: 0.4em 0.6em;">Gov<br>Co-finance</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+::: {.callout-box}
+**Political Stability** is a chance node — neither player controls it. If instability is high, even mutual cooperation may yield poor outcomes. The causal form lets us compute expected payoffs *conditional on* this uncertainty, exactly as in Chapter 7's influence diagrams.
+:::
+
+
+# Strategy Tables {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Contingent strategies and conditional commitments</span>
+
+
+## Representing Contingent Strategies
+
+::: {.definition-box}
+**Strategy (in extensive form):** A complete plan of action specifying what a player will do at *every* decision point they might reach, contingent on what they observe.
+:::
+
+. . .
+
+**Government's contingent strategies:**
+
+| Strategy | If Donor Funds High | If Donor Funds Low |
+|---|---|---|
+| **Always High** | Co-finance High | Co-finance High |
+| **Always Low** | Co-finance Low | Co-finance Low |
+| **Match** | Co-finance High | Co-finance Low |
+| **Oppose** | Co-finance Low | Co-finance High |
+
+. . .
+
+::: {.callout-box}
+A strategy table enumerates all possible contingent plans. With 2 information sets and 2 actions each, the Government has $2^2 = 4$ strategies. The "Match" strategy is particularly interesting — it says "I'll cooperate if and only if you do."
+:::
+
+
+## Conditional Funding Agreements
+
+::: {.example-block}
+[MNH Example]{.example-label}
+
+**Donor conditional strategy:** "I fund high IF government co-finances $\geq$ 30% of recurrent costs, AND absorbs $\geq$ 80% of trained workers by year 3."
+
+This is a **contingent strategy** — the Donor's action depends on the Government's observable behavior.
+:::
+
+. . .
+
+**Donor's strategy table:**
+
+| Strategy | If Gov Co-fin $\geq$ 30% | If Gov Co-fin < 30% |
+|---|---|---|
+| **Unconditional High** | High Funding | High Funding |
+| **Conditional High** | High Funding | Low Funding |
+| **Conditional Low** | Low Funding | High Funding |
+| **Unconditional Low** | Low Funding | Low Funding |
+
+. . .
+
+::: {.callout-box .green}
+**"Conditional High" is the dominant strategy** when the Donor can credibly commit. It rewards government cooperation and punishes free-riding. This is exactly the structure of milestone-based payment agreements.
+:::
+
+
+## Milestone-Based Payments as Commitment
+
+Real-world MNH program contracts operationalize conditional strategies:
+
+. . .
+
+| Milestone | Verification | Funding Release |
+|---|---|---|
+| Government budget line for health workers created | Audited budget document | 25% of tranche |
+| $\geq$ 200 workers on government payroll by Year 1 | Payroll verification | 25% of tranche |
+| $\geq$ 400 workers absorbed by Year 2 | Payroll + facility verification | 25% of tranche |
+| Full absorption ($\geq$ 500) by Year 3 | Independent audit | Final 25% |
+
+. . .
+
+::: {.callout-box .orange}
+**The commitment problem:** Milestones only work if the Donor *actually* withholds funding when milestones are missed. If the Government believes the Donor will disburse regardless (due to political pressure or sunk-cost fallacy), the conditionality has no bite. **Credibility is everything.**
+:::
+
+
+# MNH Application: The Workforce Absorption Game {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">A complete game-theoretic analysis</span>
+
+
+## The Setting
+
+::: {.callout-box}
+**The Workforce Absorption Game**
+
+A large MNH program trains **500 community health workers** in a target country. Training and initial salary support represent a **substantial multi-year investment**.
+
+The Government must **absorb these workers onto its payroll** within 3 years. If it doesn't, workers leave for the private sector or emigrate, and the investment is wasted.
+
+**Both players know the stakes. Both act strategically.**
+:::
+
+. . .
+
+**Players:**
+
+- **Donor Program (B):** Decides funding level {Full Funding, Reduced Funding}
+- **Government (G):** Decides absorption level {Full Absorb, Partial Absorb, No Absorb}
+
+
+## The Payoff Matrix
+
+Payoffs incorporate lives saved over 10 years, cost burden, and political capital:
+
+|  | Gov: Full Absorb | Gov: Partial Absorb | Gov: No Absorb |
+|---|---|---|---|
+| **B: Full Funding** | B: **4500**, G: **600** | B: **2800**, G: **900** | B: **500**, G: **1000** |
+| **B: Reduced** | B: **2200**, G: **400** | B: **1500**, G: **700** | B: **300**, G: **800** |
+
+. . .
+
+::: {.callout-box}
+**Reading the payoffs:**
+
+- **the donor program** values lives saved (higher is better)
+- **Government** values lives saved but heavily discounts fiscal cost of absorption (adding hundreds of workers to payroll is a significant recurring expense)
+- Government gets highest utility from **No Absorb** (saves money, still benefits from trained workers during donor-funded period)
+:::
+
+
+## Finding the Nash Equilibrium
+
+**Government's best responses** (underline method):
+
+- If B plays Full: No Absorb (**1000**) > Partial (900) > Full Absorb (600)
+- If B plays Reduced: No Absorb (**800**) > Partial (700) > Full Absorb (400)
+
+. . .
+
+**No Absorb is dominant for the Government.**
+
+. . .
+
+**the donor program's best responses:**
+
+- If Gov plays Full Absorb: Full Funding (**4500**) > Reduced (2200)
+- If Gov plays Partial: Full Funding (**2800**) > Reduced (1500)
+- If Gov plays No Absorb: Full Funding (**500**) > Reduced (300)
+
+. . .
+
+**Full Funding is dominant for the donor program.**
+
+. . .
+
+::: {.callout-box .red}
+**Nash Equilibrium: (Full Funding, No Absorb)** with payoffs (500, 1000). The worst outcome for the donor program — substantial investment in training, workers deployed, but no absorption. A classic free-rider tragedy.
+:::
+
+
+## Redesigning the Game: Commitment Devices
+
+The the donor program can change the equilibrium through **contract design:**
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+**Device 1: Milestone Payments**
+
+Restructure disbursement: 20% upfront, 25% at Year 1 if $\geq$ 150 absorbed, 25% at Year 2 if $\geq$ 350 absorbed, 30% at Year 3 if $\geq$ 500 absorbed.
+
+New payoffs if Gov doesn't absorb:
+
+- Gov gets only initial-phase training (not the full package)
+- Payoff drops from 1000 to **350**
+:::
+
+::: {.col}
+**Device 2: Bonding Agreement**
+
+Government deposits funds in escrow, forfeited if absorption targets are missed.
+
+New payoffs for No Absorb:
+
+- Gov loses escrow: 1000 - 200 = **800** → **600**
+- Changes the ranking: Full Absorb (600) $\approx$ No Absorb (600)
+:::
+:::
+
+. . .
+
+::: {.callout-box .green}
+**Device 3: Combine both.** With milestone payments AND a bonding agreement, the revised payoff matrix makes **Full Absorb the dominant strategy** for the Government. Contract design is mechanism design.
+:::
+
+
+## The Transformed Game
+
+**Revised payoff matrix with milestone payments:**
+
+|  | Gov: Full Absorb | Gov: Partial Absorb | Gov: No Absorb |
+|---|---|---|---|
+| **B: Conditional** | B: **4500**, G: **600** | B: **2000**, G: **500** | B: **200**, G: **350** |
+| **B: Reduced** | B: **2200**, G: **400** | B: **1500**, G: **700** | B: **300**, G: **800** |
+
+. . .
+
+**Government's best responses with conditional funding:**
+
+- If B plays Conditional: Full Absorb (**600**) > Partial (500) > No Absorb (350)
+- If B plays Reduced: No Absorb (800) > Partial (700) > Full Absorb (400)
+
+. . .
+
+**New Nash Equilibrium: (Conditional Funding, Full Absorb)** with payoffs (4500, 600).
+
+. . .
+
+::: {.key-takeaway}
+**Contract design shifted the equilibrium** from (Full, No Absorb) = 500 lives to (Conditional, Full Absorb) = 4500 lives. The the donor program achieved a **9x improvement** in expected impact by restructuring incentives rather than increasing funding.
+:::
+
+
+## Lessons from the Absorption Game
+
+::: {.callout-box .green}
+**Five principles for multi-agent MNH program design:**
+
+1. **Map the game first.** Identify players, strategies, and payoffs *before* committing funds
+2. **Check for dominant strategies.** If the Government has a dominant strategy to free-ride, unconditional funding will fail
+3. **Design for subgame perfection.** Conditionalities must be credible — the Donor must be willing to actually withhold
+4. **Use milestones, not lump sums.** Phased disbursement turns a one-shot game into a sequential game with accountability
+5. **Align payoffs, don't just add conditions.** The best mechanism makes cooperation *genuinely attractive* for both sides
+:::
+
+
+# R Workshop: Game Theory {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Finding equilibria and visualizing strategic interactions</span>
+
+
+## R: Representing and Solving a 2x2 Game
+
+```{r}
+#| label: nash-equilibrium
+#| echo: true
+
+# Define the Workforce Absorption Game (2-player, 2x3 reduced to 2x2)
+# Payoffs: list(Donor, Government)
+
+# Donor strategies: Full Funding, Reduced Funding (rows)
+# Gov strategies: Full Absorb, No Absorb (columns, simplified)
+
+donor_payoffs <- matrix(c(4500, 2200,   # Full Absorb column
+                          500,  300),    # No Absorb column
+                        nrow = 2, ncol = 2,
+                        dimnames = list(
+                          Donor = c("Full Funding", "Reduced"),
+                          Gov = c("Full Absorb", "No Absorb")))
+
+gov_payoffs <- matrix(c(600, 400,     # Full Absorb column
+                        1000, 800),   # No Absorb column
+                      nrow = 2, ncol = 2,
+                      dimnames = list(
+                        Donor = c("Full Funding", "Reduced"),
+                        Gov = c("Full Absorb", "No Absorb")))
+
+# Find Nash Equilibria by checking best responses
+find_nash <- function(p1, p2) {
+  nr <- nrow(p1); nc <- ncol(p1)
+  nash <- list()
+  for (i in 1:nr) {
+    for (j in 1:nc) {
+      # Is i a best response for Player 1 given Player 2 plays j?
+      p1_br <- p1[i, j] == max(p1[, j])
+      # Is j a best response for Player 2 given Player 1 plays i?
+      p2_br <- p2[i, j] == max(p2[i, ])
+      if (p1_br & p2_br) {
+        nash <- c(nash, list(c(row = i, col = j)))
+      }
+    }
+  }
+  nash
+}
+
+ne <- find_nash(donor_payoffs, gov_payoffs)
+cat("Nash Equilibria:\n")
+for (eq in ne) {
+  cat(sprintf("  (%s, %s) -> Donor: %d, Gov: %d\n",
+              rownames(donor_payoffs)[eq[1]],
+              colnames(donor_payoffs)[eq[2]],
+              donor_payoffs[eq[1], eq[2]],
+              gov_payoffs[eq[1], eq[2]]))
+}
+# Expected output: (Full Funding, No Absorb) -> Donor: 500, Gov: 1000
+```
+
+
+## R: Payoff Matrix Heatmap
+
+```{r}
+#| label: payoff-heatmap
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+library(ggplot2)
+library(tidyr)
+
+# Build tidy data for both players
+game_df <- expand.grid(
+  Donor = c("Full Funding", "Reduced"),
+  Gov = c("Full Absorb", "Partial Absorb", "No Absorb")
+)
+game_df$Donor_Payoff <- c(4500, 2200, 2800, 1500, 500, 300)
+game_df$Gov_Payoff   <- c(600,  400,  900,  700,  1000, 800)
+game_df$Total        <- game_df$Donor_Payoff + game_df$Gov_Payoff
+game_df$Label <- paste0("D: ", game_df$Donor_Payoff,
+                        "\nG: ", game_df$Gov_Payoff)
+
+# Factor ordering
+game_df$Donor <- factor(game_df$Donor,
+                        levels = c("Full Funding", "Reduced"))
+game_df$Gov   <- factor(game_df$Gov,
+                        levels = c("Full Absorb", "Partial Absorb",
+                                   "No Absorb"))
+
+ggplot(game_df, aes(x = Gov, y = Donor, fill = Donor_Payoff)) +
+  geom_tile(color = "white", linewidth = 2) +
+  geom_text(aes(label = Label), size = 5, fontface = "bold") +
+  scale_fill_gradient2(low = "#E24A3F", mid = "#FED141",
+                       high = "#83BD00", midpoint = 2000,
+                       name = "Donor\nPayoff") +
+  labs(title = "Workforce Absorption Game: Payoff Matrix",
+       x = "Government Strategy", y = "Donor Strategy") +
+  theme_minimal(base_size = 16) +
+  theme(panel.grid = element_blank(),
+        plot.title = element_text(color = "#005CB9", face = "bold"))
+```
+
+
+## R: Extensive Form — Backward Induction
+
+```{r}
+#| label: backward-induction
+#| echo: true
+
+# Extensive form: Donor moves first, Government observes and responds
+# Define terminal payoffs: (Donor, Gov)
+terminal <- list(
+  "Full->FullAbsorb"    = c(D = 4500, G = 600),
+  "Full->PartialAbsorb" = c(D = 2800, G = 900),
+  "Full->NoAbsorb"      = c(D = 500,  G = 1000),
+  "Reduced->FullAbsorb"    = c(D = 2200, G = 400),
+  "Reduced->PartialAbsorb" = c(D = 1500, G = 700),
+  "Reduced->NoAbsorb"      = c(D = 300,  G = 800)
+)
+
+# Step 1: Government's best response at each information set
+gov_after_full <- terminal[grep("^Full->", names(terminal))]
+gov_br_full <- names(which.max(sapply(gov_after_full, `[`, "G")))
+cat("Gov best response after Full Funding:", gov_br_full, "\n")
+cat("  Payoffs:", gov_after_full[[gov_br_full]], "\n\n")
+
+gov_after_reduced <- terminal[grep("^Reduced->", names(terminal))]
+gov_br_reduced <- names(which.max(sapply(gov_after_reduced, `[`, "G")))
+cat("Gov best response after Reduced:", gov_br_reduced, "\n")
+cat("  Payoffs:", gov_after_reduced[[gov_br_reduced]], "\n\n")
+
+# Step 2: Donor anticipates and chooses
+donor_full    <- gov_after_full[[gov_br_full]]["D"]
+donor_reduced <- gov_after_reduced[[gov_br_reduced]]["D"]
+cat("Donor payoff if Full:", donor_full, "\n")
+cat("Donor payoff if Reduced:", donor_reduced, "\n")
+cat("Donor optimal choice:",
+    ifelse(donor_full >= donor_reduced, "Full Funding", "Reduced"), "\n")
+
+# SPE: (Full Funding, Gov always plays No Absorb)
+# Donor gets 500 lives — motivating the need for conditionality
+```
+
+
+## R: Simulating a Repeated Game
+
+```{r}
+#| label: repeated-game
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+library(ggplot2)
+
+# Simulate repeated interaction with tit-for-tat strategy
+# Donor uses conditional strategy: fund high if Gov cooperated last round
+set.seed(42)
+n_rounds <- 20
+
+# Strategy profiles
+simulate_repeated <- function(donor_strategy, n = 20) {
+  donor_action <- character(n)
+  gov_action   <- character(n)
+  donor_payoff <- numeric(n)
+  gov_payoff   <- numeric(n)
+
+  # Payoffs per round (lives saved in hundreds)
+  payoff_matrix <- list(
+    "High_High" = c(D = 24, G = 7),
+    "High_Low"  = c(D = 5,  G = 10),
+    "Low_High"  = c(D = 18, G = 5),
+    "Low_Low"   = c(D = 8,  G = 6)
+  )
+
+  for (t in 1:n) {
+    # Donor strategy
+    if (donor_strategy == "unconditional") {
+      donor_action[t] <- "High"
+    } else if (donor_strategy == "tit_for_tat") {
+      donor_action[t] <- if (t == 1) "High"
+                          else if (gov_action[t-1] == "High") "High"
+                          else "Low"
+    }
+    # Government: rational, but learns from consequences
+    # Starts by free-riding, switches to cooperate if punished
+    if (t <= 3) {
+      gov_action[t] <- "Low"  # Test the donor
+    } else if (donor_strategy == "tit_for_tat" &
+               donor_action[t] == "Low") {
+      gov_action[t] <- "High"  # Cooperate after punishment
+    } else {
+      gov_action[t] <- "Low"   # Free-ride if no punishment
+    }
+
+    key <- paste0(donor_action[t], "_", gov_action[t])
+    donor_payoff[t] <- payoff_matrix[[key]]["D"]
+    gov_payoff[t]   <- payoff_matrix[[key]]["G"]
+  }
+
+  data.frame(round = 1:n, donor_action, gov_action,
+             donor_payoff, gov_payoff)
+}
+
+# Compare unconditional vs tit-for-tat
+uncond <- simulate_repeated("unconditional")
+uncond$strategy <- "Unconditional"
+tft <- simulate_repeated("tit_for_tat")
+tft$strategy <- "Tit-for-Tat"
+results <- rbind(uncond, tft)
+
+ggplot(results, aes(x = round, y = cumsum(donor_payoff),
+                    color = strategy)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(aes(shape = gov_action), size = 2.5) +
+  scale_color_manual(values = c("#E24A3F", "#83BD00")) +
+  scale_shape_manual(values = c(High = 16, Low = 4),
+                     name = "Gov Action") +
+  labs(title = "Repeated Game: Cumulative Donor Payoff",
+       subtitle = "Tit-for-tat induces Government cooperation over time",
+       x = "Funding Round", y = "Cumulative Lives Saved (hundreds)",
+       color = "Donor Strategy") +
+  theme_minimal(base_size = 14) +
+  theme(plot.title = element_text(color = "#005CB9", face = "bold"))
+```
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Game theory** models strategic interaction among multiple agents — essential when governments, donors, and partners all make interdependent choices.
+
+**Nash equilibrium** reveals the stable outcome when each agent optimizes individually. In MNH, this often means free-riding unless contracts are designed carefully.
+
+**Extensive-form analysis** and backward induction show how the sequence of moves matters. Conditional commitments (milestone payments) transform the game's equilibrium.
+
+**Strategy tables** and the **causal form** connect game theory to the influence diagrams of Chapters 7–8, providing a unified framework for multi-agent decision problems.
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 10 — Data-Driven Causal Modeling**
+
+We return from theory to practice with real data:
+
+- Learning causal structure from MNH datasets
+- Bayesian network parameter estimation
+- Combining expert knowledge with data
+- Validation and sensitivity analysis for policy recommendations
+:::
+
+. . .
+
+::: {.callout-box .green}
+**The arc of the book:** Chapters 1–6 built causal models (inference). Chapters 7–9 used them for decisions (intervention). Chapter 10 grounds everything in data — closing the loop between theory and evidence.
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[Inference and Intervention | Chapter 9: Multi-Agent Interventions]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

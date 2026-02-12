@@ -1,0 +1,72 @@
+---
+title: "Course Schedule"
+subtitle: "10-session syllabus for Inference and Intervention"
+---
+
+## Course Structure
+
+This course consists of 10 sessions, each corresponding to one chapter of the textbook. Sessions are grouped into four thematic parts that build on each other sequentially.
+
+::: {.callout-box}
+**Prerequisite chain:** Each chapter builds on the previous ones. The dependency chain runs Ch1 → Ch2 → Ch3 → Ch4 → Ch5 → Ch6 → Ch7 → Ch8 → Ch9 → Ch10. It is strongly recommended to follow the chapters in order.
+:::
+
+## Part I: Foundations (Sessions 1--3)
+
+| Session | Chapter | Topics | R Packages | Preparation |
+|---------|---------|--------|------------|-------------|
+| 1 | [Ch 1: Introduction to Causal Analysis](chapters/ch01.qmd) | Situational assessment vs. intervention; correlation ≠ causation; confounding, reverse causation, selection bias | `dagitty`, `ggdag` | Read Ryall & Bramson Ch 1; install R packages |
+| 2 | [Ch 2: Qualitative Causal Models](chapters/ch02.qmd) | Four node types; signed directed links; serial, diverging, converging triplets; d-separation | `dagitty`, `ggdag` | Read Ryall & Bramson Ch 2 |
+| 3 | [Ch 3: The MNH Diagnostic Case Study](chapters/ch03.qmd) | Iterative model building; stakeholder interviews; root node identification; prioritizing recommendations | `dagitty`, `ggdag` | Read Ryall & Bramson Ch 3 |
+
+## Part II: Quantitative Analysis (Sessions 4--6)
+
+| Session | Chapter | Topics | R Packages | Preparation |
+|---------|---------|--------|------------|-------------|
+| 4 | [Ch 4: Quantitative Causal Models](chapters/ch04.qmd) | Probability distributions; CPTs; Bayes' rule; Causal Markov Condition; Bayesian networks | `bnlearn`, `ggplot2` | Read Ryall & Bramson Ch 4 |
+| 5 | [Ch 5: Situational Analysis](chapters/ch05.qmd) | Marginal probabilities; belief updating; inference in serial, diverging, converging structures; explaining away | `bnlearn`, `ggplot2` | Read Ryall & Bramson Ch 5 |
+| 6 | [Ch 6: Simpson's Paradox & Cost-Effectiveness](chapters/ch06.qmd) | Simpson's Paradox; Prosecutor's Fallacy; causal reasoning in cost-effectiveness analysis | `ggplot2` | Read Ryall & Bramson Ch 6 |
+
+## Part III: Decision & Strategy (Sessions 7--9)
+
+| Session | Chapter | Topics | R Packages | Preparation |
+|---------|---------|--------|------------|-------------|
+| 7 | [Ch 7: Decision Analysis & Value of Information](chapters/ch07.qmd) | Do-calculus; expected utility; decision trees; value of information; optimal intervention design | `bnlearn`, `ggplot2` | Read Ryall & Bramson Ch 7 |
+| 8 | [Ch 8: Multi-Country Resource Allocation](chapters/ch08.qmd) | Portfolio optimization; allocation under uncertainty; country-level analysis; budget distribution | `ggplot2`, `tidyr` | Read Ryall & Bramson Ch 8 |
+| 9 | [Ch 9: Game Theory & Strategic Interactions](chapters/ch09.qmd) | Nash equilibrium; dominant strategies; incentive design; donor-government dynamics | `ggplot2` | Read Ryall & Bramson Ch 9 |
+
+## Part IV: Data-Driven Methods (Session 10)
+
+| Session | Chapter | Topics | R Packages | Preparation |
+|---------|---------|--------|------------|-------------|
+| 10 | [Ch 10: Structure Learning from Observational Data](chapters/ch10.qmd) | Markov equivalence; PC algorithm; hill-climbing; instrumental variables; causal regression | `bnlearn`, `dagitty`, `ggdag`, `ivreg` | Read Ryall & Bramson Ch 10 |
+
+## Chapter Dependency Chain
+
+```
+Ch 1 (Introduction)
+ └─→ Ch 2 (Qualitative DAGs)
+      └─→ Ch 3 (Interview Case Study)
+           └─→ Ch 4 (Quantitative / CPTs / Bayes)
+                └─→ Ch 5 (Inference / Belief Updating)
+                     └─→ Ch 6 (Simpson's Paradox)
+                          └─→ Ch 7 (Decision Analysis / do-calculus)
+                               └─→ Ch 8 (Resource Allocation)
+                                    └─→ Ch 9 (Game Theory)
+                                         └─→ Ch 10 (Structure Learning)
+```
+
+## Session Format
+
+Each session follows a consistent structure:
+
+1. **Theory presentation** (lecture slides) — Core concepts from the textbook, adapted to MNH contexts
+2. **MNH application** — Real-world examples applying the theory to maternal and newborn health programs
+3. **R code workshop** — Hands-on coding exercises using the chapter's R packages
+4. **Key takeaways and discussion** — Summary and preview of the next session
+
+## Textbook
+
+Ryall, M. D., & Bramson, A. (2014). *Inference and Intervention: Causal Models for Business Analysis*. Routledge.
+
+All textbook examples have been adapted from business contexts to maternal and newborn health program analysis.

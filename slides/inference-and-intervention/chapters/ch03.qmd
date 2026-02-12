@@ -1,0 +1,237 @@
+---
+title: "Chapter 3: The MNH Diagnostic Case Study"
+subtitle: "Iterative model building from stakeholder interviews"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Apply the **iterative model-building process** used in program evaluations
+- Start with a simple model and **expand it systematically** through interviews
+- Identify **root nodes** (levers) vs. **intermediate nodes** in a causal system
+- Use a causal model to **prioritize recommendations** and structure analysis
+- Build a comprehensive MNH causal model through a simulated diagnostic case study
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### Diagnostic Causal Modeling
+
+An iterative cycle of hypothesis, stakeholder interview, model revision, deeper questions, and refinement. The process begins with the simplest possible model and adds complexity only as interviews reveal new variables and mechanisms. At each stage, the model tells you what questions to ask next -- this is the power of structured causal thinking.
+:::
+
+::: {.key-concept .green}
+#### The Four Diagnostic Principles
+
+The diagnostic approach follows four key principles. First, **focus on significant drivers** -- not all variables matter equally, so identify those with the largest causal effects on the objective. Second, **seek sources of common problems** -- look for common causes that explain multiple symptoms, as these are high-leverage intervention points. Third, **ask specific questions** -- use the model to generate targeted hypotheses rather than open-ended inquiries. Fourth, **bring it all together** -- the final model should tell a coherent causal story linking decisions to outcomes.
+:::
+
+::: {.key-concept .orange}
+#### Supply Side vs. Demand Side
+
+A complete diagnostic model must capture both supply-side and demand-side factors. On the supply side, investment flows through channels like training, equipment, and staffing but can be undermined by transmission failures such as staff attrition, equipment breakdown, and referral gaps. On the demand side, geographic access, health-seeking behavior, and financial barriers determine whether communities actually benefit from facility-level improvements. Both sides must work together to reduce mortality.
+:::
+
+::: {.key-concept .teal}
+#### Root Nodes as Leverage Points
+
+Root nodes are variables without any parents in the causal model -- they are ultimate causes. Intervening on root nodes has the broadest downstream effects. In the MNH diagnostic case, staff retention and equipment maintenance emerged as critical root-level bottlenecks that the initial investment plan had overlooked. The model reveals that investing in the right inputs (training, equipment) is necessary but not sufficient when transmission mechanisms are broken.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch03-interview-case/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch03-interview-case/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This chapter demonstrates how to formalize each round of the diagnostic interview process in R, building progressively more complex DAGs with `dagitty` and `ggdag`.
+
+### Round 1: Simple Supply-Side Model
+
+After the initial interviews with the ministry of health, we decompose the investment-to-outcome chain into its supply-side components: training, equipment, staffing, competency, and utilization.
+
+```{r}
+#| label: round1-dag
+#| echo: true
+#| fig-width: 9
+#| fig-height: 4
+
+library(dagitty)
+library(ggdag)
+library(ggplot2)
+
+# Round 1: Simple supply-side model
+round1 <- dagitty('dag {
+  Investment [pos="0,1"]
+  Training [pos="1,0"]
+  Equipment [pos="1,1"]
+  Staffing [pos="1,2"]
+  Competency [pos="2,0.5"]
+  Utilization [pos="2,1.5"]
+  Coverage [pos="3,1"]
+  NMR [pos="4,1"]
+
+  Investment -> Training
+  Investment -> Equipment
+  Investment -> Staffing
+  Training -> Competency
+  Staffing -> Competency
+  Equipment -> Utilization
+  Staffing -> Utilization
+  Competency -> Coverage
+  Utilization -> Coverage
+  Coverage -> NMR
+}')
+
+ggdag(round1) + theme_dag() +
+  labs(title = "Round 1: Supply-Side Model (7 nodes)")
+```
+
+### Round 2: Adding Transmission Failures
+
+Facility director interviews revealed that staff retention, equipment maintenance, and referral system gaps are critical missing variables. These common causes explain why inputs were delivered but effective use remains low.
+
+```{r}
+#| label: round2-dag
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+# Round 2: Add retention, maintenance, referral
+round2 <- dagitty('dag {
+  Investment [pos="0,1"]
+  Training [pos="1,0"]
+  Equipment [pos="1,2"]
+  Staffing [pos="1,1"]
+  Retention [pos="1.5,0.5"]
+  Maintenance [pos="1.5,2.5"]
+  Referral [pos="1.5,3"]
+  Competency [pos="2,0.5"]
+  Utilization [pos="2,2"]
+  Coverage [pos="3,1"]
+  NMR [pos="4,1"]
+
+  Investment -> Training
+  Investment -> Equipment
+  Investment -> Staffing
+  Investment -> Referral
+  Training -> Competency
+  Staffing -> Competency
+  Retention -> Competency
+  Retention -> Utilization
+  Equipment -> Utilization
+  Maintenance -> Utilization
+  Competency -> Coverage
+  Utilization -> Coverage
+  Referral -> Coverage
+  Coverage -> NMR
+}')
+
+ggdag(round2) + theme_dag() +
+  labs(title = "Round 2: Adding Transmission Failures (10 nodes)")
+```
+
+### Round 3: Complete Model with Demand Side
+
+Community health worker interviews added demand-side variables: geographic access, health-seeking behavior, and financial barriers. These factors determine whether communities benefit from improved facility quality.
+
+```{r}
+#| label: round3-dag
+#| echo: true
+#| fig-width: 11
+#| fig-height: 6
+
+# Round 3: Add demand-side variables
+round3 <- dagitty('dag {
+  Investment [pos="0,1.5"]
+  Training [pos="1,0"]
+  Equipment [pos="1,2"]
+  Staffing [pos="1,1"]
+  Retention [pos="1.5,0.5"]
+  Maintenance [pos="1.5,2.5"]
+  Referral [pos="1.5,3.5"]
+  Competency [pos="2,0.5"]
+  Utilization [pos="2,2"]
+  Access [pos="2,3.5"]
+  Behavior [pos="2,4.5"]
+  Fin_Barriers [pos="2,5.5"]
+  Facility_Births [pos="3,4"]
+  Quality [pos="3,1.5"]
+  NMR [pos="4,2.5"]
+
+  Investment -> Training
+  Investment -> Equipment
+  Investment -> Staffing
+  Investment -> Referral
+  Training -> Competency
+  Staffing -> Competency
+  Retention -> Competency
+  Retention -> Utilization
+  Equipment -> Utilization
+  Maintenance -> Utilization
+  Competency -> Quality
+  Utilization -> Quality
+  Referral -> Access
+  Access -> Facility_Births
+  Behavior -> Facility_Births
+  Fin_Barriers -> Facility_Births
+  Quality -> NMR
+  Facility_Births -> NMR
+}')
+
+ggdag(round3) + theme_dag() +
+  labs(title = "Round 3: Complete Model (15 nodes)")
+```
+
+### Identifying What to Measure
+
+The final model's structure tells us which variables must be measured and controlled for in any evaluation, what conditional independencies the model predicts, and which causal paths connect investment to mortality outcomes.
+
+```{r}
+#| label: adjustment-analysis
+#| echo: true
+
+# What must we control for to estimate the causal effect
+# of investment on NMR?
+adjustmentSets(round3,
+               exposure = "Investment",
+               outcome = "NMR")
+
+# What are the implied conditional independencies?
+# These are testable predictions of the model
+impliedConditionalIndependencies(round3)
+
+# What are all paths from Investment to NMR?
+paths(round3,
+      from = "Investment",
+      to = "NMR")
+```
+
+The `adjustmentSets()` function tells us which variables we must measure and control for in our evaluation. The `impliedConditionalIndependencies()` function generates testable predictions -- if the data violates them, our model is wrong and needs revision.
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Build models iteratively.** Start simple and add complexity as interviews reveal new variables and mechanisms.
+
+**Root nodes are leverage points.** Staff retention and equipment maintenance emerged as critical bottlenecks that the initial investment plan overlooked.
+
+**The model guides the analysis.** Each round's model tells you what questions to ask next, what data to collect, and where the bottlenecks are.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 4 -- Quantitative Causal Models**, we take the qualitative models built in this chapter and add numbers:
+
+- Conditional probability tables (CPTs) for each node
+- Joint probability distributions
+- Bayes' rule for updating beliefs with evidence
+- The mathematical foundation for precise inference and decision analysis

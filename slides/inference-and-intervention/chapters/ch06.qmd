@@ -1,0 +1,305 @@
+---
+title: "Chapter 6: Simpson's Paradox & Cost-Effectiveness"
+subtitle: "Aggregation paradoxes, the Prosecutor's Fallacy, and causal reasoning in MNH cost-effectiveness analysis"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Identify **Simpson's Paradox** and explain why aggregated data can reverse the direction of causal effects
+- Avoid the **Prosecutor's Fallacy** by applying Bayes' rule to distinguish $P(\text{Evidence} \mid \text{Hypothesis})$ from $P(\text{Hypothesis} \mid \text{Evidence})$
+- Apply **causal reasoning** to cost-effectiveness analysis, avoiding naive cross-country comparisons
+- Use R to simulate, visualize, and model data that exhibit these paradoxes
+- Make sound **resource-allocation recommendations** for a large-scale MNH program portfolio
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### Simpson's Paradox
+
+A trend that appears in aggregated data *reverses* or disappears when the data is disaggregated by a confounding variable. The paradox arises when a lurking variable is associated with both the treatment and the outcome. Decisions based on aggregated data can be exactly wrong; resolution requires causal reasoning, not just statistical adjustment.
+:::
+
+::: {.key-concept .green}
+#### Cost Per Life Saved (CPLS)
+
+The total program expenditure divided by the number of additional lives saved attributable to the intervention. Lower CPLS means greater efficiency. Naive comparisons of CPLS across countries can be deeply misleading because baseline severity, health system capacity, and population density confound the treatment-outcome relationship.
+:::
+
+::: {.key-concept .red}
+#### The Prosecutor's Fallacy
+
+Confusing $P(\text{Evidence} \mid \text{Hypothesis})$ with $P(\text{Hypothesis} \mid \text{Evidence})$. The probability of observing the evidence given that a hypothesis is true is not the same as the probability that the hypothesis is true given the evidence. Bayes' rule and the base rate are needed to convert one into the other.
+:::
+
+::: {.key-concept .orange}
+#### Confounders vs. Mediators
+
+Always condition on **confounders** (common causes of treatment and outcome) to remove spurious associations. Never condition on **mediators** (variables on the causal path between treatment and outcome), because doing so blocks the very causal effect you are trying to estimate. Getting this distinction wrong leads to Simpson's Paradox or underestimation of treatment effects.
+:::
+
+::: {.key-concept .teal}
+#### Confounder-Adjusted Rankings
+
+Naive ranking of countries by raw CPLS concentrates investment in countries with strong health systems and low mortality burden. Causal ranking, which adjusts for baseline NMR, health system capacity, population size, and existing coverage, targets countries where the causal effect of intervention is greatest. The causal approach can save thousands of additional lives with the same budget.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch06-business-financials/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch06-business-financials/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This chapter uses R to simulate and analyze Simpson's Paradox and the Prosecutor's Fallacy, demonstrating how aggregated data can mislead and how Bayes' rule corrects diagnostic reasoning.
+
+### Simulating Simpson's Paradox
+
+We begin by generating an MNH dataset where a confounder (country group) drives both treatment assignment and baseline risk, producing a Simpson's Paradox in the aggregated data.
+
+```{r}
+#| label: simulate-simpsons
+#| echo: true
+
+library(tidyverse)
+
+set.seed(42)
+
+# Simulate MNH data exhibiting Simpson's Paradox
+# Confounder: country_group (high-burden vs low-burden)
+n <- 2000
+
+mnh_data <- tibble(
+  # Confounder: country group determines both treatment and baseline risk
+ country_group = sample(c("High-burden", "Low-burden"), n, replace = TRUE,
+                         prob = c(0.6, 0.4)),
+  # Treatment assignment depends on country group (confounder)
+  cpap = case_when(
+    country_group == "High-burden" ~ rbinom(n, 1, 0.75),
+    country_group == "Low-burden"  ~ rbinom(n, 1, 0.25)
+  ),
+  # Outcome depends on BOTH country group and treatment
+  # CPAP has a positive causal effect (+10pp), but high-burden has lower baseline
+  survival_prob = case_when(
+    country_group == "High-burden" & cpap == 1 ~ 0.68,
+    country_group == "High-burden" & cpap == 0 ~ 0.61,
+    country_group == "Low-burden"  & cpap == 1 ~ 0.85,
+    country_group == "Low-burden"  & cpap == 0 ~ 0.82
+  ),
+  survived = rbinom(n, 1, survival_prob)
+)
+
+# Aggregated result (misleading)
+mnh_data |>
+  group_by(cpap) |>
+  summarise(survival_rate = mean(survived), n = n(), .groups = "drop")
+
+# Disaggregated result (correct)
+mnh_data |>
+  group_by(country_group, cpap) |>
+  summarise(survival_rate = mean(survived), n = n(), .groups = "drop")
+```
+
+### Visualizing Aggregated vs. Stratified Results
+
+The side-by-side comparison shows how the same data yields opposite conclusions depending on whether you stratify by the confounder.
+
+```{r}
+#| label: visualize-simpsons
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+library(ggplot2)
+
+# Prepare labels
+mnh_data <- mnh_data |>
+  mutate(cpap_label = ifelse(cpap == 1, "CPAP", "No CPAP"))
+
+# Aggregated view (misleading)
+p_agg <- ggplot(mnh_data, aes(x = cpap_label, y = survived, fill = cpap_label)) +
+  stat_summary(fun = mean, geom = "bar", width = 0.6) +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  scale_fill_manual(values = c("CPAP" = "#005CB9", "No CPAP" = "#FA7650")) +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  labs(title = "Aggregated: CPAP Looks Harmful",
+       y = "Survival Rate", x = NULL) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none")
+
+# Stratified view (correct)
+p_strat <- ggplot(mnh_data, aes(x = cpap_label, y = survived, fill = cpap_label)) +
+  stat_summary(fun = mean, geom = "bar", width = 0.6) +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  facet_wrap(~ country_group) +
+  scale_fill_manual(values = c("CPAP" = "#005CB9", "No CPAP" = "#FA7650")) +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  labs(title = "Stratified: CPAP Helps in BOTH Groups",
+       y = "Survival Rate", x = NULL) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none")
+
+library(patchwork)
+p_agg + p_strat +
+  plot_annotation(title = "Simpson's Paradox in MNH Data",
+                  subtitle = "Same data, opposite conclusions")
+```
+
+### Naive vs. Confounder-Adjusted Regression
+
+The naive regression omits the confounder and produces a negative (misleading) CPAP coefficient. The adjusted regression includes the confounder and correctly estimates a positive causal effect.
+
+```{r}
+#| label: regression-comparison
+#| echo: true
+
+# Naive regression: ignores confounder
+naive_model <- lm(survived ~ cpap, data = mnh_data)
+summary(naive_model)
+# Expected: CPAP coefficient is NEGATIVE (misleading)
+
+# Confounder-adjusted regression: includes country_group
+adjusted_model <- lm(survived ~ cpap + country_group, data = mnh_data)
+summary(adjusted_model)
+# Expected: CPAP coefficient is POSITIVE (correct)
+
+# Compare coefficients side by side
+tibble(
+  Model = c("Naive (no confounder)", "Adjusted (with confounder)"),
+  CPAP_Coefficient = c(coef(naive_model)["cpap"],
+                       coef(adjusted_model)["cpap"]),
+  Interpretation = c("CPAP appears harmful",
+                     "CPAP is beneficial (+7pp)")
+)
+```
+
+### Bayesian Network Encoding the Causal Structure
+
+A Bayesian network that encodes the fork (confounder) structure automatically handles Simpson's Paradox in its queries.
+
+```{r}
+#| label: bn-simpsons
+#| echo: true
+
+library(bnlearn)
+
+# Prepare data for bnlearn (factors required)
+bn_data <- mnh_data |>
+  mutate(
+    country_group = factor(country_group),
+    cpap = factor(cpap, labels = c("No", "Yes")),
+    survived = factor(survived, labels = c("Died", "Survived"))
+  ) |>
+  select(country_group, cpap, survived) |>
+  as.data.frame()
+
+# Define the causal structure (DAG)
+dag <- model2network("[country_group][cpap|country_group][survived|cpap:country_group]")
+plot(dag)
+
+# Fit the BN with maximum likelihood estimates
+fitted_bn <- bn.fit(dag, bn_data)
+
+# Query: P(survived | do(cpap = Yes)) using causal reasoning
+# Marginalizing over country_group (the back-door adjustment)
+cpquery(fitted_bn,
+        event = (survived == "Survived"),
+        evidence = (cpap == "Yes"),
+        n = 100000)
+
+# Compare: P(survived | cpap = Yes, country_group = High-burden)
+cpquery(fitted_bn,
+        event = (survived == "Survived"),
+        evidence = (cpap == "Yes" & country_group == "High-burden"),
+        n = 100000)
+
+# The BN correctly handles the conditioning automatically
+```
+
+### Prosecutor's Fallacy Calculator
+
+This Bayes' rule calculator demonstrates how the positive predictive value (PPV) of a diagnostic test depends critically on the base rate (prevalence), not just on sensitivity and specificity.
+
+```{r}
+#| label: bayes-calculator
+#| echo: true
+
+# Bayes' rule calculator for diagnostic tests
+bayes_diagnostic <- function(sensitivity, specificity, prevalence) {
+  # P(positive | disease) = sensitivity
+  # P(negative | no disease) = specificity
+  # P(positive | no disease) = 1 - specificity (false positive rate)
+  # P(disease) = prevalence
+
+  p_pos_given_disease    <- sensitivity
+  p_pos_given_no_disease <- 1 - specificity
+  p_disease              <- prevalence
+  p_no_disease           <- 1 - prevalence
+
+  # Total probability of a positive test
+  p_positive <- (p_pos_given_disease * p_disease) +
+                (p_pos_given_no_disease * p_no_disease)
+
+  # Bayes' rule: P(disease | positive)
+  p_disease_given_pos <- (p_pos_given_disease * p_disease) / p_positive
+
+  # Return results
+  tibble(
+    Metric = c("Sensitivity", "Specificity", "Prevalence",
+               "P(Positive Test)", "P(Disease | Positive) [PPV]",
+               "Prosecutor's Fallacy Would Claim"),
+    Value = c(
+      scales::percent(sensitivity, accuracy = 0.1),
+      scales::percent(specificity, accuracy = 0.1),
+      scales::percent(prevalence, accuracy = 0.1),
+      scales::percent(p_positive, accuracy = 0.1),
+      scales::percent(p_disease_given_pos, accuracy = 0.1),
+      scales::percent(sensitivity, accuracy = 0.1)
+    )
+  )
+}
+
+# Preeclampsia screening example
+bayes_diagnostic(
+  sensitivity = 0.90,
+  specificity = 0.85,
+  prevalence  = 0.05
+)
+
+# What if prevalence is higher (e.g., high-risk population)?
+bayes_diagnostic(
+  sensitivity = 0.90,
+  specificity = 0.85,
+  prevalence  = 0.20
+)
+```
+
+At 5% prevalence, the PPV is approximately 24%. At 20% prevalence, the PPV rises to approximately 60%. The same test with the same sensitivity and specificity, but the meaning of a positive result depends entirely on the base rate.
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Simpson's Paradox** arises when a confounder creates a fork structure in the DAG. Aggregated data can reverse the true causal effect. Always stratify by confounders, never by mediators.
+
+**The Prosecutor's Fallacy** confuses $P(E \mid H)$ with $P(H \mid E)$. Base rates matter. Use Bayes' rule to compute the correct posterior probability.
+
+**In MNH cost-effectiveness**, naive cross-country comparisons mislead because baseline severity and health system strength confound the treatment-outcome relationship. Causal adjustment can change which countries and interventions are prioritized -- and save thousands of additional lives.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 7 -- Decision Analysis and Value of Information**, we build on the causal models from this chapter to make optimal decisions under uncertainty:
+
+- **Decision trees** for intervention selection under multiple scenarios
+- **Expected Value of Perfect Information (EVPI):** How much would it be worth to resolve uncertainty before investing?
+- **Sensitivity analysis:** Which uncertain parameters matter most for the allocation decision?
+- **Multi-criteria decision analysis:** Balancing cost-effectiveness with equity, political feasibility, and sustainability
+
+Chapter 6 taught us how to correctly estimate causal effects (avoiding Simpson's Paradox and the Prosecutor's Fallacy). Chapter 7 teaches us how to use those estimates to make optimal decisions about where to invest program resources.

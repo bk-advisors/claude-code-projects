@@ -1,0 +1,1047 @@
+---
+title: "Chapter 6: Modeling MNH Cost-Effectiveness"
+subtitle: "Inference and Intervention | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Identify **Simpson's Paradox** and explain why aggregated data can reverse the direction of causal effects
+- Avoid the **Prosecutor's Fallacy** by applying Bayes' rule to distinguish $P(\text{Evidence} \mid \text{Hypothesis})$ from $P(\text{Hypothesis} \mid \text{Evidence})$
+- Apply **causal reasoning** to cost-effectiveness analysis, avoiding naive cross-country comparisons
+- Use R to simulate, visualize, and model data that exhibit these paradoxes
+- Make sound **resource-allocation recommendations** for a large-scale MNH program portfolio
+:::
+
+
+# Book Context: Program Financials {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">From Slimtree Publishing to MNH cost-effectiveness</span>
+
+
+## The Slimtree Publishing Case
+
+::: {.callout-box}
+**Chapter 6 of Ryall & Bramson** builds a causal model of an organization's P&L statement. Inputs and costs are decomposed into causal drivers, and the model is used to identify which levers have the greatest impact on outcomes.
+:::
+
+. . .
+
+**Key ideas from the book:**
+
+::: {.incremental}
+- A **P&L spreadsheet** is already an implicit causal model -- inputs minus costs equals outcomes
+- Making the causal structure **explicit** reveals hidden assumptions (e.g., which costs are fixed vs. variable)
+- Simpson's Paradox arises when **aggregated program data** masks segment-level effects
+- The Prosecutor's Fallacy leads to **misinterpreting diagnostic signals** about program performance
+:::
+
+
+## Transition: From Profit to Lives Saved
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Slimtree Publishing**
+
+- Objective: Maximize profit
+- Financial model: Revenue - Costs = Profit
+- Levers: Pricing, volume, cost structure
+- Paradox: A product line looks unprofitable overall but is profitable in every segment
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**MNH Cost-Effectiveness**
+
+- Objective: Maximize lives saved per dollar
+- Program model: Cost / Lives Saved = CPLS
+- Levers: Intervention choice, country allocation, dosage
+- Paradox: An intervention looks ineffective overall but is effective in every country group
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box .orange}
+**The same causal reasoning applies.** Whether you are analyzing a publishing organization's profit margins or an MNH program's cost-per-life-saved, Simpson's Paradox and the Prosecutor's Fallacy arise from the same structural features of the causal model.
+:::
+
+
+# Cost-Effectiveness in MNH {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Why naive country comparisons mislead</span>
+
+
+## The Key Metric: Cost Per Life Saved
+
+::: {.definition-box}
+**Cost Per Life Saved (CPLS):** The total program expenditure divided by the number of additional lives saved attributable to the intervention. Lower CPLS means greater efficiency.
+:::
+
+. . .
+
+**Why CPLS matters for MNH program leadership:**
+
+::: {.incremental}
+- A large-scale MNH initiative has substantial funding to deploy across several target countries
+- Each country has different baseline mortality, health system capacity, and cost structures
+- Naive comparisons of CPLS across countries can be **deeply misleading**
+- A country with high CPLS may actually be the *best* investment when you account for confounders
+:::
+
+. . .
+
+::: {.callout-box .red}
+**The core problem:** Comparing CPLS without adjusting for confounders (baseline severity, health system strength, population density) is like comparing apples to oranges -- and can lead to catastrophically wrong allocation decisions.
+:::
+
+
+## Lives Saved Targets by Country
+
+The program's country portfolio targets **hundreds of thousands of lives saved** across several target countries:
+
+| Country | Lives Saved Target | Share of Total |
+|---|---:|---:|
+| Country A | ~78,000 | 26.5% |
+| Country B | ~58,000 | 19.7% |
+| Country C | ~42,500 | 14.4% |
+| Country D | ~39,500 | 13.4% |
+| Country E | ~22,000 | 7.5% |
+| Country F | ~19,000 | 6.5% |
+| Country G | ~18,000 | 6.1% |
+| Country H | ~13,500 | 4.6% |
+| Country I | ~3,800 | 1.3% |
+| **Total** | **~294,000** | **100%** |
+
+. . .
+
+::: {.callout-box}
+**Note:** Targets reflect both baseline mortality burden and projected intervention effectiveness. Country A's large share is driven by population size and high NMR, not simply by spending more.
+:::
+
+
+## The Danger of Naive Rankings
+
+::: {.columns-equal}
+::: {.col}
+::: {.example-block}
+[Naive Approach]{.example-label}
+
+Rank countries by raw CPLS:
+
+| Country | CPLS |
+|---|---:|
+| Country H | $820 |
+| Country F | $1,050 |
+| Country A | $1,200 |
+| Country C | $1,450 |
+| Country B | $1,380 |
+
+"Invest everything in Country H -- lowest CPLS!"
+:::
+:::
+
+::: {.col}
+::: {.example-block}
+[Causal Approach]{.example-label}
+
+Adjust for baseline severity and health system strength:
+
+| Country | CPLS | Adjusted CPLS |
+|---|---:|---:|
+| Country H | $820 | $1,340 |
+| Country F | $1,050 | $1,180 |
+| Country A | $1,200 | $980 |
+| Country C | $1,450 | $1,100 |
+| Country B | $1,380 | $1,060 |
+
+"Country A is actually most efficient!"
+:::
+:::
+:::
+
+. . .
+
+::: {.key-takeaway}
+**Rankings reverse** when you condition on confounders. Country H's low raw CPLS reflects its strong health system (low baseline severity), not superior intervention efficiency.
+:::
+
+
+# Simpson's Paradox {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">When aggregated data reverses the truth</span>
+
+
+## Definition: Simpson's Paradox
+
+::: {.definition-box}
+**Simpson's Paradox:** A trend that appears in aggregated data *reverses* or disappears when the data is disaggregated by a confounding variable. The paradox arises when a lurking variable is associated with both the treatment and the outcome.
+:::
+
+. . .
+
+**Why it matters:**
+
+::: {.incremental}
+- Decisions based on aggregated data can be **exactly wrong**
+- The paradox is not a statistical curiosity -- it has led to real-world policy failures
+- Resolution requires **causal reasoning**, not just statistical adjustment
+- The key question: Should you condition on a variable, or not? The answer depends on the **causal structure**.
+:::
+
+
+## Classic Example: UC Berkeley Admissions
+
+::: {.example-block}
+[The Famous Case (1973)]{.example-label}
+
+UC Berkeley was sued for gender bias in graduate admissions:
+
+| | Applicants | Admitted | Rate |
+|---|---:|---:|---:|
+| **Men** | 8,442 | 3,738 | **44%** |
+| **Women** | 4,321 | 1,494 | **35%** |
+
+Women appeared to be discriminated against overall.
+:::
+
+. . .
+
+**But when broken down by department:**
+
+| Department | Men Admit Rate | Women Admit Rate |
+|---|---:|---:|
+| A | 62% | **82%** |
+| B | 63% | **68%** |
+| C | 37% | **34%** |
+| D | 33% | **35%** |
+
+. . .
+
+::: {.callout-box .green}
+**Within most departments, women were admitted at *higher* rates.** The paradox arose because women applied disproportionately to competitive departments with low admission rates. **Department choice** was the confounder.
+:::
+
+
+## MNH Example: CPAP Intervention
+
+Consider evaluating CPAP (Continuous Positive Airway Pressure) for neonatal respiratory distress across countries:
+
+::: {.example-block}
+[Aggregated Data]{.example-label}
+
+| Group | With CPAP | Without CPAP |
+|---|---:|---:|
+| **Survival Rate** | 72% | 78% |
+
+CPAP appears to *reduce* survival! Should we abandon it?
+:::
+
+. . .
+
+::: {.example-block}
+[Disaggregated by Country Group]{.example-label}
+
+| Country Group | With CPAP | Without CPAP | Difference |
+|---|---:|---:|---:|
+| **High-burden** (Countries A, B, D) | 68% | 61% | **+7 pp** |
+| **Low-burden** (Countries H, C, E) | 85% | 82% | **+3 pp** |
+
+CPAP **improves** survival in *every* group!
+:::
+
+
+## The Confounder: Baseline Severity
+
+**Why does this happen?** The confounder is **baseline severity**:
+
+::: {.incremental}
+- High-burden countries have more severe cases (lower baseline survival)
+- High-burden countries also use CPAP more frequently (greater need)
+- The aggregated data mixes these two groups, and the *composition effect* overwhelms the *treatment effect*
+:::
+
+. . .
+
+<table style="width: 85%; margin: 0.4em auto; font-size: 0.55em;">
+<tr>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node confounder">Baseline<br>Severity</div>
+</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td style="text-align: center; padding: 0.3em;">
+<span class="dag-arrow positive">&#8601; [+]</span>
+</td>
+<td></td>
+<td style="text-align: center; padding: 0.3em;">
+<span class="dag-arrow negative">&#8600; [&#8722;]</span>
+</td>
+</tr>
+<tr>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node treatment">CPAP<br>Usage</div>
+</td>
+<td style="text-align: center; padding: 0.3em;">
+<span class="dag-arrow positive">&#8594; [+]</span>
+</td>
+<td style="text-align: center; padding: 0.6em;">
+<div class="dag-node outcome">Survival<br>Rate</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+::: {.callout-box}
+**Baseline severity** is a classic *fork* (diverging triplet): it causes both higher CPAP usage *and* lower survival. The spurious negative association between CPAP and survival is entirely driven by this confounder.
+:::
+
+
+## The Numbers in Detail
+
+::: {.columns-equal}
+::: {.col}
+**Aggregated (misleading):**
+
+| | CPAP | No CPAP | Total |
+|---|---:|---:|---:|
+| Survived | 720 | 780 | 1,500 |
+| Died | 280 | 220 | 500 |
+| **Total** | **1,000** | **1,000** | 2,000 |
+| **Rate** | **72%** | **78%** | |
+
+CPAP looks worse: 72% vs 78%.
+:::
+
+::: {.col}
+**Disaggregated (correct):**
+
+*High-burden (n = 1,400):*
+
+| | CPAP | No CPAP |
+|---|---:|---:|
+| Survived | 544 | 183 |
+| Total | 800 | 300 |
+| **Rate** | **68%** | **61%** |
+
+*Low-burden (n = 600):*
+
+| | CPAP | No CPAP |
+|---|---:|---:|
+| Survived | 170 | 574 |
+| Total | 200 | 700 |
+| **Rate** | **85%** | **82%** |
+:::
+:::
+
+. . .
+
+::: {.callout-box .red}
+**The composition effect:** 80% of CPAP cases come from high-burden countries (where baseline survival is lower), but only 30% of non-CPAP cases do. The groups are not comparable without stratification.
+:::
+
+
+## The DAG That Generates Simpson's Paradox
+
+::: {.definition-box}
+**Simpson's Paradox arises whenever a confounder creates a fork structure:** a variable that is a common cause of both the treatment assignment and the outcome.
+:::
+
+. . .
+
+<table style="width: 90%; margin: 0.4em auto; font-size: 0.5em;">
+<tr>
+<td colspan="5" style="text-align: center; padding: 0.5em;">
+<div class="dag-node confounder">Confounder<br>(Baseline Severity / Country Group)</div>
+</td>
+</tr>
+<tr>
+<td style="text-align: center; padding: 0.3em;"><span class="dag-arrow">&#8595;</span></td>
+<td></td>
+<td></td>
+<td></td>
+<td style="text-align: center; padding: 0.3em;"><span class="dag-arrow">&#8595;</span></td>
+</tr>
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node treatment">Treatment<br>(CPAP Usage)</div>
+</td>
+<td></td>
+<td style="text-align: center; padding: 0.5em;">
+<span class="dag-arrow positive">&#8594; [+]</span>
+</td>
+<td></td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node outcome">Outcome<br>(Survival Rate)</div>
+</td>
+</tr>
+</table>
+
+. . .
+
+**Resolution:** Condition on (stratify by) the confounder. The **stratified** estimates give the correct causal effect.
+
+. . .
+
+::: {.callout-box .orange}
+**Critical rule:** Always condition on **confounders** (common causes of treatment and outcome). Never condition on **mediators** (variables on the causal path between treatment and outcome). Conditioning on a mediator *blocks* the causal effect you are trying to estimate.
+:::
+
+
+## Key Insight: Confounders vs. Mediators
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box .green}
+**Condition on CONFOUNDERS**
+
+Confounder is a common cause:
+
+Treatment $\leftarrow$ Confounder $\rightarrow$ Outcome
+
+Conditioning *removes* the spurious association and reveals the true causal effect.
+
+[Always stratify by confounders]{.good-example}
+:::
+:::
+
+::: {.col}
+::: {.callout-box .red}
+**Do NOT condition on MEDIATORS**
+
+Mediator is on the causal path:
+
+Treatment $\rightarrow$ Mediator $\rightarrow$ Outcome
+
+Conditioning *blocks* the very causal pathway you want to measure.
+
+[Never stratify by mediators]{.bad-example}
+:::
+:::
+:::
+
+. . .
+
+::: {.example-block}
+[MNH Example]{.example-label}
+
+- **Confounder:** Baseline severity (condition on it -- YES)
+- **Mediator:** Quality of care improvement (do NOT condition on it -- blocking the effect of investment on mortality)
+- Getting this wrong leads to Simpson's Paradox or underestimation of treatment effects
+:::
+
+
+# The Prosecutor's Fallacy {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Confusing the direction of conditional probability</span>
+
+
+## Definition: The Prosecutor's Fallacy
+
+::: {.definition-box}
+**The Prosecutor's Fallacy:** Confusing $P(\text{Evidence} \mid \text{Hypothesis})$ with $P(\text{Hypothesis} \mid \text{Evidence})$. That is, mistaking the probability of observing the evidence *given* that a hypothesis is true for the probability that the hypothesis is true *given* the evidence.
+:::
+
+. . .
+
+**The classic courtroom version:**
+
+::: {.incremental}
+- A DNA match occurs in 1 in 1,000,000 people
+- Prosecutor argues: "There is only a 1-in-a-million chance the defendant is innocent!"
+- But in a city of 5 million people, **5 people** match the DNA
+- $P(\text{match} \mid \text{innocent}) = 0.0001\%$ but $P(\text{innocent} \mid \text{match})$ could be $\frac{4}{5} = 80\%$
+:::
+
+. . .
+
+::: {.callout-box .red}
+**The fallacy:** The probability of the evidence given innocence is NOT the probability of innocence given the evidence. You need Bayes' rule and the **base rate** to convert one into the other.
+:::
+
+
+## MNH Example: Preeclampsia Screening
+
+::: {.example-block}
+[The Diagnostic Test]{.example-label}
+
+A screening test for **preeclampsia** in pregnant women has the following performance:
+
+- **Sensitivity:** 90% -- $P(\text{positive test} \mid \text{has preeclampsia}) = 0.90$
+- **Specificity:** 85% -- $P(\text{negative test} \mid \text{no preeclampsia}) = 0.85$
+- **Prevalence:** 5% -- $P(\text{preeclampsia}) = 0.05$
+:::
+
+. . .
+
+**The Prosecutor's Fallacy in action:**
+
+A health worker sees a positive test result and tells the patient: *"The test is 90% accurate, so there is a 90% chance you have preeclampsia."*
+
+. . .
+
+::: {.callout-box .red}
+**This is WRONG.** The 90% is $P(\text{positive} \mid \text{disease})$, not $P(\text{disease} \mid \text{positive})$. To find the latter, we need **Bayes' rule**.
+:::
+
+
+## Bayes' Rule Calculation
+
+::: {.math-block}
+$$P(\text{disease} \mid \text{positive}) = \frac{P(\text{positive} \mid \text{disease}) \times P(\text{disease})}{P(\text{positive})}$$
+:::
+
+. . .
+
+**Step 1: Compute $P(\text{positive})$ using the law of total probability:**
+
+::: {.math-block}
+$$P(\text{positive}) = P(\text{pos} \mid \text{disease}) \times P(\text{disease}) + P(\text{pos} \mid \text{no disease}) \times P(\text{no disease})$$
+$$= (0.90)(0.05) + (0.15)(0.95) = 0.045 + 0.1425 = 0.1875$$
+:::
+
+. . .
+
+**Step 2: Apply Bayes' rule:**
+
+::: {.math-block}
+$$P(\text{disease} \mid \text{positive}) = \frac{(0.90)(0.05)}{0.1875} = \frac{0.045}{0.1875} \approx 0.24$$
+:::
+
+. . .
+
+::: {.key-takeaway}
+**A positive test means only a 24% chance of preeclampsia** -- not 90%! The low base rate (5% prevalence) means most positive tests are **false positives**.
+:::
+
+
+## Visualizing the Fallacy
+
+Consider 10,000 pregnant women screened:
+
+| | Has Preeclampsia (500) | No Preeclampsia (9,500) | Total |
+|---|---:|---:|---:|
+| **Test Positive** | 450 (true pos) | 1,425 (false pos) | **1,875** |
+| **Test Negative** | 50 (false neg) | 8,075 (true neg) | 8,125 |
+
+. . .
+
+Of the **1,875 positive tests**, only **450** (24%) actually have preeclampsia.
+
+. . .
+
+::: {.callout-box}
+**The DAG for correct inference:**
+
+The key insight is that **prevalence** (base rate) is a prior that must be combined with the likelihood (test accuracy) to produce the posterior (probability of disease given positive test). Ignoring the base rate is the essence of the Prosecutor's Fallacy.
+:::
+
+. . .
+
+<table style="width: 75%; margin: 0.3em auto; font-size: 0.5em;">
+<tr>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node confounder">Prevalence<br>(Base Rate)</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive">&#8594; [+]</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node">Disease<br>Status</div>
+</td>
+<td style="text-align: center;">
+<span class="dag-arrow positive">&#8594; [+]</span>
+</td>
+<td style="text-align: center; padding: 0.5em;">
+<div class="dag-node outcome">Test<br>Result</div>
+</td>
+</tr>
+</table>
+
+
+# MNH Application: Cross-Country Cost-Effectiveness {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Applying causal reasoning to large-scale MNH resource allocation</span>
+
+
+## Cost-Effectiveness Data Across Countries
+
+Estimated cost per life saved (CPLS) for three key interventions:
+
+| Country | CPAP | PPH Bundle | Workforce Training | Baseline NMR |
+|---|---:|---:|---:|---:|
+| Country A | $1,310 | $940 | $1,720 | 31/1,000 |
+| Country B | $1,240 | $1,010 | $1,580 | 27/1,000 |
+| Country C | $1,510 | $1,150 | $1,440 | 22/1,000 |
+| Country D | $1,360 | $920 | $1,770 | 28/1,000 |
+| Country E | $1,620 | $1,260 | $1,310 | 19/1,000 |
+| Country H | $870 | $720 | $1,030 | 16/1,000 |
+| Country F | $1,100 | $830 | $1,460 | 24/1,000 |
+| Country G | $1,160 | $900 | $1,210 | 20/1,000 |
+
+. . .
+
+::: {.callout-box .orange}
+**Tempting but wrong:** Simply pick the country-intervention pair with the lowest CPLS (Country H, PPH bundle at $720). But Country H's low CPLS reflects its strong health system, not necessarily a larger *causal* impact of the intervention.
+:::
+
+
+## Naive Ranking vs. Causal Ranking
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box .red}
+**Naive Ranking (by raw CPLS)**
+
+1. Country H -- PPH ($720)
+2. Country F -- PPH ($830)
+3. Country H -- CPAP ($870)
+4. Country G -- PPH ($900)
+5. Country D -- PPH ($920)
+
+*Concentrates investment in countries with strong health systems and low mortality burden.*
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**Causal Ranking (adjusted for confounders)**
+
+1. Country A -- PPH ($940 raw, high marginal impact)
+2. Country D -- PPH ($920 raw, large unmet need)
+3. Country B -- PPH ($1,010 raw, high burden)
+4. Country F -- CPAP ($1,100, weak systems amplify effect)
+5. Country A -- CPAP ($1,310, massive population)
+
+*Targets countries where the *causal effect* of intervention is greatest.*
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box}
+**The confounders that drive the difference:** Baseline NMR (severity), health system capacity, population size, and existing intervention coverage. Adjusting for these reveals where each additional dollar has the greatest *marginal* impact on lives saved.
+:::
+
+
+## Simpson's Paradox in Cost-Effectiveness
+
+Consider a PPH bundle intervention evaluated across all target countries:
+
+::: {.columns-equal}
+::: {.col}
+::: {.example-block}
+[Aggregated]{.example-label}
+
+| | PPH Bundle | Standard Care |
+|---|---:|---:|
+| Mortality Rate | 3.2% | 2.8% |
+
+PPH bundle appears **worse** than standard care!
+:::
+:::
+
+::: {.col}
+::: {.example-block}
+[Stratified by Health System Strength]{.example-label}
+
+*Weak systems (Countries A, D, F, B):*
+
+| | PPH Bundle | Standard Care |
+|---|---:|---:|
+| Mortality | 4.1% | 5.8% |
+
+*Strong systems (Countries H, C, E, G):*
+
+| | PPH Bundle | Standard Care |
+|---|---:|---:|
+| Mortality | 1.5% | 1.9% |
+:::
+:::
+:::
+
+. . .
+
+::: {.key-takeaway}
+**The PPH bundle reduces mortality in BOTH strata.** The aggregated data is misleading because the bundle is deployed disproportionately in weak-system countries (where baseline mortality is higher). Health system strength is the confounder.
+:::
+
+
+## Policy Implication: The Next Funding Allocation
+
+::: {.callout-box}
+**Decision:** The program has an additional tranche of funding to allocate across the country portfolio. Where should it go?
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box .red}
+**Without causal reasoning:**
+
+- Allocate to Country H and Country E (lowest raw CPLS)
+- Expected lives saved: ~8,200
+- Ignores diminishing returns in strong systems
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**With causal reasoning:**
+
+- Allocate to Country A and Country B (highest marginal impact after confounder adjustment)
+- Expected lives saved: ~14,600
+- Accounts for unmet need, baseline severity, and system capacity
+:::
+:::
+:::
+
+. . .
+
+**The causal approach saves an additional 6,400 lives with the same budget.**
+
+. . .
+
+::: {.callout-box .orange}
+**This is not hypothetical.** Misallocation of global health funds due to Simpson's Paradox-style reasoning has been documented in HIV/AIDS, malaria, and vaccination programs. Causal thinking is not academic -- it is life-or-death.
+:::
+
+
+## Interactive Exercise
+
+::: {.callout-box}
+**Your turn:** Work in small groups (5 minutes).
+:::
+
+. . .
+
+**Scenario:** You are a technical advisor to the MNH program. The data shows:
+
+- **Workforce training** has a CPLS of $1,720 in Country A but only $1,030 in Country H
+- Country A has a staff:patient ratio of 1:22; Country H has 1:6
+- Country A's baseline NMR is 31/1,000; Country H's is 16/1,000
+
+. . .
+
+**Questions:**
+
+::: {.incremental}
+1. Is workforce training more cost-effective in Country H or Country A *at the margin*?
+2. What is the confounder driving the raw CPLS difference?
+3. Draw the DAG showing the relationship between health system capacity, CPLS, and lives saved.
+4. Where would you invest additional workforce training funds? Justify with causal reasoning.
+:::
+
+
+# R Code Workshop {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Simulating and analyzing Simpson's Paradox and the Prosecutor's Fallacy</span>
+
+
+## R Block 1: Simulating Simpson's Paradox
+
+```{r}
+#| label: simulate-simpsons
+#| echo: true
+
+library(tidyverse)
+
+set.seed(42)
+
+# Simulate MNH data exhibiting Simpson's Paradox
+# Confounder: country_group (high-burden vs low-burden)
+n <- 2000
+
+mnh_data <- tibble(
+  # Confounder: country group determines both treatment and baseline risk
+ country_group = sample(c("High-burden", "Low-burden"), n, replace = TRUE,
+                         prob = c(0.6, 0.4)),
+  # Treatment assignment depends on country group (confounder)
+  cpap = case_when(
+    country_group == "High-burden" ~ rbinom(n, 1, 0.75),
+    country_group == "Low-burden"  ~ rbinom(n, 1, 0.25)
+  ),
+  # Outcome depends on BOTH country group and treatment
+  # CPAP has a positive causal effect (+10pp), but high-burden has lower baseline
+  survival_prob = case_when(
+    country_group == "High-burden" & cpap == 1 ~ 0.68,
+    country_group == "High-burden" & cpap == 0 ~ 0.61,
+    country_group == "Low-burden"  & cpap == 1 ~ 0.85,
+    country_group == "Low-burden"  & cpap == 0 ~ 0.82
+  ),
+  survived = rbinom(n, 1, survival_prob)
+)
+
+# Aggregated result (misleading)
+mnh_data |>
+  group_by(cpap) |>
+  summarise(survival_rate = mean(survived), n = n(), .groups = "drop")
+
+# Disaggregated result (correct)
+mnh_data |>
+  group_by(country_group, cpap) |>
+  summarise(survival_rate = mean(survived), n = n(), .groups = "drop")
+```
+
+
+## R Block 2: Visualizing Aggregated vs. Stratified
+
+```{r}
+#| label: visualize-simpsons
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5
+
+library(ggplot2)
+
+# Prepare labels
+mnh_data <- mnh_data |>
+  mutate(cpap_label = ifelse(cpap == 1, "CPAP", "No CPAP"))
+
+# Aggregated view (misleading)
+p_agg <- ggplot(mnh_data, aes(x = cpap_label, y = survived, fill = cpap_label)) +
+  stat_summary(fun = mean, geom = "bar", width = 0.6) +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  scale_fill_manual(values = c("CPAP" = "#005CB9", "No CPAP" = "#FA7650")) +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  labs(title = "Aggregated: CPAP Looks Harmful",
+       y = "Survival Rate", x = NULL) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none")
+
+# Stratified view (correct)
+p_strat <- ggplot(mnh_data, aes(x = cpap_label, y = survived, fill = cpap_label)) +
+  stat_summary(fun = mean, geom = "bar", width = 0.6) +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  facet_wrap(~ country_group) +
+  scale_fill_manual(values = c("CPAP" = "#005CB9", "No CPAP" = "#FA7650")) +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  labs(title = "Stratified: CPAP Helps in BOTH Groups",
+       y = "Survival Rate", x = NULL) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none")
+
+library(patchwork)
+p_agg + p_strat +
+  plot_annotation(title = "Simpson's Paradox in MNH Data",
+                  subtitle = "Same data, opposite conclusions")
+```
+
+
+## R Block 3: Naive vs. Confounder-Adjusted Regression
+
+```{r}
+#| label: regression-comparison
+#| echo: true
+
+# Naive regression: ignores confounder
+naive_model <- lm(survived ~ cpap, data = mnh_data)
+summary(naive_model)
+# Expected: CPAP coefficient is NEGATIVE (misleading)
+
+# Confounder-adjusted regression: includes country_group
+adjusted_model <- lm(survived ~ cpap + country_group, data = mnh_data)
+summary(adjusted_model)
+# Expected: CPAP coefficient is POSITIVE (correct)
+
+# Compare coefficients side by side
+tibble(
+  Model = c("Naive (no confounder)", "Adjusted (with confounder)"),
+  CPAP_Coefficient = c(coef(naive_model)["cpap"],
+                       coef(adjusted_model)["cpap"]),
+  Interpretation = c("CPAP appears harmful",
+                     "CPAP is beneficial (+7pp)")
+)
+```
+
+. . .
+
+::: {.callout-box .green}
+**Key lesson:** The naive model estimates a *negative* effect of CPAP on survival. The adjusted model, which conditions on the confounder (country group), correctly estimates a *positive* effect. **Omitted variable bias** is the statistical signature of Simpson's Paradox.
+:::
+
+
+## R Block 4: Bayesian Network with bnlearn
+
+```{r}
+#| label: bn-simpsons
+#| echo: true
+
+library(bnlearn)
+
+# Prepare data for bnlearn (factors required)
+bn_data <- mnh_data |>
+  mutate(
+    country_group = factor(country_group),
+    cpap = factor(cpap, labels = c("No", "Yes")),
+    survived = factor(survived, labels = c("Died", "Survived"))
+  ) |>
+  select(country_group, cpap, survived) |>
+  as.data.frame()
+
+# Define the causal structure (DAG)
+dag <- model2network("[country_group][cpap|country_group][survived|cpap:country_group]")
+plot(dag)
+
+# Fit the BN with maximum likelihood estimates
+fitted_bn <- bn.fit(dag, bn_data)
+
+# Query: P(survived | do(cpap = Yes)) using causal reasoning
+# Marginalizing over country_group (the back-door adjustment)
+cpquery(fitted_bn,
+        event = (survived == "Survived"),
+        evidence = (cpap == "Yes"),
+        n = 100000)
+
+# Compare: P(survived | cpap = Yes, country_group = High-burden)
+cpquery(fitted_bn,
+        event = (survived == "Survived"),
+        evidence = (cpap == "Yes" & country_group == "High-burden"),
+        n = 100000)
+
+# The BN correctly handles the conditioning automatically
+```
+
+. . .
+
+::: {.callout-box}
+**The Bayesian network encodes the causal structure.** Queries on the fitted BN respect the DAG and give correct causal estimates, avoiding Simpson's Paradox by construction.
+:::
+
+
+## R Block 5: Prosecutor's Fallacy Calculator
+
+```{r}
+#| label: bayes-calculator
+#| echo: true
+
+# Bayes' rule calculator for diagnostic tests
+bayes_diagnostic <- function(sensitivity, specificity, prevalence) {
+  # P(positive | disease) = sensitivity
+  # P(negative | no disease) = specificity
+  # P(positive | no disease) = 1 - specificity (false positive rate)
+  # P(disease) = prevalence
+
+  p_pos_given_disease    <- sensitivity
+  p_pos_given_no_disease <- 1 - specificity
+  p_disease              <- prevalence
+  p_no_disease           <- 1 - prevalence
+
+  # Total probability of a positive test
+  p_positive <- (p_pos_given_disease * p_disease) +
+                (p_pos_given_no_disease * p_no_disease)
+
+  # Bayes' rule: P(disease | positive)
+  p_disease_given_pos <- (p_pos_given_disease * p_disease) / p_positive
+
+  # Return results
+  tibble(
+    Metric = c("Sensitivity", "Specificity", "Prevalence",
+               "P(Positive Test)", "P(Disease | Positive) [PPV]",
+               "Prosecutor's Fallacy Would Claim"),
+    Value = c(
+      scales::percent(sensitivity, accuracy = 0.1),
+      scales::percent(specificity, accuracy = 0.1),
+      scales::percent(prevalence, accuracy = 0.1),
+      scales::percent(p_positive, accuracy = 0.1),
+      scales::percent(p_disease_given_pos, accuracy = 0.1),
+      scales::percent(sensitivity, accuracy = 0.1)
+    )
+  )
+}
+
+# Preeclampsia screening example
+bayes_diagnostic(
+  sensitivity = 0.90,
+  specificity = 0.85,
+  prevalence  = 0.05
+)
+
+# What if prevalence is higher (e.g., high-risk population)?
+bayes_diagnostic(
+  sensitivity = 0.90,
+  specificity = 0.85,
+  prevalence  = 0.20
+)
+```
+
+. . .
+
+::: {.callout-box .orange}
+**Note how the PPV changes dramatically with prevalence:** At 5% prevalence, PPV is ~24%. At 20% prevalence, PPV rises to ~60%. The same test, the same sensitivity and specificity -- but the *meaning* of a positive result depends entirely on the **base rate**. This is why the Prosecutor's Fallacy is so dangerous.
+:::
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Simpson's Paradox** arises when a confounder creates a fork structure in the DAG. Aggregated data can reverse the true causal effect. Always stratify by confounders, never by mediators.
+
+**The Prosecutor's Fallacy** confuses $P(E \mid H)$ with $P(H \mid E)$. Base rates matter. Use Bayes' rule to compute the correct posterior probability.
+
+**In MNH cost-effectiveness**, naive cross-country comparisons mislead because baseline severity and health system strength confound the treatment-outcome relationship. Causal adjustment can change which countries and interventions are prioritized -- and save thousands of additional lives.
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 7 -- Decision Analysis and Value of Information**
+
+We will build on the causal models from this chapter to make **optimal decisions under uncertainty**:
+
+- **Decision trees** for intervention selection under multiple scenarios
+- **Expected value of perfect information (EVPI):** How much would it be worth to resolve our uncertainty before investing?
+- **Sensitivity analysis:** Which uncertain parameters matter most for the allocation decision?
+- **Multi-criteria decision analysis:** Balancing cost-effectiveness with equity, political feasibility, and sustainability
+:::
+
+. . .
+
+::: {.callout-box .green}
+**The connection:** Chapter 6 taught us how to *correctly estimate* causal effects (avoiding Simpson's Paradox and the Prosecutor's Fallacy). Chapter 7 teaches us how to use those estimates to *make optimal decisions* about where to invest the MNH program's resources.
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[Inference and Intervention | Chapter 6: Modeling MNH Cost-Effectiveness]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::
