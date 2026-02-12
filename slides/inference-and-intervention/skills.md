@@ -8,7 +8,7 @@ This file documents the patterns, conventions, and decisions made while building
 
 - **Source material:** The textbook uses business examples (advertising, market share, ridesharing companies). Every chapter's examples have been adapted to MNH/public health contexts.
 - **Audience:** Future program managers in MNH and Public Health programs in developing countries.
-- **Privacy requirement:** All identifying details from the real organization behind the examples have been removed. See Section 7 (Anonymization) below.
+- **Privacy requirement:** All identifying details from the real organization behind the examples have been removed. See Section 8 (Anonymization) below.
 - **10 chapters**, each a standalone deck in its own folder under `inference-and-intervention/`.
 - **Course website** — a Quarto multi-page website tying all 10 chapters together with navigation, companion pages, and supplementary resources.
 
@@ -48,6 +48,7 @@ Each **chapter slide folder** (e.g., `ch01-intro/`) contains:
 - `index.qmd` — Slide source (revealjs format)
 - `custom.scss` — Identical SCSS theme (same file across all 10)
 - `bka-logo.png` — Logo (copied from `slide-master/`)
+- `speaker-notes.md` — Presenter-facing speaker notes for the chapter
 - `index.html` + `index_files/` — Rendered slide output (generated)
 
 Each **chapter companion page** (e.g., `chapters/ch01.qmd`) contains:
@@ -143,7 +144,52 @@ Use `. . .` (three dots with spaces) for fragment reveals within a slide. Use `:
 
 ---
 
-## 5. CSS Component Classes
+## 5. Speaker Notes
+
+Each chapter folder contains a `speaker-notes.md` file with presenter-facing commentary for every slide. These are not embedded in the `.qmd` files — they live as standalone Markdown files intended for the instructor to reference during lecture preparation and delivery.
+
+### Format
+
+```markdown
+# Speaker Notes — Chapter N: Title
+
+## Overview
+High-level summary of the chapter's purpose, arc, and key pedagogical goals.
+
+## Slide: Slide Title
+Paragraph(s) of commentary for that slide — explaining the "why" behind the content,
+delivery tips, connections to other chapters, and emphasis cues.
+```
+
+### Conventions
+
+- **One `## Slide:` heading per slide**, matching the slide title from `index.qmd`
+- **`## Overview` section** at the top provides the chapter's narrative arc and teaching goals
+- **Conversational, instructor-facing tone** — written as if coaching the presenter ("This is the 'scare them straight' slide", "Let that sink in", "Worth emphasizing")
+- **Substantive commentary, not transcripts** — notes explain *why* the slide matters, what to emphasize, common student misconceptions, and connections to other chapters rather than simply restating slide content
+- **Cross-chapter references** are called out explicitly ("This builds on the d-separation criteria from Chapter 2")
+- **R workshop slides** get brief notes ("Live coding walkthrough. Students install and load…") since the code is self-explanatory
+- **MNH context** is reinforced — notes connect abstract concepts back to the public health application
+- **Anonymization rules still apply** — speaker notes must not contain any banned terms from Section 8
+
+### All 10 Chapters
+
+| File | Chapter |
+|---|---|
+| `ch01-intro/speaker-notes.md` | Chapter 1: Introduction to Causal Analysis |
+| `ch02-qualitative-models/speaker-notes.md` | Chapter 2: Qualitative Causal Models |
+| `ch03-interview-case/speaker-notes.md` | Chapter 3: The Interview Case |
+| `ch04-quantitative-models/speaker-notes.md` | Chapter 4: Quantitative Causal Models |
+| `ch05-situational-analysis/speaker-notes.md` | Chapter 5: Situational Analysis |
+| `ch06-business-financials/speaker-notes.md` | Chapter 6: Business Financials |
+| `ch07-single-agent/speaker-notes.md` | Chapter 7: Single-Agent Decisions |
+| `ch08-resource-allocation/speaker-notes.md` | Chapter 8: Resource Allocation |
+| `ch09-multi-agent/speaker-notes.md` | Chapter 9: Multi-Agent Decisions |
+| `ch10-data-driven/speaker-notes.md` | Chapter 10: Data-Driven Methods |
+
+---
+
+## 6. CSS Component Classes
 
 All defined in `custom.scss`. Use these consistently:
 
@@ -180,7 +226,7 @@ Content here.
 
 ---
 
-## 6. DAG Diagrams
+## 7. DAG Diagrams
 
 CSS grid layouts break in reveal.js. Always use **inline HTML `<table>`** for DAG and diagram layouts:
 
@@ -209,7 +255,7 @@ Node type conventions:
 
 ---
 
-## 7. Anonymization Rules (CRITICAL)
+## 8. Anonymization Rules (CRITICAL)
 
 The MNH examples are based on a real organization. All identifying details have been removed. **Never reintroduce any of the following:**
 
@@ -255,17 +301,17 @@ Used in ch06 and ch08 (the only chapters with country-level data):
 
 ### Verification Command
 
-Run this grep to verify no identifying terms remain:
+Run this grep to verify no identifying terms remain (covers both `.qmd` slides and `speaker-notes.md`):
 
 ```bash
-rg -i "Meridian|Alliance|Beginnings|Investment Committee|CIFF|Delta Philanthrop|ELMA|Gates Foundation|Mohamed|HaHCo|Fund Two|76 months|\$525|322,000|322,847|Ethiopia|Tanzania|Kenya|Uganda|Ghana|Malawi|Zimbabwe|Rwanda|Lesotho|Nigeria|Phase [12]" inference-and-intervention/**/*.qmd
+rg -i "Meridian|Alliance|Beginnings|Investment Committee|CIFF|Delta Philanthrop|ELMA|Gates Foundation|Mohamed|HaHCo|Fund Two|76 months|\$525|322,000|322,847|Ethiopia|Tanzania|Kenya|Uganda|Ghana|Malawi|Zimbabwe|Rwanda|Lesotho|Nigeria|Phase [12]" inference-and-intervention/**/*.qmd inference-and-intervention/**/speaker-notes.md
 ```
 
 This should return zero matches.
 
 ---
 
-## 8. R Code Conventions
+## 9. R Code Conventions
 
 ### Packages Used Across Chapters
 
@@ -307,7 +353,7 @@ These variable names are used across chapters for consistency:
 
 ---
 
-## 9. Business-to-Public-Health Terminology
+## 10. Business-to-Public-Health Terminology
 
 The textbook uses business language. We systematically replaced:
 
@@ -330,7 +376,7 @@ The book's *original* examples (Slimtree Publishing, Hubris Health, The Rideshar
 
 ---
 
-## 10. Cross-Chapter References
+## 11. Cross-Chapter References
 
 Chapters reference each other frequently. The linking pattern:
 
@@ -352,7 +398,7 @@ Ch1 (intro) → Ch2 (qualitative DAGs) → Ch3 (case study applying Ch2)
 
 ---
 
-## 11. Revision Workflow
+## 12. Revision Workflow
 
 When revising content across all 10 decks (e.g., anonymization, terminology changes):
 
@@ -374,7 +420,7 @@ When revising content across all 10 decks (e.g., anonymization, terminology chan
 
 ---
 
-## 12. Course Website
+## 13. Course Website
 
 ### Architecture
 
@@ -463,7 +509,7 @@ Defined in `styles.scss` (website-specific, separate from slide `custom.scss`):
 
 ---
 
-## 13. Rendering and Testing
+## 14. Rendering and Testing
 
 ### Slide Decks (standalone)
 
@@ -508,10 +554,10 @@ quarto preview inference-and-intervention/
 
 Since `eval: false`, rendering requires only Quarto 1.8+ (no R installation).
 
-### Anonymization Verification (covers both slides and website)
+### Anonymization Verification (covers slides, website, and speaker notes)
 
 ```bash
-rg -i "Meridian|Alliance|Beginnings|Investment Committee|CIFF|Delta Philanthrop|ELMA|Gates Foundation|Mohamed|HaHCo|Fund Two|76 months|\$525|322,000|322,847|Ethiopia|Tanzania|Kenya|Uganda|Ghana|Malawi|Zimbabwe|Rwanda|Lesotho|Nigeria|Phase [12]" inference-and-intervention/**/*.qmd
+rg -i "Meridian|Alliance|Beginnings|Investment Committee|CIFF|Delta Philanthrop|ELMA|Gates Foundation|Mohamed|HaHCo|Fund Two|76 months|\$525|322,000|322,847|Ethiopia|Tanzania|Kenya|Uganda|Ghana|Malawi|Zimbabwe|Rwanda|Lesotho|Nigeria|Phase [12]" inference-and-intervention/**/*.qmd inference-and-intervention/**/speaker-notes.md
 ```
 
 This should return zero matches.
