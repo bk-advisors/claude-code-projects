@@ -41,6 +41,11 @@ inference-and-intervention/
   ch10-data-driven/         # Ch 10 slide deck (standalone)
   context/                  # Reference PDFs (do not modify)
   skills.md                 # This file
+  intro-video-speaker-notes.md  # YouTube intro video presenter script
+  pre-class-essays.docx     # Pre-class essays Word document (generated)
+  generate_essays.py        # Script to regenerate pre-class-essays.docx
+  generate_whiteboard_diagrams.py  # Script to regenerate whiteboard PNGs
+  whiteboard-diagrams/      # Whiteboard summary diagram PNGs (generated)
   _site/                    # Rendered website output (generated)
 ```
 
@@ -512,7 +517,154 @@ Defined in `styles.scss` (website-specific, separate from slide `custom.scss`):
 
 ---
 
-## 14. Rendering and Testing
+## 14. Pre-Class Essays
+
+### Overview
+
+A set of 11 pre-class essays — one course introduction plus one per chapter — written in **Morgan Housel's style** (conversational, story-driven, counterintuitive insights, short punchy paragraphs). These are intended to prime students before each lecture and serve as draft material for future book chapters.
+
+### Files
+
+| File | Purpose |
+|---|---|
+| `pre-class-essays.docx` | The finished Word document with all 10 essays |
+| `generate_essays.py` | Python script that generates the .docx (uses `python-docx`) |
+
+### Essay List
+
+| Ch | Title | Core Insight |
+|---|---|---|
+| Intro | The Gap Between Good Intentions and Good Outcomes | Course roadmap — from correlations to causal decisions in four parts |
+| 1 | The Most Dangerous Number Is a Correlation | The Feather Touch cautionary tale — regressions without causal models recommend the worst option |
+| 2 | Drawing What You Believe | Implicit vs explicit mental models — putting arrows on a whiteboard is the most productive argument |
+| 3 | The Art of Asking Better Questions | Iterative model-building through interviews — each round reveals what the last model missed |
+| 4 | Putting Numbers on Uncertainty | From "I don't know" to CPTs and Bayes' Rule — quantifying beliefs makes them testable |
+| 5 | Running the Model Backwards | Explaining away — observing an outcome creates competition between its causes |
+| 6 | When the Average Lies | Simpson's Paradox and the Prosecutor's Fallacy — aggregated data can recommend the wrong thing |
+| 7 | The Difference Between Watching and Doing | do-calculus and graph surgery — observation ≠ intervention |
+| 8 | Portfolio Thinking for Lives Saved | Markowitz meets MNH — diversification, Monte Carlo, and sequential decisions across countries |
+| 9 | When the World Pushes Back | Game theory in health funding — free-riding, commitment devices, and incentive-compatible contracts |
+| 10 | Can Data Discover Causes? | Causal discovery algorithms, Markov equivalence, instrumental variables — and why expertise still matters |
+
+### Writing Style (Morgan Housel Pattern)
+
+Each essay (~1,200–1,800 words) follows this structure:
+- **Open with a story or vivid anecdote** drawn from the chapter's examples (Feather Touch, UC Berkeley admissions, Markowitz, the Workforce Absorption Game, etc.)
+- **Build to a counterintuitive insight** (correlation ≠ causation, conditioning on colliders opens paths, free-riding is rational, etc.)
+- **Short paragraphs** and conversational "you/we" language throughout
+- **Draw connections to everyday human psychology** — why we fall for these traps
+- **Close with a memorable takeaway** that primes the student for the lecture
+
+### Document Formatting
+
+- **Fonts:** Calibri Light (headings), Calibri (body) — matching BK Advisors brand
+- **Heading color:** BKA primary blue (`#005CB9`)
+- **Structure:** Title page → Table of Contents → 10 essays with page breaks between each
+- **Each essay:** Chapter number label (Heading 3) → Title (Heading 1) → Subtitle (Heading 2, italic gray) → Body text
+
+### Regenerating the Document
+
+To regenerate or update the essays after editing `generate_essays.py`:
+
+```bash
+python inference-and-intervention/generate_essays.py
+```
+
+Requires `python-docx` (`pip install python-docx`). Output is written to `inference-and-intervention/pre-class-essays.docx`.
+
+### Anonymization Note
+
+The essays follow the same anonymization rules as the slides (Section 8). No banned terms appear — the essays use generic references ("a global health organization", "sub-Saharan Africa", "Country A") rather than identifying details. The Feather Touch / TruSmartz example from the textbook is used as-is since it is not identifying.
+
+---
+
+## 15. Whiteboard Summary Diagrams
+
+### Overview
+
+A set of 11 whiteboard-style summary diagrams — one course introduction plus one per chapter — generated as PNG images via matplotlib with a hand-drawn (`xkcd()`) aesthetic. These are visual references the instructor can glance at while sketching the chapter's core framework on a physical whiteboard before each lecture.
+
+### Files
+
+| File | Purpose |
+|---|---|
+| `whiteboard-diagrams/intro-whiteboard.png` | Course journey overview diagram |
+| `whiteboard-diagrams/ch01-whiteboard.png` … `ch10-whiteboard.png` | The 10 chapter diagram PNGs |
+| `generate_whiteboard_diagrams.py` | Python script that generates all 10 PNGs (uses `matplotlib`) |
+
+### Diagram List
+
+| Ch | Title | Layout | Core Visual |
+|---|---|---|---|
+| Intro | The Course Journey | Four-phase pathway | Foundations → Quantify → Decide → Discover + feedback loop |
+| 1 | Causal Model as Foundation | T-split + foundation bar | Two questions, one foundation, three traps |
+| 2 | Three Triplet Structures | Triptych (3 mini-DAGs) | Chain / Fork / Collider side by side with d-sep rules |
+| 3 | Iterative Model Building | Concentric rings | Expanding model through 3 interview rounds |
+| 4 | From Beliefs to Numbers | Ascending staircase | 5 steps with Causal Markov Condition bridge |
+| 5 | Forward & Backward Reasoning | Central DAG + arrows | Predict (down) vs Diagnose (up), explaining away callout |
+| 6 | Simpson's Paradox | Before/After split | Aggregate vs stratified + confounder/mediator DAGs |
+| 7 | Observe vs Intervene | Before/after influence diagram | Graph surgery (arrows cut) + EVPI bracket |
+| 8 | Portfolio Allocation | Funnel fan-out + timeline | Fund → countries + Commit → Observe → Scale |
+| 9 | The Free-Rider Trap | 2×2 payoff matrix | Nash trap → optimal cell + 3 escape routes |
+| 10 | Expert + Algorithm + Data | Triangular cycle | Three agents + CPDAG center + Oriented DAG exit |
+
+### Visual Style
+
+- White background, no axes/grids — clean whiteboard aesthetic
+- `matplotlib.pyplot.xkcd()` context for hand-drawn feel
+- BKA brand colours: blue `#005CB9`, green `#83BD00`, red `#E24A3F`, teal `#3E9B6E`, orange `#FA7650`, amber `#F8A623`
+- Node shapes via `matplotlib.patches`, arrows via `annotate`
+- 10×7 inches at 150 DPI
+- Circled step numbers where applicable
+
+### Regenerating the Diagrams
+
+```bash
+python inference-and-intervention/generate_whiteboard_diagrams.py
+```
+
+Requires `matplotlib` (`pip install matplotlib`). Output is written to `inference-and-intervention/whiteboard-diagrams/`.
+
+---
+
+## 16. Course Introduction (YouTube Video)
+
+### Overview
+
+A set of three companion materials for recording a YouTube introduction video that previews the entire course journey before diving into individual chapters.
+
+### Files
+
+| File | Purpose |
+|---|---|
+| `intro-video-speaker-notes.md` | Presenter script (~6 min spoken) with section timings and whiteboard cues |
+| `pre-class-essays.docx` (Introduction section) | Morgan Housel-style essay: "The Gap Between Good Intentions and Good Outcomes" |
+| `whiteboard-diagrams/intro-whiteboard.png` | Four-phase pathway diagram: Foundations → Quantify → Decide → Discover |
+
+### Speaker Notes Structure
+
+| Section | Duration | Content |
+|---|---|---|
+| Opening Hook | ~30 sec | Feather Touch story — the cost of confusing correlation with causation |
+| What This Course Is About | ~1 min | Causal thinking vs data analysis, the core distinction |
+| The Journey in Four Parts | ~3 min | Walk through 4 phases, referencing whiteboard diagram, with chapter previews |
+| Who This Course Is For | ~30 sec | Program managers, decision-makers; no stats prerequisites |
+| What You'll Walk Away With | ~30 sec | Four bullet-point outcomes |
+| Closing | ~15 sec | "The gap is causal reasoning. See you in Chapter 1." |
+
+### Whiteboard Diagram for Video
+
+The intro whiteboard diagram shows a **four-phase left-to-right pathway**:
+1. **Foundations** (Ch 1–3, blue) — Think Causally
+2. **Quantify** (Ch 4–6, teal) — Add Numbers & Catch Traps
+3. **Decide** (Ch 7–9, green) — Intervene, Allocate, Negotiate
+4. **Discover** (Ch 10, amber) — Let Data Refine the Model
+
+With individual chapter bubbles underneath, bookend labels ("You see a correlation... → ...you make a causal decision"), and a dashed red feedback arrow looping back from Ch 10 to Ch 1.
+
+---
+
+## 17. Rendering and Testing
 
 ### Slide Decks (standalone)
 

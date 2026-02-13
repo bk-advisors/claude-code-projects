@@ -21,7 +21,9 @@
       "Bash(findstr:*)",
       "Bash(find:*)",
       "Bash(git -C \"c:/Users/HP/Desktop/Parking Lot/1 Frequently Used/Web Projects/bk-github/claude-code-projects/slides\" show HEAD:.gitignore)",
-      "Bash(git diff:*)"
+      "Bash(git diff:*)",
+      "Bash(python:*)",
+      "Bash(\"C:\\\\Users\\\\HP\\\\AppData\\\\Local\\\\Microsoft\\\\WindowsApps\\\\python.exe\" -c \"import matplotlib; print\\(matplotlib.__version__\\)\")"
     ]
   }
 }
