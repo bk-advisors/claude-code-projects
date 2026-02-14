@@ -10,6 +10,7 @@ import os
 import matplotlib
 matplotlib.use("Agg")  # non-interactive backend
 import matplotlib.pyplot as plt
+import matplotlib.patheffects as pe
 import matplotlib.patches as mpatches
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch, Circle
 import numpy as np
@@ -101,8 +102,9 @@ def draw_ch01():
     bar = FancyBboxPatch((1.5, 0.6), 7, 0.9,
                          boxstyle="round,pad=0.15", facecolor=BLUE, edgecolor=BLUE, linewidth=2)
     ax.add_patch(bar)
-    ax.text(5, 1.05, "CAUSAL  MODEL", ha="center", va="center",
-            fontsize=16, fontweight="bold", color="white", fontfamily="sans-serif")
+    t = ax.text(5, 1.05, "CAUSAL  MODEL", ha="center", va="center",
+                fontsize=16, fontweight="bold", color="white", fontfamily="sans-serif")
+    t.set_path_effects([])
 
     # Two zones
     rounded_box(ax, 3, 5.0, 3.2, 1.6, "Situational\nAssessment", fc="#E8F0FE", ec=BLUE)
@@ -244,8 +246,9 @@ def draw_ch03():
     # Central "Core DAG" node
     core = Circle((cx, cy), 0.4, fill=True, facecolor=BLUE, edgecolor=BLUE, linewidth=2)
     ax.add_patch(core)
-    ax.text(cx, cy, "Core\nDAG", ha="center", va="center",
-            fontsize=8, fontweight="bold", color="white", fontfamily="sans-serif")
+    t = ax.text(cx, cy, "Core\nDAG", ha="center", va="center",
+                fontsize=8, fontweight="bold", color="white", fontfamily="sans-serif")
+    t.set_path_effects([])
 
     # Curved arrows between rings
     for i in range(2):
@@ -566,8 +569,9 @@ def draw_ch08():
     # Fund circle (left)
     fund = Circle((1.5, 4.5), 0.7, fill=True, facecolor=BLUE, edgecolor=BLUE, linewidth=2)
     ax.add_patch(fund)
-    ax.text(1.5, 4.5, "Pooled\nFund", ha="center", va="center",
-            fontsize=10, fontweight="bold", color="white", fontfamily="sans-serif")
+    t = ax.text(1.5, 4.5, "Pooled\nFund", ha="center", va="center",
+                fontsize=10, fontweight="bold", color="white", fontfamily="sans-serif")
+    t.set_path_effects([])
 
     # Country circles
     countries = [

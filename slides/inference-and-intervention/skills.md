@@ -616,6 +616,7 @@ A set of 11 whiteboard-style summary diagrams — one course introduction plus o
 - Node shapes via `matplotlib.patches`, arrows via `annotate`
 - 10×7 inches at 150 DPI
 - Circled step numbers where applicable
+- **White-on-blue text fix:** `xkcd()` mode adds a white stroke outline to all text via `path_effects`, which makes white text on filled blue shapes illegible. For any white text on a coloured background, strip the effects: `t = ax.text(..., color="white"); t.set_path_effects([])`. This is applied in Ch 1 ("CAUSAL MODEL"), Ch 3 ("Core DAG"), and Ch 8 ("Pooled Fund").
 
 ### Regenerating the Diagrams
 
