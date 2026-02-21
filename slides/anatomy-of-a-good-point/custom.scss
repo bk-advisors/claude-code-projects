@@ -71,6 +71,8 @@ $presentation-line-height: 1.4;
 
 // ===== General slide styles =====
 .reveal .slides section {
+  overflow-y: auto;
+
   h2 {
     border-bottom: 3px solid $bka-light-blue;
     padding-bottom: 0.2em;
@@ -185,9 +187,9 @@ $presentation-line-height: 1.4;
   background: linear-gradient(135deg, rgba($bka-blue, 0.06), rgba($bka-light-blue, 0.08));
   border-left: 4px solid $bka-blue;
   border-radius: 6px;
-  padding: 0.5em 0.8em;
-  margin: 0.4em 0;
-  font-size: 0.8em;
+  padding: 0.35em 0.7em;
+  margin: 0.3em 0;
+  font-size: 0.72em;
 }
 
 .callout-box.green {
@@ -210,9 +212,9 @@ $presentation-line-height: 1.4;
   background: #f7fafd;
   border: 1px solid rgba($bka-blue, 0.15);
   border-radius: 8px;
-  padding: 0.6em 0.9em;
-  margin: 0.5em 0;
-  font-size: 0.72em;
+  padding: 0.4em 0.7em;
+  margin: 0.35em 0;
+  font-size: 0.65em;
 
   .example-label {
     color: $bka-light-blue;
@@ -284,16 +286,16 @@ $presentation-line-height: 1.4;
   background: $bka-blue;
   color: white;
   border-radius: 10px;
-  padding: 0.6em 1em;
+  padding: 0.4em 0.8em;
   text-align: center;
-  font-size: 0.85em;
-  margin: 0.5em auto;
+  font-size: 0.78em;
+  margin: 0.3em auto;
   max-width: 85%;
   box-shadow: 0 4px 15px rgba($bka-blue, 0.3);
 
   strong {
     display: block;
-    font-size: 1.2em;
-    margin-bottom: 0.15em;
+    font-size: 1.1em;
+    margin-bottom: 0.1em;
   }
 }

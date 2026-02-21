@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/tabby.min.js"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.8.27">
+
+  <meta name="author" content="BK Advisors">
+  <meta name="dcterms.date" content="2026-02-21">
+  <title>Making Causal Arguments That Hold Up</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="index_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="index_files/libs/revealjs/dist/reveal.css">
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="index_files/libs/revealjs/dist/theme/quarto-fcbf23a4432429664341d24b46798199.css">
+  <link href="index_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="index_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="index_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="index_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section data-background-color="#005CB9" class="quarto-title-block center">
+  <h1 class="title">Making Causal Arguments That Hold Up</h1>
+  <p class="subtitle">From Correlation to Conviction — A Framework for Consultants</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+BK Advisors 
+</div>
+</div>
+</div>
+
+  <p class="date">2026-02-21</p>
+</section>
+<section class="slide level2">
+<h2>Where We Left Off</h2>
+<p>In our last session, you learned the <strong>4-part framework</strong> for making a good point:</p>
+<ul>
+<li class="fragment"><strong>The Point</strong> — lead with your claim</li>
+<li class="fragment"><strong>Why It’s True</strong> — the reasoning</li>
+<li class="fragment"><strong>The Evidence</strong> — Zoom In (deduction) and Zoom Out (induction)</li>
+<li class="fragment"><strong>Who Cares</strong> — the impact</li>
+</ul>
+<div class="fragment">
+<div class="callout-box">
+<p>Today we go deeper into one specific skill — the one that separates solid recommendations from shaky ones, especially when working in contexts like Ethiopia.</p>
+<p><strong>Today’s question: When you claim X causes Y, how do you prove it?</strong></p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Why Causal Arguments Matter</h2>
+<p>In Ethiopia, causal claims come up every day in MNH work:</p>
+<ul>
+<li class="fragment">A consultant tells an Ethiopian minister: <em>“The vacancy rate at health posts is causing preventable newborn deaths.”</em></li>
+<li class="fragment">A report states: <em>“Community Health Extension Workers improved antenatal care coverage by 18% in Ethiopia.”</em></li>
+<li class="fragment">A donor asks: <em>“How do you know this program in Ethiopia caused the improvement?”</em></li>
+</ul>
+<div class="fragment">
+<div class="callout-box orange">
+<p>Each of these is a <strong>causal claim</strong>. And every one of them can be challenged.</p>
+</div>
+</div>
+</section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>The Core Problem</h1>
+<p><span style="font-size:1.3em; font-weight:300;">Correlation Is Not Causation</span></p>
+</section>
+<section class="slide level2">
+<h2>Correlation vs.&nbsp;Causation</h2>
+<div class="columns-equal">
+<div class="col">
+<div class="example-block">
+<p><span class="example-label">Correlation</span></p>
+<p>In Ethiopia, woredas with more Community Health Extension Workers tend to have lower maternal mortality.</p>
+<p>The two <strong>move together</strong>.</p>
+</div>
+</div>
+<div class="col">
+<div class="example-block">
+<p><span class="example-label">Causation</span></p>
+<p>Deploying CHEWs to underserved woredas in Ethiopia <strong>caused</strong> maternal mortality to decline.</p>
+<p>One <strong>produced</strong> the other.</p>
+</div>
+</div>
+</div>
+<div class="fragment">
+<div class="key-takeaway">
+<p><strong>Correlation tells you two things move together. Causation tells you one made the other happen.</strong></p>
+<p>Stakeholders in Ethiopia need to know which claim is being made.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>The Timeline Trap</h2>
+<p>The most common causal mistake:</p>
+<h3><strong>Because X happened before Y, X must have caused Y.</strong></h3>
+<ul>
+<li class="fragment">A CHEW training program launched in Ethiopia in January</li>
+<li class="fragment">Neonatal mortality dropped by March</li>
+<li class="fragment">Therefore the program caused the drop. Right?</li>
+<li class="fragment"><strong>Not necessarily. Timing alone is not proof.</strong></li>
+</ul>
+<p>. . .</p>
+<div class="example-block">
+<p><span class="example-label">Example</span></p>
+<p>A new CHEW training program was rolled out in Ethiopia’s Tigray region in Q1. Neonatal mortality dropped 12% by Q3. But Ethiopia’s national bed-net distribution campaign also ran during the same period.</p>
+<p>Did the training cause the drop — or did fewer malaria-related neonatal deaths?</p>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Three Things to Rule Out</h1>
+<p><span style="font-size:1.3em; font-weight:300;">Before you claim X caused Y</span></p>
+</section>
+<section class="slide level2" data-background-color="#005CB9">
+<h2>The Three Alternatives</h2>
+<table style="width:100%; border-collapse:separate; border-spacing:12px; margin-top:0.3em;">
+<tbody><tr>
+<td>
+</td>
+<td style="text-align:center;">
+<div style="background:white; border-radius:10px; padding:14px 18px; border-left:4px solid #E24A3F; box-shadow:0 2px 10px rgba(0,0,0,0.15); font-size:0.6em;">
+<p><strong style="color:#E24A3F; font-size:1.15em;">1. Common Cause</strong><br>Could something else cause both X and Y?</p>
+</div>
+<div style="color:rgba(255,255,255,0.5); font-size:1.6em;">
+▲
+</div>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+<div style="background:white; border-radius:10px; padding:14px 18px; border-left:4px solid #FA7650; box-shadow:0 2px 10px rgba(0,0,0,0.15); font-size:0.6em;">
+<p><strong style="color:#FA7650; font-size:1.15em;">2. Coincidence</strong><br>Could X and Y be unrelated?</p>
+</div>
+</td>
+<td style="text-align:center;">
+<div style="background:#005CB9; border:3px solid rgba(255,255,255,0.6); color:white; border-radius:50%; width:150px; height:150px; display:flex; align-items:center; justify-content:center; text-align:center; font-weight:700; font-size:0.65em; margin:0 auto; box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+<p><span><strong style="font-size:1.3em;">X caused Y?</strong></span></p>
+</div>
+</td>
+<td style="text-align:left;">
+<div style="background:white; border-radius:10px; padding:14px 18px; border-left:4px solid #3E9B6E; box-shadow:0 2px 10px rgba(0,0,0,0.15); font-size:0.6em;">
+<p><strong style="color:#3E9B6E; font-size:1.15em;">3. Reversed Causation</strong><br>Could Y actually cause X?</p>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td style="text-align:center;">
+<div style="color:rgba(255,255,255,0.5); font-size:1.6em;">
+▼
+</div>
+<div style="background:white; border-radius:10px; padding:14px 18px; border-left:4px solid #005CB9; box-shadow:0 2px 10px rgba(0,0,0,0.15); font-size:0.6em;">
+<p><strong style="color:#005CB9; font-size:1.15em;">Your Causal Claim</strong><br>Only holds if you rule out all three</p>
+</div>
+</td>
+<td>
+</td>
+</tr>
+</tbody></table>
+</section>
+<section class="slide level2">
+<h2><span style="font-size:0.95em;"><span class="step-number red">1</span> Common Cause</span></h2>
+<p>Could a <strong>third factor</strong> be causing both X and Y?</p>
+<ul>
+<li class="fragment">In Ethiopia, we can observe: woredas with more NGO programs also have better MNH outcomes</li>
+<li class="fragment">But both might be driven by a third factor: <strong>government prioritization under Ethiopia’s HSTP</strong></li>
+<li class="fragment">High-priority woredas in Ethiopia attract more NGOs <em>and</em> receive more government investment</li>
+</ul>
+<div class="fragment">
+<div class="example-block">
+<p><span class="example-label">Example</span></p>
+<p><strong>Your claim:</strong> “Our safe delivery kit deployment reduced obstetric complications in Ethiopia.”</p>
+<p><strong>The challenge:</strong> The health centers in Ethiopia chosen for deployment were already higher-performing because they had stronger woreda health office leadership — the common cause.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2><span style="font-size:0.95em;"><span class="step-number orange">2</span> Coincidence</span></h2>
+<p>Could X and Y just <strong>happen to move together</strong> without any real connection?</p>
+<ul>
+<li class="fragment">The more data points tracked across Ethiopia, the more spurious correlations emerge</li>
+<li class="fragment">Especially in small samples (a single health center, one quarter of data)</li>
+<li class="fragment">Ask yourself: is there a plausible <em>mechanism</em> connecting X and Y?</li>
+</ul>
+<div class="fragment">
+<div class="example-block">
+<p><span class="example-label">Example</span></p>
+<p>A health center in Ethiopia’s SNNPR introduced a new patient register the same month neonatal mortality dropped. Did the register cause the drop?</p>
+<p>More likely: the drop was within normal quarterly variation. <strong>No mechanism connects a register format to newborn survival.</strong></p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2><span style="font-size:0.95em;"><span class="step-number teal">3</span> Reversed Causation</span></h2>
+<p>Could the <strong>direction of causation be backwards?</strong></p>
+<ul>
+<li class="fragment">Consider this from Ethiopia: health posts with more supportive supervision visits have better outcomes</li>
+<li class="fragment">But maybe better-performing health posts <em>attract</em> more visits</li>
+<li class="fragment">The outcome might be driving the input, not the other way around</li>
+</ul>
+<div class="fragment">
+<div class="example-block">
+<p><span class="example-label">Example</span></p>
+<p><strong>Your claim:</strong> “More frequent supportive supervision visits improved health post performance in Ethiopia’s Oromia region.”</p>
+<p><strong>The challenge:</strong> Maybe supervisors visit high-performing health posts in Ethiopia more often because they are easier to reach and more cooperative. The performance is driving the visits — not the reverse.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>The Checklist</h2>
+<p>Before claiming X caused Y in Ethiopia, run through these three checks:</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Challenge</th>
+<th>The Question</th>
+<th>In Ethiopia’s Health System</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Common Cause</strong></td>
+<td>Could something else cause both?</td>
+<td>Check for confounders — Ethiopia’s HSTP priority status, geography, baseline capacity, donor attention</td>
+</tr>
+<tr class="even">
+<td><strong>Coincidence</strong></td>
+<td>Is the connection real or noise?</td>
+<td>Look for a plausible mechanism. Check sample sizes across Ethiopian woredas. Is this within normal variation?</td>
+</tr>
+<tr class="odd">
+<td><strong>Reversed Causation</strong></td>
+<td>Is the direction backwards?</td>
+<td>Could the outcome be driving the input? Watch for selection effects in Ethiopia’s health system</td>
+</tr>
+</tbody>
+</table>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Building a Causal Argument</h1>
+<p><span style="font-size:1.3em; font-weight:300;">From claim to conviction</span></p>
+</section>
+<section class="slide level2">
+<h2>The Two-Part Structure</h2>
+<p>A solid causal argument has <strong>two parts</strong>:</p>
+<ul>
+<li class="fragment"><span class="step-number">1</span> <strong>Show the correlation</strong> — X and Y move together (use data from Ethiopia)</li>
+<li class="fragment"><span class="step-number green">2</span> <strong>Tell the causal story</strong> — explain <em>how</em> X produces Y (the mechanism)</li>
+</ul>
+<div class="fragment">
+<div class="callout-box green">
+<p><strong>The causal story is what separates a correlation from a cause.</strong> It is a chain of reasoning that explains the steps between X and Y.</p>
+</div>
+<p>Remember <strong>“Why It’s True”</strong> from the Anatomy framework? The causal story <em>is</em> your “why it’s true” for causal claims.</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>What Makes a Good Causal Story</h2>
+<div class="columns-equal">
+<div class="col">
+<div class="example-block">
+<p><span class="example-label bad-example">Bad</span></p>
+<p>“We deployed CHEWs in Ethiopia and maternal mortality dropped.”</p>
+<p><em>Correlation only. No mechanism.</em></p>
+</div>
+</div>
+<div class="col">
+<div class="example-block">
+<p><span class="example-label good-example">Good</span></p>
+<p>“Ethiopia’s CHEWs conducted home visits → identified danger signs early → referred mothers to health centers faster → reduced the first and second delays in emergency obstetric care → reduced maternal hemorrhage deaths.”</p>
+<p><em>Chain of mechanism.</em></p>
+</div>
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box">
+<p>A good causal story traces the <strong>chain of events</strong> step by step. Each link should be plausible and, ideally, supported by evidence.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>The Removal Test</h2>
+<p>The strongest test of causation: <strong>if you removed X, would Y still happen?</strong></p>
+<ul>
+<li class="fragment">If you pulled Ethiopia’s CHEWs out, would the improvements vanish?</li>
+<li class="fragment">If you stopped the mentorship program in Ethiopia, would facility performance decline?</li>
+<li class="fragment">If yes — you have strong evidence of causation</li>
+</ul>
+<div class="fragment">
+<div class="example-block">
+<p><span class="example-label">Example</span></p>
+<p>We paused the essential medicine supply chain reform for one quarter in control woredas in Ethiopia. Stockout rates climbed back to baseline. We reinstated it. Stockouts dropped again.</p>
+<p><strong>That is evidence of causation — not just correlation.</strong></p>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>Putting It All Together</h1>
+
+</section>
+<section class="slide level2">
+<h2>Full Example</h2>
+<div style="font-size:0.68em; line-height:1.5;">
+<p><span style="color:#005CB9; font-weight:600;"><span class="step-number" style="width:36px;height:36px;font-size:0.55em;">1</span> <strong>The Claim:</strong></span> “Our mentorship program reduced neonatal mortality in target health centers in Ethiopia’s Amhara region.”</p>
+<p><span style="color:#3E9B6E; font-weight:600;"><span class="step-number green" style="width:36px;height:36px;font-size:0.55em;">2</span> <strong>The Correlation:</strong></span> “Health centers in Ethiopia with mentored midwives saw a 35% drop in neonatal deaths over 12 months; matched control facilities saw no change.”</p>
+<p><span style="color:#3E9B6E; font-weight:600;"><span class="step-number teal" style="width:36px;height:36px;font-size:0.55em;">3</span> <strong>The Causal Story:</strong></span> “Mentored midwives in Ethiopia learned neonatal resuscitation skills, applied them in delivery rooms, recognized danger signs earlier, and initiated treatment faster.”</p>
+<p><span style="color:#E24A3F; font-weight:600;"><span class="step-number red" style="width:36px;height:36px;font-size:0.55em;">4</span> <strong>Ruling Out Alternatives:</strong></span> “Not common cause (control facilities in Ethiopia had similar baseline resources). Not coincidence (35% drop is well beyond normal quarterly variation). Not reversed causation (facilities were randomly assigned, not self-selected).”</p>
+<p><span style="color:#FA7650; font-weight:600;"><span class="step-number orange" style="width:36px;height:36px;font-size:0.55em;">5</span> <strong>The Removal Test:</strong></span> “When mentors rotated out of two Ethiopian facilities temporarily, neonatal resuscitation rates dropped within weeks.”</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>Common Mistakes</h2>
+<div style="font-size:0.85em;">
+<ul>
+<li class="fragment"><strong>Confusing correlation with causation</strong> — “The data from Ethiopia shows X and Y are linked” is not the same as “X caused Y”</li>
+<li class="fragment"><strong>Relying on timing alone</strong> — “It happened after our program launched in Ethiopia” is the timeline trap</li>
+<li class="fragment"><strong>Ignoring common causes</strong> — The most frequent failure in program evaluation in Ethiopia and globally</li>
+<li class="fragment"><strong>Skipping the causal story</strong> — If you can’t explain <em>how</em> X causes Y step by step, neither can your audience</li>
+<li class="fragment"><strong>Overclaiming from small samples</strong> — One health center in Ethiopia, one quarter of data is not enough to establish a pattern</li>
+</ul>
+</div>
+</section>
+<section class="slide level2">
+<h2>Calibrate Your Language</h2>
+<p>Match your claim to the strength of your evidence:</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Evidence Strength</th>
+<th>Appropriate Language</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Strong RCT or quasi-experimental design</td>
+<td>“X caused Y”</td>
+</tr>
+<tr class="even">
+<td>Consistent correlation + plausible mechanism</td>
+<td>“X likely contributed to Y”</td>
+</tr>
+<tr class="odd">
+<td>Observed correlation, mechanism unclear</td>
+<td>“X is associated with Y”</td>
+</tr>
+<tr class="even">
+<td>Single case, limited data</td>
+<td>“X may have played a role in Y”</td>
+</tr>
+<tr class="odd">
+<td>No mechanism, timing only</td>
+<td>“We observed Y after X, but cannot yet attribute causation”</td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>Calibrate your language.</strong> Stakeholders in Ethiopia and beyond respect precision. Overclaiming destroys credibility.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Key Takeaways</h2>
+<ol type="1">
+<li class="fragment"><strong>Correlation is not causation</strong> — showing X and Y move together is step one, not the finish line</li>
+<li class="fragment"><strong>Rule out the three alternatives</strong> — common cause, coincidence, reversed causation</li>
+<li class="fragment"><strong>Tell the causal story</strong> — trace the mechanism step by step</li>
+<li class="fragment"><strong>Apply the removal test</strong> — if X disappears, does Y?</li>
+<li class="fragment"><strong>Calibrate your claim</strong> — match your language to your evidence</li>
+</ol>
+<div class="fragment">
+<div class="key-takeaway">
+<p><strong>A causal argument that holds up does three things: shows the pattern, explains the mechanism, and rules out the alternatives.</strong></p>
+</div>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center" data-background-color="#005CB9">
+<h1>What’s Next</h1>
+<p><span style="font-size:1.3em; font-weight:300;">From Causal Arguments to Causal Analysis</span></p>
+</section>
+<section class="slide level2">
+<h2>Coming Up: Inference and Intervention</h2>
+<p>Today you learned to <strong>make</strong> causal arguments. Next, you’ll learn to <strong>build</strong> causal models — and we’ll expand beyond Ethiopia to Uganda, Rwanda, and many other countries.</p>
+<ul>
+<li class="fragment"><strong>Qualitative causal models</strong> — mapping cause-and-effect with DAGs across countries</li>
+<li class="fragment"><strong>Quantitative analysis</strong> — putting numbers on your causal stories with Bayesian networks</li>
+<li class="fragment"><strong>Decision analysis</strong> — using causal models to decide where to invest across Ethiopia, Uganda, Rwanda, and beyond</li>
+<li class="fragment"><strong>Strategic thinking</strong> — anticipating how partners and stakeholders will respond</li>
+<li class="fragment"><strong>Data-driven discovery</strong> — learning causal structure from health data across multiple countries</li>
+</ul>
+<div class="fragment">
+<div class="callout-box green">
+<p><strong>10 chapters. One toolkit.</strong> From building your first causal diagram to making resource allocation decisions across Ethiopia, Uganda, Rwanda, and beyond — this is where the reasoning you learned today becomes a rigorous analytical practice.</p>
+</div>
+</div>
+</section>
+<section class="slide level2" data-background-color="white">
+<h2></h2>
+<div style="text-align:center; margin-top:1.5em;">
+<p><img data-src="bka-logo.png" width="250"></p>
+<p><span style="font-size:1.4em; color:#005CB9; font-weight:300; display:block; margin-top:0.6em;">Now go make arguments that hold up.</span></p>
+<p><span style="color:#00A1DF; font-size:0.7em;"><em>Connecting Dots, Delivering Results.</em></span></p>
+</div>
+
+</section></section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<p><img src="bka-logo.png" class="slide-logo"></p>
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="index_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="index_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="index_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="index_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="index_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="index_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="index_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="index_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="index_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="index_files/libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'fade',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'slide',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1280,
+
+        height: 720,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

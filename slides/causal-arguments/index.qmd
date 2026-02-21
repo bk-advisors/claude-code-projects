@@ -1,0 +1,418 @@
+---
+title: "Making Causal Arguments That Hold Up"
+subtitle: "From Correlation to Conviction --- A Framework for Consultants"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+---
+
+## Where We Left Off
+
+In our last session, you learned the **4-part framework** for making a good point:
+
+::: {.incremental}
+- **The Point** --- lead with your claim
+- **Why It's True** --- the reasoning
+- **The Evidence** --- Zoom In (deduction) and Zoom Out (induction)
+- **Who Cares** --- the impact
+:::
+
+. . .
+
+::: {.callout-box}
+Today we go deeper into one specific skill --- the one that separates solid recommendations from shaky ones, especially when working in contexts like Ethiopia.
+
+**Today's question: When you claim X causes Y, how do you prove it?**
+:::
+
+
+## Why Causal Arguments Matter
+
+In Ethiopia, causal claims come up every day in MNH work:
+
+::: {.incremental}
+- A consultant tells an Ethiopian minister: *"The vacancy rate at health posts is causing preventable newborn deaths."*
+- A report states: *"Community Health Extension Workers improved antenatal care coverage by 18% in Ethiopia."*
+- A donor asks: *"How do you know this program in Ethiopia caused the improvement?"*
+:::
+
+. . .
+
+::: {.callout-box .orange}
+Each of these is a **causal claim**. And every one of them can be challenged.
+:::
+
+
+# The Core Problem {background-color="#005CB9"}
+
+[Correlation Is Not Causation]{style="font-size:1.3em; font-weight:300;"}
+
+
+## Correlation vs. Causation
+
+::: {.columns-equal}
+::: {.col}
+::: {.example-block}
+[Correlation]{.example-label}
+
+In Ethiopia, woredas with more Community Health Extension Workers tend to have lower maternal mortality.
+
+The two **move together**.
+:::
+:::
+
+::: {.col}
+::: {.example-block}
+[Causation]{.example-label}
+
+Deploying CHEWs to underserved woredas in Ethiopia **caused** maternal mortality to decline.
+
+One **produced** the other.
+:::
+:::
+:::
+
+. . .
+
+::: {.key-takeaway}
+**Correlation tells you two things move together. Causation tells you one made the other happen.**
+
+Stakeholders in Ethiopia need to know which claim is being made.
+:::
+
+
+## The Timeline Trap
+
+The most common causal mistake:
+
+### **Because X happened before Y, X must have caused Y.**
+
+::: {.incremental}
+- A CHEW training program launched in Ethiopia in January
+- Neonatal mortality dropped by March
+- Therefore the program caused the drop. Right?
+- **Not necessarily. Timing alone is not proof.**
+:::
+
+. . .
+
+::: {.example-block}
+[Example]{.example-label}
+
+A new CHEW training program was rolled out in Ethiopia's Tigray region in Q1. Neonatal mortality dropped 12% by Q3. But Ethiopia's national bed-net distribution campaign also ran during the same period.
+
+Did the training cause the drop --- or did fewer malaria-related neonatal deaths?
+:::
+
+
+# Three Things to Rule Out {background-color="#005CB9"}
+
+[Before you claim X caused Y]{style="font-size:1.3em; font-weight:300;"}
+
+
+## The Three Alternatives {background-color="#005CB9"}
+
+<table style="width:100%; border-collapse:separate; border-spacing:12px; margin-top:0.3em;">
+<tr>
+<td></td>
+<td style="text-align:center;">
+<div style="background:white; border-radius:10px; padding:14px 18px; border-left:4px solid #E24A3F; box-shadow:0 2px 10px rgba(0,0,0,0.15); font-size:0.6em;">
+<strong style="color:#E24A3F; font-size:1.15em;">1. Common Cause</strong><br>Could something else cause both X and Y?
+</div>
+<div style="color:rgba(255,255,255,0.5); font-size:1.6em;">&#9650;</div>
+</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-align:right;">
+<div style="background:white; border-radius:10px; padding:14px 18px; border-left:4px solid #FA7650; box-shadow:0 2px 10px rgba(0,0,0,0.15); font-size:0.6em;">
+<strong style="color:#FA7650; font-size:1.15em;">2. Coincidence</strong><br>Could X and Y be unrelated?
+</div>
+</td>
+<td style="text-align:center;">
+<div style="background:#005CB9; border:3px solid rgba(255,255,255,0.6); color:white; border-radius:50%; width:150px; height:150px; display:flex; align-items:center; justify-content:center; text-align:center; font-weight:700; font-size:0.65em; margin:0 auto; box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+<span><strong style="font-size:1.3em;">X caused Y?</strong></span>
+</div>
+</td>
+<td style="text-align:left;">
+<div style="background:white; border-radius:10px; padding:14px 18px; border-left:4px solid #3E9B6E; box-shadow:0 2px 10px rgba(0,0,0,0.15); font-size:0.6em;">
+<strong style="color:#3E9B6E; font-size:1.15em;">3. Reversed Causation</strong><br>Could Y actually cause X?
+</div>
+</td>
+</tr>
+<tr>
+<td></td>
+<td style="text-align:center;">
+<div style="color:rgba(255,255,255,0.5); font-size:1.6em;">&#9660;</div>
+<div style="background:white; border-radius:10px; padding:14px 18px; border-left:4px solid #005CB9; box-shadow:0 2px 10px rgba(0,0,0,0.15); font-size:0.6em;">
+<strong style="color:#005CB9; font-size:1.15em;">Your Causal Claim</strong><br>Only holds if you rule out all three
+</div>
+</td>
+<td></td>
+</tr>
+</table>
+
+
+## [<span class="step-number red">1</span> Common Cause]{style="font-size:0.95em;"}
+
+Could a **third factor** be causing both X and Y?
+
+::: {.incremental}
+- In Ethiopia, we can observe: woredas with more NGO programs also have better MNH outcomes
+- But both might be driven by a third factor: **government prioritization under Ethiopia's HSTP**
+- High-priority woredas in Ethiopia attract more NGOs *and* receive more government investment
+:::
+
+. . .
+
+::: {.example-block}
+[Example]{.example-label}
+
+**Your claim:** "Our safe delivery kit deployment reduced obstetric complications in Ethiopia."
+
+**The challenge:** The health centers in Ethiopia chosen for deployment were already higher-performing because they had stronger woreda health office leadership --- the common cause.
+:::
+
+
+## [<span class="step-number orange">2</span> Coincidence]{style="font-size:0.95em;"}
+
+Could X and Y just **happen to move together** without any real connection?
+
+::: {.incremental}
+- The more data points tracked across Ethiopia, the more spurious correlations emerge
+- Especially in small samples (a single health center, one quarter of data)
+- Ask yourself: is there a plausible *mechanism* connecting X and Y?
+:::
+
+. . .
+
+::: {.example-block}
+[Example]{.example-label}
+
+A health center in Ethiopia's SNNPR introduced a new patient register the same month neonatal mortality dropped. Did the register cause the drop?
+
+More likely: the drop was within normal quarterly variation. **No mechanism connects a register format to newborn survival.**
+:::
+
+
+## [<span class="step-number teal">3</span> Reversed Causation]{style="font-size:0.95em;"}
+
+Could the **direction of causation be backwards?**
+
+::: {.incremental}
+- Consider this from Ethiopia: health posts with more supportive supervision visits have better outcomes
+- But maybe better-performing health posts *attract* more visits
+- The outcome might be driving the input, not the other way around
+:::
+
+. . .
+
+::: {.example-block}
+[Example]{.example-label}
+
+**Your claim:** "More frequent supportive supervision visits improved health post performance in Ethiopia's Oromia region."
+
+**The challenge:** Maybe supervisors visit high-performing health posts in Ethiopia more often because they are easier to reach and more cooperative. The performance is driving the visits --- not the reverse.
+:::
+
+
+## The Checklist
+
+Before claiming X caused Y in Ethiopia, run through these three checks:
+
+| Challenge | The Question | In Ethiopia's Health System |
+|---|---|---|
+| **Common Cause** | Could something else cause both? | Check for confounders --- Ethiopia's HSTP priority status, geography, baseline capacity, donor attention |
+| **Coincidence** | Is the connection real or noise? | Look for a plausible mechanism. Check sample sizes across Ethiopian woredas. Is this within normal variation? |
+| **Reversed Causation** | Is the direction backwards? | Could the outcome be driving the input? Watch for selection effects in Ethiopia's health system |
+
+
+# Building a Causal Argument {background-color="#005CB9"}
+
+[From claim to conviction]{style="font-size:1.3em; font-weight:300;"}
+
+
+## The Two-Part Structure
+
+A solid causal argument has **two parts**:
+
+::: {.incremental}
+- [1]{.step-number} **Show the correlation** --- X and Y move together (use data from Ethiopia)
+- [2]{.step-number .green} **Tell the causal story** --- explain *how* X produces Y (the mechanism)
+:::
+
+. . .
+
+::: {.callout-box .green}
+**The causal story is what separates a correlation from a cause.** It is a chain of reasoning that explains the steps between X and Y.
+:::
+
+Remember **"Why It's True"** from the Anatomy framework? The causal story *is* your "why it's true" for causal claims.
+
+
+## What Makes a Good Causal Story
+
+::: {.columns-equal}
+::: {.col}
+::: {.example-block}
+[Bad]{.example-label .bad-example}
+
+"We deployed CHEWs in Ethiopia and maternal mortality dropped."
+
+*Correlation only. No mechanism.*
+:::
+:::
+
+::: {.col}
+::: {.example-block}
+[Good]{.example-label .good-example}
+
+"Ethiopia's CHEWs conducted home visits &rarr; identified danger signs early &rarr; referred mothers to health centers faster &rarr; reduced the first and second delays in emergency obstetric care &rarr; reduced maternal hemorrhage deaths."
+
+*Chain of mechanism.*
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box}
+A good causal story traces the **chain of events** step by step. Each link should be plausible and, ideally, supported by evidence.
+:::
+
+
+## The Removal Test
+
+The strongest test of causation: **if you removed X, would Y still happen?**
+
+::: {.incremental}
+- If you pulled Ethiopia's CHEWs out, would the improvements vanish?
+- If you stopped the mentorship program in Ethiopia, would facility performance decline?
+- If yes --- you have strong evidence of causation
+:::
+
+. . .
+
+::: {.example-block}
+[Example]{.example-label}
+
+We paused the essential medicine supply chain reform for one quarter in control woredas in Ethiopia. Stockout rates climbed back to baseline. We reinstated it. Stockouts dropped again.
+
+**That is evidence of causation --- not just correlation.**
+:::
+
+
+# Putting It All Together {background-color="#005CB9"}
+
+
+## Full Example
+
+::: {style="font-size:0.68em; line-height:1.5;"}
+
+[<span class="step-number" style="width:36px;height:36px;font-size:0.55em;">1</span> **The Claim:**]{style="color:#005CB9; font-weight:600;"} "Our mentorship program reduced neonatal mortality in target health centers in Ethiopia's Amhara region."
+
+[<span class="step-number green" style="width:36px;height:36px;font-size:0.55em;">2</span> **The Correlation:**]{style="color:#3E9B6E; font-weight:600;"} "Health centers in Ethiopia with mentored midwives saw a 35% drop in neonatal deaths over 12 months; matched control facilities saw no change."
+
+[<span class="step-number teal" style="width:36px;height:36px;font-size:0.55em;">3</span> **The Causal Story:**]{style="color:#3E9B6E; font-weight:600;"} "Mentored midwives in Ethiopia learned neonatal resuscitation skills, applied them in delivery rooms, recognized danger signs earlier, and initiated treatment faster."
+
+[<span class="step-number red" style="width:36px;height:36px;font-size:0.55em;">4</span> **Ruling Out Alternatives:**]{style="color:#E24A3F; font-weight:600;"} "Not common cause (control facilities in Ethiopia had similar baseline resources). Not coincidence (35% drop is well beyond normal quarterly variation). Not reversed causation (facilities were randomly assigned, not self-selected)."
+
+[<span class="step-number orange" style="width:36px;height:36px;font-size:0.55em;">5</span> **The Removal Test:**]{style="color:#FA7650; font-weight:600;"} "When mentors rotated out of two Ethiopian facilities temporarily, neonatal resuscitation rates dropped within weeks."
+
+:::
+
+
+## Common Mistakes
+
+::: {.incremental style="font-size:0.85em;"}
+- **Confusing correlation with causation** --- "The data from Ethiopia shows X and Y are linked" is not the same as "X caused Y"
+- **Relying on timing alone** --- "It happened after our program launched in Ethiopia" is the timeline trap
+- **Ignoring common causes** --- The most frequent failure in program evaluation in Ethiopia and globally
+- **Skipping the causal story** --- If you can't explain *how* X causes Y step by step, neither can your audience
+- **Overclaiming from small samples** --- One health center in Ethiopia, one quarter of data is not enough to establish a pattern
+:::
+
+
+## Calibrate Your Language
+
+Match your claim to the strength of your evidence:
+
+| Evidence Strength | Appropriate Language |
+|---|---|
+| Strong RCT or quasi-experimental design | "X caused Y" |
+| Consistent correlation + plausible mechanism | "X likely contributed to Y" |
+| Observed correlation, mechanism unclear | "X is associated with Y" |
+| Single case, limited data | "X may have played a role in Y" |
+| No mechanism, timing only | "We observed Y after X, but cannot yet attribute causation" |
+
+. . .
+
+::: {.callout-box}
+**Calibrate your language.** Stakeholders in Ethiopia and beyond respect precision. Overclaiming destroys credibility.
+:::
+
+
+## Key Takeaways
+
+::: {.incremental}
+1. **Correlation is not causation** --- showing X and Y move together is step one, not the finish line
+2. **Rule out the three alternatives** --- common cause, coincidence, reversed causation
+3. **Tell the causal story** --- trace the mechanism step by step
+4. **Apply the removal test** --- if X disappears, does Y?
+5. **Calibrate your claim** --- match your language to your evidence
+:::
+
+. . .
+
+::: {.key-takeaway}
+**A causal argument that holds up does three things: shows the pattern, explains the mechanism, and rules out the alternatives.**
+:::
+
+
+# What's Next {background-color="#005CB9"}
+
+[From Causal Arguments to Causal Analysis]{style="font-size:1.3em; font-weight:300;"}
+
+
+## Coming Up: Inference and Intervention
+
+Today you learned to **make** causal arguments. Next, you'll learn to **build** causal models --- and we'll expand beyond Ethiopia to Uganda, Rwanda, and many other countries.
+
+::: {.incremental}
+- **Qualitative causal models** --- mapping cause-and-effect with DAGs across countries
+- **Quantitative analysis** --- putting numbers on your causal stories with Bayesian networks
+- **Decision analysis** --- using causal models to decide where to invest across Ethiopia, Uganda, Rwanda, and beyond
+- **Strategic thinking** --- anticipating how partners and stakeholders will respond
+- **Data-driven discovery** --- learning causal structure from health data across multiple countries
+:::
+
+. . .
+
+::: {.callout-box .green}
+**10 chapters. One toolkit.** From building your first causal diagram to making resource allocation decisions across Ethiopia, Uganda, Rwanda, and beyond --- this is where the reasoning you learned today becomes a rigorous analytical practice.
+:::
+
+
+##  {background-color="white"}
+
+::: {style="text-align:center; margin-top:1.5em;"}
+
+![](bka-logo.png){width="250px"}
+
+[Now go make arguments that hold up.]{style="font-size:1.4em; color:#005CB9; font-weight:300; display:block; margin-top:0.6em;"}
+
+[*Connecting Dots, Delivering Results.*]{style="color:#00A1DF; font-size:0.7em;"}
+
+:::

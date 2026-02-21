@@ -1,0 +1,301 @@
+/*-- scss:defaults --*/
+
+// BK Advisors brand colors (from PPTX template)
+$bka-blue:        #005CB9;
+$bka-light-blue:  #00A1DF;
+$bka-green:       #83BD00;
+$bka-teal:        #3E9B6E;
+$bka-red:         #E24A3F;
+$bka-orange:      #FA7650;
+$bka-amber:       #F8A623;
+$bka-yellow:      #FED141;
+
+// Reveal theme variables
+$body-bg:               white;
+$body-color:            #333333;
+$link-color:            $bka-blue;
+$selection-bg:          rgba($bka-light-blue, 0.3);
+$presentation-heading-color: $bka-blue;
+$code-color:            $bka-blue;
+
+// Fonts (matching PPTX template)
+$font-family-sans-serif: "Calibri", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+$presentation-heading-font: "Calibri Light", "Calibri", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+$presentation-font-size-root: 36px;
+$presentation-h1-font-size: 1.8em;
+$presentation-h2-font-size: 1.4em;
+$presentation-h3-font-size: 1.1em;
+$presentation-line-height: 1.4;
+
+/*-- scss:rules --*/
+
+// ===== Title slide =====
+#title-slide {
+  text-align: left;
+
+  h1.title {
+    color: white;
+    font-size: 2.2em;
+    font-weight: 300;
+    margin-bottom: 0.1em;
+    line-height: 1.1;
+  }
+
+  .subtitle {
+    color: rgba(white, 0.85);
+    font-size: 0.7em;
+    font-weight: 300;
+    margin-top: 0;
+  }
+
+  .author {
+    color: rgba(white, 0.9);
+    font-size: 0.55em;
+    margin-top: 1.5em;
+  }
+
+  .date {
+    color: rgba(white, 0.7);
+    font-size: 0.45em;
+  }
+}
+
+// ===== Section header slides =====
+.section-slide {
+  h2 {
+    color: white !important;
+    font-size: 1.8em;
+    font-weight: 300;
+  }
+}
+
+// ===== General slide styles =====
+.reveal .slides section {
+  overflow-y: auto;
+
+  h2 {
+    border-bottom: 3px solid $bka-light-blue;
+    padding-bottom: 0.2em;
+    margin-bottom: 0.6em;
+  }
+}
+
+// Step number badges
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: $bka-blue;
+  color: white;
+  font-size: 0.7em;
+  font-weight: 700;
+  margin-right: 0.3em;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.step-number.green  { background-color: $bka-green; }
+.step-number.teal   { background-color: $bka-teal; }
+.step-number.orange { background-color: $bka-orange; }
+.step-number.red    { background-color: $bka-red; }
+.step-number.amber  { background-color: $bka-amber; color: #333; }
+
+// ===== Diagram styles =====
+.compass-diagram {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 0.3em;
+  max-width: 850px;
+  margin: 0 auto;
+  align-items: center;
+  justify-items: center;
+  font-size: 0.55em;
+}
+
+.compass-center {
+  grid-column: 2;
+  grid-row: 2;
+  background: $bka-blue;
+  color: white;
+  border-radius: 50%;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1em;
+  box-shadow: 0 4px 20px rgba($bka-blue, 0.4);
+}
+
+.compass-top {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.compass-bottom {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.compass-left {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.compass-right {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.compass-box {
+  background: white;
+  border-radius: 10px;
+  padding: 0.5em 0.7em;
+  text-align: center;
+  min-width: 180px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border-left: 4px solid transparent;
+}
+
+.compass-box strong {
+  display: block;
+  font-size: 1.1em;
+  margin-bottom: 0.1em;
+}
+
+.compass-box.box-blue   { border-left-color: $bka-blue; }
+.compass-box.box-green  { border-left-color: $bka-green; }
+.compass-box.box-teal   { border-left-color: $bka-teal; }
+.compass-box.box-orange { border-left-color: $bka-orange; }
+.compass-box.box-red    { border-left-color: $bka-red; }
+
+// Arrow connectors in compass
+.compass-arrow {
+  font-size: 1.6em;
+  color: $bka-blue;
+  opacity: 0.5;
+}
+
+// ===== Highlight / callout boxes =====
+.callout-box {
+  background: linear-gradient(135deg, rgba($bka-blue, 0.06), rgba($bka-light-blue, 0.08));
+  border-left: 4px solid $bka-blue;
+  border-radius: 6px;
+  padding: 0.35em 0.7em;
+  margin: 0.3em 0;
+  font-size: 0.65em;
+}
+
+.callout-box.green {
+  background: linear-gradient(135deg, rgba($bka-green, 0.08), rgba($bka-teal, 0.06));
+  border-left-color: $bka-green;
+}
+
+.callout-box.orange {
+  background: linear-gradient(135deg, rgba($bka-orange, 0.08), rgba($bka-amber, 0.06));
+  border-left-color: $bka-orange;
+}
+
+.callout-box.red {
+  background: linear-gradient(135deg, rgba($bka-red, 0.06), rgba($bka-orange, 0.06));
+  border-left-color: $bka-red;
+}
+
+// ===== Example block =====
+.example-block {
+  background: #f7fafd;
+  border: 1px solid rgba($bka-blue, 0.15);
+  border-radius: 8px;
+  padding: 0.4em 0.7em;
+  margin: 0.35em 0;
+  font-size: 0.65em;
+
+  .example-label {
+    color: $bka-light-blue;
+    font-weight: 700;
+    font-size: 0.78em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.2em;
+  }
+}
+
+// ===== Two-column layout helper =====
+.columns-equal {
+  display: flex;
+  gap: 1.2em;
+
+  .col {
+    flex: 1;
+  }
+}
+
+// ===== Footer / logo =====
+.slide-logo {
+  position: fixed;
+  bottom: 16px;
+  right: 20px;
+  height: 36px;
+  opacity: 0.7;
+}
+
+// ===== Step flow (horizontal) =====
+.step-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  margin: 0.8em 0;
+  font-size: 0.55em;
+}
+
+.step-flow .step-item {
+  background: white;
+  border-radius: 8px;
+  padding: 0.4em 0.6em;
+  text-align: center;
+  min-width: 120px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-weight: 600;
+}
+
+.step-flow .step-arrow {
+  font-size: 1.5em;
+  color: $bka-light-blue;
+}
+
+// ===== Bad / Good comparison =====
+.bad-example {
+  color: $bka-red;
+  &::before { content: "\2717  "; font-weight: 700; }
+}
+
+.good-example {
+  color: $bka-teal;
+  &::before { content: "\2713  "; font-weight: 700; }
+}
+
+// ===== Key takeaway =====
+.key-takeaway {
+  background: $bka-blue;
+  color: white;
+  border-radius: 10px;
+  padding: 0.4em 0.8em;
+  text-align: center;
+  font-size: 0.78em;
+  margin: 0.3em auto;
+  max-width: 85%;
+  box-shadow: 0 4px 15px rgba($bka-blue, 0.3);
+
+  strong {
+    display: block;
+    font-size: 1.1em;
+    margin-bottom: 0.1em;
+  }
+}
