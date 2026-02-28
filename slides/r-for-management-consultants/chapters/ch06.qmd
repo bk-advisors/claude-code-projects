@@ -1,0 +1,240 @@
+---
+title: "Chapter 6: Data Visualization with ggplot2"
+subtitle: "Grammar of graphics, basic geoms, and aesthetic mappings"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Explain the **grammar of graphics** framework: data, aesthetic mappings, and geometric objects
+- Create five core chart types: **bar charts, scatter plots, line charts, histograms, and boxplots**
+- Map data variables to visual properties (**color, size, shape, fill**) using `aes()`
+- Add **labels, titles, and basic formatting** with `labs()` and `theme()`
+- Choose the **right chart type** for different analytical questions in MNH consulting
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### Grammar of Graphics
+Every ggplot2 chart is built from three components: **data** (the tibble), **aesthetics** (which variables map to which visual properties — x-axis, y-axis, color, size), and **geoms** (the geometric shapes that represent the data — bars, points, lines). You layer these components with `+` to build up a visualization step by step.
+:::
+
+::: {.key-concept .green}
+#### Geom Types
+| Geom | Use Case | MNH Example |
+|---|---|---|
+| `geom_col()` | Compare categories | NMR by country |
+| `geom_point()` | Show relationships | Deliveries vs. NMR |
+| `geom_line()` | Show trends over time | Quarterly NMR trends |
+| `geom_histogram()` | Show distributions | Distribution of facility NMRs |
+| `geom_boxplot()` | Compare distributions | NMR by facility type |
+:::
+
+::: {.key-concept .teal}
+#### Aesthetic Mappings
+Aesthetics connect data to visual properties. `aes(x = country, y = nmr)` puts countries on the x-axis and NMR on the y-axis. `aes(color = region)` colors points by region. Aesthetics inside `aes()` are data-driven (they vary with the data); aesthetics outside `aes()` are fixed (e.g., `color = "blue"` makes everything blue).
+:::
+
+::: {.key-concept .orange}
+#### Chart Selection
+The right chart depends on your question: **Comparing categories?** Bar chart. **Showing a relationship between two numbers?** Scatter plot. **Tracking change over time?** Line chart. **Understanding a distribution?** Histogram or boxplot. Choosing the wrong chart type obscures your message; choosing the right one makes the insight immediately visible.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch06-ggplot2-intro/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch06-ggplot2-intro/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This workshop builds five core chart types using MNH data. Each chart answers a different analytical question a consultant might face.
+
+### Bar Chart: NMR by Country
+
+```{r}
+#| label: bar-chart
+#| echo: true
+#| fig-width: 8
+#| fig-height: 5
+
+library(tidyverse)
+
+# Country-level NMR data
+country_nmr <- tibble(
+  country = c("Ethiopia", "Tanzania", "Malawi", "Kenya", "Rwanda"),
+  nmr = c(28.1, 20.3, 22.4, 18.6, 16.2)
+)
+
+# Bar chart — compare a numeric value across categories
+ggplot(country_nmr, aes(x = reorder(country, nmr), y = nmr)) +
+  geom_col(fill = "#005CB9") +
+  coord_flip() +
+  labs(
+    title = "Neonatal Mortality Rate by Country",
+    subtitle = "Deaths per 1,000 live births",
+    x = NULL,
+    y = "NMR"
+  ) +
+  theme_minimal()
+```
+
+`reorder(country, nmr)` sorts the bars by NMR value rather than alphabetically — this makes the comparison immediate. `coord_flip()` makes horizontal bars, which are easier to read when category labels are long (country or facility names).
+
+### Scatter Plot: Delivery Volume vs NMR
+
+```{r}
+#| label: scatter-plot
+#| echo: true
+#| fig-width: 8
+#| fig-height: 5
+
+# Facility-level data
+facility_scatter <- tibble(
+  facility = paste0("F", 1:20),
+  country = sample(c("Ethiopia", "Tanzania", "Malawi"), 20, replace = TRUE),
+  total_deliveries = c(320, 85, 410, 120, 250, 190, 380, 95, 150, 440,
+                       60, 210, 330, 175, 290, 105, 360, 225, 145, 400),
+  nmr = c(12.5, 28.3, 15.1, 22.7, 18.4, 25.6, 14.2, 31.0, 20.1, 11.8,
+          35.2, 19.5, 16.8, 24.1, 17.3, 29.4, 13.5, 21.2, 26.8, 10.9)
+)
+
+# Scatter plot — show relationship between two numeric variables
+ggplot(facility_scatter, aes(x = total_deliveries, y = nmr, color = country)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(
+    title = "Facility Delivery Volume vs Neonatal Mortality",
+    x = "Total Deliveries (annual)",
+    y = "NMR (per 1,000 live births)",
+    color = "Country"
+  ) +
+  theme_minimal()
+```
+
+This chart lets you see whether higher-volume facilities tend to have lower NMR — a pattern you might expect if volume is a proxy for capacity. The `color = country` aesthetic lets you see whether the pattern holds across countries or varies by context.
+
+### Line Chart: NMR Trends Over Time
+
+```{r}
+#| label: line-chart
+#| echo: true
+#| fig-width: 8
+#| fig-height: 5
+
+# Quarterly NMR trends
+quarterly_trends <- tibble(
+  quarter = rep(c("2023-Q1", "2023-Q2", "2023-Q3", "2023-Q4",
+                  "2024-Q1", "2024-Q2"), 3),
+  country = rep(c("Ethiopia", "Tanzania", "Malawi"), each = 6),
+  nmr = c(28.1, 27.3, 26.5, 25.8, 25.1, 24.4,    # Ethiopia: declining
+          20.3, 20.1, 19.8, 19.5, 19.2, 18.9,      # Tanzania: declining
+          22.4, 23.1, 22.8, 21.9, 22.5, 21.2)       # Malawi: uneven
+)
+
+# Line chart — track change over time
+ggplot(quarterly_trends, aes(x = quarter, y = nmr,
+                              color = country, group = country)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Quarterly NMR Trends by Country",
+    x = "Quarter",
+    y = "NMR (per 1,000 live births)",
+    color = "Country"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Line charts require a `group` aesthetic when you have multiple lines. Without `group = country`, ggplot2 would try to connect all points in sequence. Adding `geom_point()` on top of `geom_line()` makes individual data points visible, which helps when trends are uneven (like the Malawi line).
+
+### Histogram: Distribution of Facility NMRs
+
+```{r}
+#| label: histogram
+#| echo: true
+#| fig-width: 8
+#| fig-height: 5
+
+# Distribution of NMR across many facilities
+set.seed(42)
+facility_nmrs <- tibble(
+  nmr = c(rnorm(50, mean = 22, sd = 6),   # general distribution
+          rnorm(10, mean = 35, sd = 4))     # outlier cluster
+)
+
+# Histogram — understand the shape of a distribution
+ggplot(facility_nmrs, aes(x = nmr)) +
+  geom_histogram(binwidth = 3, fill = "#005CB9", color = "white") +
+  geom_vline(xintercept = 25, color = "#E24A3F", linetype = "dashed",
+             linewidth = 1) +
+  annotate("text", x = 26, y = 12, label = "Target: 25",
+           color = "#E24A3F", hjust = 0) +
+  labs(
+    title = "Distribution of Neonatal Mortality Rates Across Facilities",
+    x = "NMR (per 1,000 live births)",
+    y = "Number of Facilities"
+  ) +
+  theme_minimal()
+```
+
+The dashed red line marks a target threshold. This kind of chart answers the question: "How many of our facilities are above or below the target?" The right tail of the distribution shows outlier facilities with very high NMR — these are the ones to investigate first.
+
+### Boxplot: NMR by Facility Type
+
+```{r}
+#| label: boxplot
+#| echo: true
+#| fig-width: 8
+#| fig-height: 5
+
+# NMR by facility type
+facility_types <- tibble(
+  facility_type = factor(
+    rep(c("Health Post", "Health Center", "Hospital"), each = 15),
+    levels = c("Health Post", "Health Center", "Hospital")
+  ),
+  nmr = c(rnorm(15, 30, 5),   # health posts: higher NMR
+          rnorm(15, 22, 4),    # health centers: medium
+          rnorm(15, 15, 3))    # hospitals: lower NMR
+)
+
+# Boxplot — compare distributions across categories
+ggplot(facility_types, aes(x = facility_type, y = nmr, fill = facility_type)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = c("#FA7650", "#F8A623", "#005CB9")) +
+  labs(
+    title = "Neonatal Mortality by Facility Type",
+    x = NULL,
+    y = "NMR (per 1,000 live births)"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+Boxplots show the median (center line), interquartile range (box), and outliers (individual points). They are the best chart for comparing distributions across categories. Here you can see whether hospitals systematically outperform health posts on NMR — and how much variation exists within each type.
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Every chart is data + aesthetics + geom.** Once you internalize this grammar, you can build any visualization by combining the right components.
+
+**Choose chart type by question.** Comparing categories = bar chart. Relationships = scatter plot. Trends = line chart. Distributions = histogram or boxplot.
+
+**Aesthetics make data visible.** Mapping variables to color, size, and shape lets you encode multiple dimensions of information in a single chart — country, facility type, and NMR all in one view.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 7 — Publication-Quality Charts**, you will learn to polish your charts for client deliverables:
+
+- Building a reusable `theme_bka()` function with BK Advisors brand colors
+- Faceting (small multiples) to show patterns across countries simultaneously
+- Combining multiple charts into a single figure with `patchwork`
+- Exporting at 300 DPI for print-quality slide decks

@@ -1,0 +1,64 @@
+project:
+  type: website
+  render:
+    - index.qmd
+    - r-setup.qmd
+    - chapters/*.qmd
+    - ch01-why-r/index.qmd
+    - ch02-building-blocks/index.qmd
+    - ch03-importing-data/index.qmd
+    - ch04-data-transformation/index.qmd
+    - ch05-reshaping-joining/index.qmd
+    - ch06-ggplot2-intro/index.qmd
+    - ch07-polished-charts/index.qmd
+    - ch08-descriptive-stats/index.qmd
+    - ch09-quarto-reports/index.qmd
+  output-dir: _site
+
+website:
+  title: "R for Management Consultants"
+  navbar:
+    background: "#005CB9"
+    foreground: "#ffffff"
+    logo: ch01-why-r/bka-logo.png
+    left:
+      - text: Home
+        href: index.qmd
+      - text: R Setup
+        href: r-setup.qmd
+  sidebar:
+    style: floating
+    title: "Chapters"
+    contents:
+      - section: "Part I: Getting Started"
+        contents:
+          - chapters/ch01.qmd
+          - chapters/ch02.qmd
+      - section: "Part II: Working with Data"
+        contents:
+          - chapters/ch03.qmd
+          - chapters/ch04.qmd
+          - chapters/ch05.qmd
+      - section: "Part III: Visualization & Analysis"
+        contents:
+          - chapters/ch06.qmd
+          - chapters/ch07.qmd
+          - chapters/ch08.qmd
+      - section: "Part IV: Communication"
+        contents:
+          - chapters/ch09.qmd
+  page-footer:
+    center: "R for Management Consultants | BK Advisors"
+
+format:
+  html:
+    theme: [cosmo, styles.scss]
+    toc: true
+    toc-depth: 3
+    code-copy: true
+    code-overflow: wrap
+
+execute:
+  echo: true
+  eval: false
+  warning: false

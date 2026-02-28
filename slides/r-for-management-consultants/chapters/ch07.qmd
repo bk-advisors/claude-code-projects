@@ -1,0 +1,270 @@
+---
+title: "Chapter 7: Publication-Quality Charts"
+subtitle: "Themes, colors, faceting, multi-panel layouts, and exporting"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Build a **reusable custom theme** (`theme_bka()`) that applies BK Advisors brand standards to every chart
+- Apply a **custom color palette** using `scale_color_manual()` and `scale_fill_manual()`
+- Use `facet_wrap()` to create **small multiples** — the same chart repeated for each country or category
+- Combine multiple charts into a **multi-panel figure** with the `patchwork` package
+- Export charts at **publication quality** (300 DPI, correct dimensions) with `ggsave()`
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### Custom Themes
+A ggplot2 theme controls every non-data element of a chart: fonts, grid lines, axis labels, legend position, background color. `theme_bka()` is a custom function that wraps these settings so you apply them once and every chart in your deliverable looks consistent. Inconsistent formatting across charts signals to clients that the analysis was rushed.
+:::
+
+::: {.key-concept .green}
+#### BKA Color Palette
+Brand colors are defined once as a named vector and reused everywhere. Using `scale_color_manual(values = bka_colors)` ensures that "Ethiopia" is always the same shade of blue, "Tanzania" is always teal, and so on. Consistent color mapping across charts helps your audience track countries or categories without re-reading the legend.
+:::
+
+::: {.key-concept .teal}
+#### Faceting (Small Multiples)
+`facet_wrap(~ country)` creates one panel per country, each with the same axes. Small multiples are the best way to compare patterns across groups — they avoid the visual clutter of overlapping lines and let you see each country's trajectory clearly. Edward Tufte called them "the best design solution for a wide range of problems in data presentation."
+:::
+
+::: {.key-concept .orange}
+#### Patchwork Layouts
+The `patchwork` package lets you combine separate ggplot objects into a single figure using `+` (side by side) and `/` (stacked). This is how you create the multi-panel dashboard figures that appear in consulting slide decks — a bar chart on the left, a trend line on the right, with a shared title.
+:::
+
+::: {.key-concept .red}
+#### ggsave
+`ggsave()` exports charts as PNG, PDF, or SVG files with explicit control over dimensions and resolution. For slide decks, use `width = 10, height = 6, dpi = 300`. For print reports, use `dpi = 300` minimum. Never screenshot a chart from RStudio — it will be low resolution and inconsistently sized.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch07-polished-charts/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch07-polished-charts/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This workshop transforms basic ggplot2 charts into polished, brand-consistent visualizations ready for client deliverables.
+
+### Building a Reusable Theme
+
+```{r}
+#| label: custom-theme
+#| echo: true
+
+library(tidyverse)
+
+# BK Advisors brand colors
+bka_colors <- c(
+  "primary"    = "#005CB9",
+  "light_blue" = "#00A1DF",
+  "green"      = "#83BD00",
+  "teal"       = "#3E9B6E",
+  "red"        = "#E24A3F",
+  "orange"     = "#FA7650",
+  "amber"      = "#F8A623",
+  "yellow"     = "#FED141"
+)
+
+# Named palette for countries (consistent across all charts)
+country_colors <- c(
+  "Ethiopia" = "#005CB9",
+  "Tanzania" = "#3E9B6E",
+  "Malawi"   = "#FA7650",
+  "Kenya"    = "#83BD00",
+  "Rwanda"   = "#00A1DF"
+)
+
+# Custom theme function
+theme_bka <- function(base_size = 12) {
+  theme_minimal(base_size = base_size) +
+    theme(
+      # Title and subtitle
+      plot.title = element_text(face = "bold", color = "#005CB9",
+                                margin = margin(b = 8)),
+      plot.subtitle = element_text(color = "#666666",
+                                    margin = margin(b = 12)),
+      # Axes
+      axis.title = element_text(color = "#333333"),
+      axis.text = element_text(color = "#666666"),
+      # Grid
+      panel.grid.minor = element_blank(),
+      panel.grid.major.x = element_blank(),
+      # Legend
+      legend.position = "bottom",
+      legend.title = element_text(face = "bold", size = 10),
+      # Plot margin
+      plot.margin = margin(15, 15, 15, 15)
+    )
+}
+```
+
+Define your theme and color palette at the top of every script. This way, every chart you create inherits brand-consistent styling with a single `+ theme_bka()` call. If the brand guidelines change, you update one function.
+
+### Applying Brand Colors
+
+```{r}
+#| label: brand-colors
+#| echo: true
+#| fig-width: 10
+#| fig-height: 6
+
+# Country-level NMR data
+country_nmr <- tibble(
+  country = c("Ethiopia", "Tanzania", "Malawi", "Kenya", "Rwanda"),
+  nmr = c(28.1, 20.3, 22.4, 18.6, 16.2)
+)
+
+# Bar chart with BKA brand styling
+ggplot(country_nmr, aes(x = reorder(country, nmr), y = nmr,
+                         fill = country)) +
+  geom_col(width = 0.7) +
+  scale_fill_manual(values = country_colors) +
+  coord_flip() +
+  labs(
+    title = "Neonatal Mortality Rate by Country",
+    subtitle = "Deaths per 1,000 live births | Most recent available year",
+    x = NULL,
+    y = "NMR"
+  ) +
+  theme_bka() +
+  theme(legend.position = "none")  # Legend redundant with axis labels
+```
+
+Notice how `scale_fill_manual(values = country_colors)` maps each country to its designated brand color. If you add a new country to the data, add it to the `country_colors` vector. Keeping color assignments explicit prevents ggplot2 from auto-assigning colors that clash with your brand.
+
+### Faceting: Small Multiples
+
+```{r}
+#| label: facet-wrap
+#| echo: true
+#| fig-width: 12
+#| fig-height: 8
+
+# Quarterly trends by country
+quarterly_data <- tibble(
+  quarter = rep(paste0("Q", 1:8), 3),
+  country = rep(c("Ethiopia", "Tanzania", "Malawi"), each = 8),
+  nmr = c(28.1, 27.3, 26.5, 25.8, 25.1, 24.4, 23.8, 23.2,  # Ethiopia
+          20.3, 20.1, 19.8, 19.5, 19.2, 18.9, 18.5, 18.1,    # Tanzania
+          22.4, 23.1, 22.8, 21.9, 22.5, 21.2, 20.8, 21.5),    # Malawi
+  target = rep(c(20, 15, 18), each = 8)
+)
+
+# Faceted line chart — one panel per country
+ggplot(quarterly_data, aes(x = quarter, y = nmr, group = 1)) +
+  geom_line(color = "#005CB9", linewidth = 1) +
+  geom_point(color = "#005CB9", size = 2) +
+  geom_hline(aes(yintercept = target), linetype = "dashed",
+             color = "#E24A3F", linewidth = 0.8) +
+  facet_wrap(~ country, scales = "free_y", ncol = 3) +
+  labs(
+    title = "NMR Quarterly Trends by Country",
+    subtitle = "Dashed line = national target",
+    x = "Quarter",
+    y = "NMR (per 1,000 live births)"
+  ) +
+  theme_bka() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+```
+
+`facet_wrap(~ country, scales = "free_y")` lets each panel have its own y-axis range, which is appropriate when countries have very different NMR levels. Use `scales = "fixed"` when you want to emphasize cross-country comparison on the same scale. The choice depends on whether your message is about each country's trajectory or about the gap between them.
+
+### Multi-Panel Layouts with patchwork
+
+```{r}
+#| label: patchwork-layout
+#| echo: true
+#| fig-width: 14
+#| fig-height: 7
+
+library(patchwork)
+
+# Chart 1: Bar chart of current NMR
+p1 <- ggplot(country_nmr, aes(x = reorder(country, nmr), y = nmr,
+                                fill = country)) +
+  geom_col(width = 0.7) +
+  scale_fill_manual(values = country_colors) +
+  coord_flip() +
+  labs(title = "Current NMR", x = NULL, y = "NMR") +
+  theme_bka() +
+  theme(legend.position = "none")
+
+# Chart 2: Line chart of trends (Ethiopia only, for focus)
+p2 <- quarterly_data |>
+  filter(country == "Ethiopia") |>
+  ggplot(aes(x = quarter, y = nmr, group = 1)) +
+  geom_line(color = "#005CB9", linewidth = 1.2) +
+  geom_point(color = "#005CB9", size = 2.5) +
+  geom_hline(yintercept = 20, linetype = "dashed", color = "#E24A3F") +
+  labs(title = "Ethiopia NMR Trend", x = "Quarter", y = "NMR") +
+  theme_bka() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Combine with patchwork
+p1 + p2 +
+  plot_annotation(
+    title = "MNH Dashboard: Neonatal Mortality Overview",
+    subtitle = "Cross-country comparison and Ethiopia trend detail",
+    theme = theme(
+      plot.title = element_text(face = "bold", size = 16, color = "#005CB9"),
+      plot.subtitle = element_text(color = "#666666", size = 12)
+    )
+  )
+```
+
+The `+` operator places charts side by side; `/` stacks them vertically. `plot_annotation()` adds an overall title. You can also use `plot_layout(widths = c(1, 2))` to give more space to the trend chart. This is how you build the multi-panel figures that appear on the "dashboard" slides in consulting decks.
+
+### Exporting at Publication Quality
+
+```{r}
+#| label: ggsave-export
+#| echo: true
+
+# Save the last plot at high resolution
+# ggsave("output/nmr_dashboard.png",
+#        width = 14, height = 7, dpi = 300, bg = "white")
+
+# Save as PDF (vector format — scales perfectly at any size)
+# ggsave("output/nmr_dashboard.pdf",
+#        width = 14, height = 7)
+
+# Save individual charts for different slide layouts
+# ggsave("output/nmr_bar_chart.png",
+#        plot = p1,
+#        width = 8, height = 5, dpi = 300, bg = "white")
+
+# Tip: Set bg = "white" to avoid transparent backgrounds
+# that look wrong when pasted into PowerPoint
+```
+
+Always specify `width`, `height`, and `dpi` explicitly. The default `ggsave()` dimensions rarely match your slide layout. For a standard 16:9 slide, `width = 10, height = 5.6` is a good starting point. Always use `bg = "white"` for PNG exports destined for PowerPoint.
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Define your theme once, apply it everywhere.** A `theme_bka()` function ensures every chart in your deliverable looks consistent and professional.
+
+**Faceting reveals patterns that overlapping lines hide.** Small multiples are especially effective for comparing country-level trends when lines would otherwise cross and tangle.
+
+**Export intentionally.** Use `ggsave()` with explicit dimensions and 300 DPI. Never screenshot a chart from RStudio.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 8 — Descriptive Statistics for Consultants**, you will learn to pair your visualizations with rigorous quantitative summaries:
+
+- Central tendency (mean vs. median) and when each is appropriate
+- Confidence intervals with `t.test()` — what you can and cannot claim
+- Correlation (`cor.test()`) and the connection to the causal arguments course
+- Linear regression with `lm()` — fitting a line and interpreting coefficients
+- The crucial distinction between statistical and practical significance

@@ -1,0 +1,483 @@
+---
+title: "Chapter 9: Reproducible Reports with Quarto"
+subtitle: "R for Management Consultants | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Understand the **Quarto document structure**: YAML header, markdown text, and code chunks
+- Write **narrative text** with markdown formatting
+- Embed **R code chunks** that produce tables and charts inline
+- Use **inline R code** to insert computed values into sentences
+- **Render** documents to HTML, PDF, and DOCX for different stakeholders
+- Create **parameterized reports** to generate country-specific briefs from a single template
+:::
+
+
+## Chapter Overview
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #E24A3F;">What Is<br>Quarto?</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #005CB9;">Document<br>Structure</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">Code<br>Chunks</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">Output<br>Formats</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">Parameterized<br>Reports</div>
+</div>
+
+
+# What Is Quarto? {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">One source, many outputs</span>
+
+
+## The Reproducibility Problem
+
+::: {.columns-equal}
+::: {.col}
+::: {.bad-example}
+[The Old Way]{.example-label}
+
+- Analyze in R or Excel
+- Copy results into Word
+- Format manually
+- Data updates
+- **Start over**
+:::
+:::
+
+::: {.col}
+::: {.good-example}
+[The Quarto Way]{.example-label}
+
+- Write analysis + narrative in one `.qmd` file
+- Click Render
+- Professional report ready
+- Data updates
+- **Re-render**
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box}
+Quarto combines your R code, results, and narrative into a single document. When data changes, you re-render --- and every number, table, and chart updates automatically.
+:::
+
+
+## Quarto vs. R Markdown
+
+::: {.incremental}
+- Quarto is the **next generation** of R Markdown (by the same team at Posit)
+- Works with R, Python, Julia, and Observable
+- Same concept: **plain text file → rendered output**
+- If you have used R Markdown before, Quarto works the same way with improvements
+- If you have not, **Quarto is where to start**
+:::
+
+. . .
+
+::: {.definition-box}
+**Quarto** (`.qmd`) is a document format that combines code, output, and narrative text. You write one source file and render it to HTML, PDF, or Word --- with all results computed fresh from your data.
+:::
+
+
+# Document Structure {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">YAML + Markdown + Code Chunks</span>
+
+
+## A Minimal Quarto Document
+
+```{r}
+#| label: minimal-qmd
+#| echo: true
+#| code-line-numbers: true
+
+# Contents of: mnh_brief.qmd
+# ---
+# title: "MNH Program Brief"
+# author: "BK Advisors"
+# date: today
+# format: html
+# ---
+#
+# ## Executive Summary
+#
+# This report summarizes maternal and newborn health indicators
+# across **five program countries** for Q4 2024.
+#
+# ```{r}
+# library(dplyr)
+# library(ggplot2)
+#
+# facility_data |>
+#   group_by(country) |>
+#   summarise(avg_nmr = mean(nmr, na.rm = TRUE))
+# ```
+#
+# ## Key Findings
+#
+# The average NMR across all facilities is declining.
+```
+
+. . .
+
+::: {.callout-box}
+Three sections: (1) **YAML header** between `---` sets metadata and output format. (2) **Markdown text** for narrative. (3) **Code chunks** in `` ```{r} `` fences for analysis.
+:::
+
+
+## Markdown Formatting Essentials
+
+| Syntax | Result |
+|--------|--------|
+| `**bold**` | **bold** |
+| `*italic*` | *italic* |
+| `## Heading 2` | Section heading |
+| `- item` | Bullet list |
+| `1. item` | Numbered list |
+| `[text](url)` | Hyperlink |
+| `![](image.png)` | Image |
+
+. . .
+
+::: {.callout-box .green}
+You already know markdown if you have written a README on GitHub or formatted text in Slack. These six patterns cover 90% of what you need in reports.
+:::
+
+
+# Code Chunks {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Executable analysis inside your document</span>
+
+
+## Code Chunk Options
+
+```{r}
+#| label: chunk-options
+#| echo: true
+
+# Key chunk options (set with #| syntax):
+#
+# #| echo: true     Show the code in the output
+# #| echo: false    Hide the code (show only results)
+# #| eval: true     Run the code
+# #| eval: false    Show code but don't run it
+# #| warning: false Suppress warning messages
+# #| fig-width: 10  Set figure width (inches)
+# #| fig-height: 6  Set figure height (inches)
+# #| tbl-cap: "..."  Add a table caption
+```
+
+. . .
+
+::: {.callout-box}
+**For donor reports, set `echo: false` globally** so stakeholders see only results. For internal team documents, keep `echo: true` so analysts can review the methodology.
+:::
+
+
+## Tables with knitr::kable()
+
+```{r}
+#| label: kable-example
+#| echo: true
+
+library(knitr)
+
+country_summary <- facility_data |>
+  group_by(country) |>
+  summarise(
+    Facilities = n(),
+    `Mean NMR` = round(mean(nmr, na.rm = TRUE), 1),
+    `Median NMR` = round(median(nmr, na.rm = TRUE), 1),
+    `% with CPAP` = round(mean(has_cpap, na.rm = TRUE) * 100, 1)
+  )
+
+kable(country_summary, caption = "MNH Indicators by Country")
+```
+
+. . .
+
+::: {.callout-box .green}
+`kable()` produces clean, professional tables that render correctly in HTML, PDF, and Word. For more control, explore the `kableExtra` and `gt` packages.
+:::
+
+
+## Charts in Documents
+
+```{r}
+#| label: chart-in-doc
+#| echo: true
+#| fig-width: 8
+#| fig-height: 5
+
+# This chart renders directly into the report
+ggplot(country_summary, aes(x = reorder(country, `Mean NMR`), y = `Mean NMR`)) +
+  geom_col(fill = "#005CB9") +
+  geom_text(aes(label = `Mean NMR`), hjust = -0.2, size = 4) +
+  coord_flip() +
+  labs(title = "Average NMR by Country",
+       x = NULL, y = "NMR (per 1,000 live births)") +
+  theme_minimal(base_size = 14)
+```
+
+. . .
+
+::: {.callout-box}
+Charts created with `ggplot2` embed directly in the rendered document --- no screenshots, no copy-paste. Resize with `fig-width` and `fig-height` chunk options.
+:::
+
+
+## Inline R Code
+
+```{r}
+#| label: inline-example
+#| echo: true
+
+# In your markdown text, use inline R to insert computed values:
+#
+# "The average NMR across all facilities is `r round(mean(facility_data$nmr), 1)`
+#  per 1,000 live births, based on data from `r nrow(facility_data)` facilities
+#  across `r n_distinct(facility_data$country)` countries."
+#
+# When rendered, this becomes:
+# "The average NMR across all facilities is 28.3 per 1,000 live births,
+#  based on data from 200 facilities across 5 countries."
+```
+
+. . .
+
+::: {.callout-box}
+Inline R eliminates copy-paste errors. When the data updates, every number in your narrative updates too.
+:::
+
+
+# Output Formats {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">HTML for the web, PDF for print, DOCX for donors</span>
+
+
+## Rendering to Different Formats
+
+```{r}
+#| label: render-formats
+#| echo: true
+
+# In the YAML header, change the format:
+#
+# format: html     → Interactive web page
+# format: pdf      → Print-ready document (requires LaTeX)
+# format: docx     → Microsoft Word document
+#
+# Or render multiple formats at once:
+# format:
+#   html: default
+#   docx: default
+#   pdf: default
+```
+
+. . .
+
+| Format | Best For | Notes |
+|--------|----------|-------|
+| **HTML** | Internal team, interactive charts | Default, no extra software needed |
+| **PDF** | Formal reports, print | Requires TinyTeX: `quarto install tinytex` |
+| **DOCX** | Donor reports, collaborative editing | Recipients can edit text but not code |
+
+
+## Rendering from RStudio
+
+Click the **Render** button (or press Ctrl+Shift+K)
+
+Or render from the terminal:
+
+```{r}
+#| label: render-cli
+#| echo: true
+
+# Render from the command line
+# quarto render mnh_brief.qmd
+# quarto render mnh_brief.qmd --to docx
+# quarto render mnh_brief.qmd --to pdf
+```
+
+. . .
+
+::: {.callout-box .green}
+**Tip:** During drafting, render to HTML (it is fastest). Switch to DOCX or PDF only for the final version you send to stakeholders.
+:::
+
+
+# Parameterized Reports {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">One template, five country briefs</span>
+
+
+## The Parameterization Pattern
+
+```{r}
+#| label: params-yaml
+#| echo: true
+
+# In the YAML header, define parameters:
+# ---
+# title: "MNH Country Brief"
+# params:
+#   country: "Ethiopia"
+# format: html
+# ---
+#
+# In the code, use params$country:
+# facility_data |>
+#   filter(country == params$country)
+```
+
+. . .
+
+::: {.callout-box}
+**Parameters** are variables defined in the YAML header and available throughout the document as `params$name`. Set defaults in the template, then override at render time.
+:::
+
+
+## Parameterized Report Template
+
+```{r}
+#| label: param-template
+#| echo: true
+
+# ── Country Brief Template (country_brief.qmd) ──────────
+# The YAML sets the default country:
+# params:
+#   country: "Ethiopia"
+#
+# In the body:
+
+# Filter to the selected country
+country_data <- facility_data |>
+  filter(country == params$country)
+
+n_facilities <- nrow(country_data)
+avg_nmr <- round(mean(country_data$nmr, na.rm = TRUE), 1)
+
+# Narrative uses inline R:
+# "This brief covers `r n_facilities` facilities in
+#  `r params$country`, with an average NMR of `r avg_nmr`."
+```
+
+. . .
+
+::: {.callout-box .orange}
+**Every number in the narrative is computed, not typed.** When the Ethiopia data updates, the Ethiopia brief updates. No manual editing required.
+:::
+
+
+## Rendering for Each Country
+
+```{r}
+#| label: render-all-countries
+#| echo: true
+
+# From R, render one report per country:
+countries <- c("Ethiopia", "Tanzania", "Malawi", "Mozambique", "Kenya")
+
+for (ctry in countries) {
+  quarto::quarto_render(
+    input = "country_brief.qmd",
+    output_file = paste0("brief_", tolower(ctry), ".html"),
+    execute_params = list(country = ctry)
+  )
+}
+# Produces: brief_ethiopia.html, brief_tanzania.html, etc.
+```
+
+. . .
+
+::: {.callout-box .green}
+Five country briefs from one template. When the data updates, re-run the loop --- all five reports regenerate in seconds.
+:::
+
+
+## Course Wrap-Up: The Complete Workflow
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #E24A3F;">Import<br>(Ch 3)</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #005CB9;">Transform<br>(Ch 4-5)</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">Visualize<br>(Ch 6-7)</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">Analyze<br>(Ch 8)</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">Communicate<br>(Ch 9)</div>
+</div>
+
+. . .
+
+::: {.callout-box}
+You now have a complete toolkit: import data from CSV and Excel, transform it with dplyr, visualize it with ggplot2, analyze it with descriptive statistics, and communicate findings in reproducible Quarto reports. You are ready for the Inference and Intervention course.
+:::
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Quarto combines code, results, and narrative in one document. When data changes, re-render --- everything updates.**
+
+**Parameterized reports let you generate country-specific briefs from a single template.**
+
+**This completes the R toolkit for management consultants: import → transform → visualize → analyze → communicate.**
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**What's Next?**
+
+- Apply these R skills in the **Inference and Intervention** course
+- Build causal models with dagitty and ggdag
+- Run Bayesian network analyses with bnlearn
+- Create data-driven resource allocation recommendations
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[R for Management Consultants | Chapter 9: Reproducible Reports with Quarto]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

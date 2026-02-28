@@ -1,0 +1,422 @@
+---
+title: "Chapter 5: Reshaping & Joining Datasets"
+subtitle: "R for Management Consultants | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Reshape data between **wide** and **long** formats with `pivot_longer()` and `pivot_wider()`
+- Combine datasets using **joins**: `left_join()`, `inner_join()`, `full_join()`
+- Stack datasets with `bind_rows()`
+- Perform basic **string operations** with `stringr` (cleaning facility names, extracting patterns)
+:::
+
+## Chapter Overview
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #E24A3F;">Wide vs<br>Long</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #005CB9;">pivot_<br>longer()</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">pivot_<br>wider()</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">Joins</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">Strings</div>
+</div>
+
+
+# Wide vs. Long Format {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">The shape of your data matters</span>
+
+
+## Two Ways to Store the Same Data
+
+::: {.columns-equal}
+::: {.col}
+**Wide format** (good for reading)
+
+| facility_id | jan_deliveries | feb_deliveries | mar_deliveries |
+|-------------|---------------|----------------|----------------|
+| F001 | 45 | 52 | 48 |
+| F002 | 120 | 115 | 130 |
+:::
+
+::: {.col}
+**Long format** (good for analysis and ggplot2)
+
+| facility_id | month | deliveries |
+|-------------|-------|------------|
+| F001 | jan | 45 |
+| F001 | feb | 52 |
+| F001 | mar | 48 |
+| F002 | jan | 120 |
+| F002 | feb | 115 |
+| F002 | mar | 130 |
+:::
+:::
+
+. . .
+
+::: {.callout-box}
+Most R analysis and visualization functions (dplyr, ggplot2) expect **long format**. Most spreadsheet exports from DHIS2 and Excel arrive in **wide format**. Learning to reshape between them is an essential skill.
+:::
+
+
+# pivot_longer() {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Wide to long</span>
+
+
+## pivot_longer() --- Unpivoting
+
+```{r}
+#| label: pivot-longer-basic
+#| echo: true
+
+library(tidyr)
+
+# Wide format: monthly delivery data
+wide_data <- tibble(
+  facility_id = c("F001", "F002", "F003"),
+  country = c("Ethiopia", "Tanzania", "Malawi"),
+  jan = c(45, 120, 33),
+  feb = c(52, 115, 38),
+  mar = c(48, 130, 35)
+)
+
+# Pivot to long format
+long_data <- wide_data |>
+  pivot_longer(
+    cols = jan:mar,           # columns to pivot
+    names_to = "month",        # new column for the old column names
+    values_to = "deliveries"   # new column for the values
+  )
+
+long_data
+```
+
+
+## Practical MNH Example
+
+```{r}
+#| label: pivot-longer-mnh
+#| echo: true
+
+# Quarterly indicators from DHIS2 (wide format export)
+quarterly <- tibble(
+  facility_id = c("F001", "F002", "F003"),
+  nmr_q1 = c(22.1, 31.7, 45.3),
+  nmr_q2 = c(20.8, 29.5, 42.0),
+  nmr_q3 = c(19.5, 28.1, 38.8),
+  nmr_q4 = c(18.2, 27.0, 36.5)
+)
+
+# Reshape for trend analysis
+quarterly_long <- quarterly |>
+  pivot_longer(
+    cols = starts_with("nmr_"),
+    names_to = "quarter",
+    names_prefix = "nmr_",     # strip the "nmr_" prefix
+    values_to = "nmr"
+  )
+
+quarterly_long
+# Now ready for ggplot2 trend lines!
+```
+
+
+# pivot_wider() {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Long to wide</span>
+
+
+## pivot_wider() --- Spreading
+
+```{r}
+#| label: pivot-wider
+#| echo: true
+
+# Long format: indicator values per country
+indicators_long <- tibble(
+  country = rep(c("Ethiopia", "Tanzania", "Malawi"), each = 3),
+  indicator = rep(c("nmr", "mmr", "anc_coverage"), 3),
+  value = c(25.3, 353, 0.62,
+            31.7, 524, 0.51,
+            19.8, 439, 0.71)
+)
+
+# Spread to wide format for a summary table
+indicators_wide <- indicators_long |>
+  pivot_wider(
+    names_from = indicator,
+    values_from = value
+  )
+
+indicators_wide
+```
+
+. . .
+
+::: {.callout-box}
+Use `pivot_wider()` when you need a summary table for a report or presentation --- one row per country, one column per indicator.
+:::
+
+
+# Joining Datasets {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Combining data from multiple sources</span>
+
+
+## Why Join?
+
+In MNH program analysis, data lives in separate files:
+
+::: {.incremental}
+- Facility characteristics (one file)
+- Monthly delivery data (another file)
+- Country-level indicators (yet another file)
+- Training records (yet another)
+:::
+
+. . .
+
+::: {.callout-box}
+**Joins let you combine these into one analysis-ready dataset.** Instead of manually copying columns between spreadsheets, you write one line of code that matches rows by a shared key.
+:::
+
+
+## left_join() --- The Most Common Join
+
+```{r}
+#| label: left-join
+#| echo: true
+
+# Facility data
+facilities <- tibble(
+  facility_id = c("F001", "F002", "F003", "F004"),
+  country = c("Ethiopia", "Tanzania", "Malawi", "Kenya"),
+  facility_type = c("Hospital", "Health Center", "Health Post", "Hospital")
+)
+
+# Country-level indicators
+country_data <- tibble(
+  country = c("Ethiopia", "Tanzania", "Malawi", "Mozambique"),
+  gdp_per_capita = c(936, 1136, 625, 504),
+  health_expenditure_pct = c(3.3, 3.6, 9.3, 4.9)
+)
+
+# Join: add country data to each facility
+facilities |>
+  left_join(country_data, by = "country")
+# Kenya gets NA (no match in country_data)
+# Mozambique is dropped (no match in facilities)
+```
+
+
+## Types of Joins
+
+| Join | Keeps | Use Case |
+|------|-------|----------|
+| `left_join(x, y)` | All rows from x, matching from y | Add context to your main dataset |
+| `inner_join(x, y)` | Only rows that match in both | Analysis requiring complete data |
+| `full_join(x, y)` | All rows from both | Comprehensive audit of both sources |
+| `anti_join(x, y)` | Rows in x with NO match in y | Find missing or unmatched records |
+
+. . .
+
+::: {.callout-box .orange}
+**Start with `left_join()`.** It preserves every row in your primary dataset and adds columns from the second. You won't accidentally drop records.
+:::
+
+
+## Joining Monthly Data
+
+```{r}
+#| label: join-monthly
+#| echo: true
+
+# Monthly deliveries
+monthly <- tibble(
+  facility_id = rep(c("F001", "F002"), each = 3),
+  month = rep(c("Jan", "Feb", "Mar"), 2),
+  deliveries = c(45, 52, 48, 120, 115, 130)
+)
+
+# Add facility characteristics to monthly data
+monthly_enriched <- monthly |>
+  left_join(facilities, by = "facility_id")
+
+monthly_enriched
+# Now each monthly row has country and facility_type attached
+```
+
+
+## bind_rows() --- Stacking Datasets
+
+```{r}
+#| label: bind-rows
+#| echo: true
+
+# Separate quarterly data files (common DHIS2 pattern)
+q1_data <- tibble(facility_id = c("F001", "F002"),
+                   quarter = "Q1", deliveries = c(135, 365))
+q2_data <- tibble(facility_id = c("F001", "F002"),
+                   quarter = "Q2", deliveries = c(148, 350))
+q3_data <- tibble(facility_id = c("F001", "F002"),
+                   quarter = "Q3", deliveries = c(141, 378))
+
+# Stack them into one dataset
+annual_data <- bind_rows(q1_data, q2_data, q3_data)
+annual_data
+```
+
+. . .
+
+::: {.callout-box .green}
+`bind_rows()` is your tool when you have the **same columns** split across multiple files --- quarterly DHIS2 exports, monthly facility reports, or country-specific datasets. It stacks them vertically into one dataset.
+:::
+
+
+## anti_join() --- Finding Gaps
+
+```{r}
+#| label: anti-join
+#| echo: true
+
+# Which facilities didn't report this month?
+all_facilities <- tibble(
+  facility_id = c("F001", "F002", "F003", "F004", "F005")
+)
+
+reported <- tibble(
+  facility_id = c("F001", "F003", "F005"),
+  deliveries = c(45, 33, 120)
+)
+
+# Facilities that did NOT report
+all_facilities |>
+  anti_join(reported, by = "facility_id")
+# F002 and F004 — follow up with these facilities
+```
+
+. . .
+
+::: {.callout-box}
+`anti_join()` is invaluable for **data quality audits** --- finding facilities that missed a reporting period, countries missing from a reference table, or patients lost to follow-up.
+:::
+
+
+# String Basics with stringr {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Cleaning messy text data</span>
+
+
+## Common String Problems
+
+```{r}
+#| label: string-basics
+#| echo: true
+
+library(stringr)
+
+# Facility names from DHIS2 are often inconsistent
+facility_names <- c("Addis Ababa Hospital", "addis ababa hospital",
+                     "  Dar es Salaam HC  ", "Lilongwe Health Centre")
+
+# Convert to consistent case
+str_to_title(facility_names)
+
+# Remove leading/trailing whitespace
+str_trim(facility_names)
+
+# Detect a pattern
+str_detect(facility_names, "Hospital|hospital")
+
+# Replace text
+str_replace(facility_names, "HC", "Health Center")
+```
+
+
+## Cleaning Facility Names
+
+```{r}
+#| label: string-cleaning
+#| echo: true
+
+facility_data |>
+  mutate(
+    # Standardize facility names
+    facility_name = facility_name |>
+      str_trim() |>
+      str_to_title() |>
+      str_replace_all("Hc\\b", "Health Center") |>
+      str_replace_all("Hp\\b", "Health Post")
+  )
+```
+
+. . .
+
+::: {.callout-box .green}
+**Clean string data early.** Inconsistent names (like "HC" vs "Health Center") will cause joins to fail and `group_by()` to split what should be one group into many.
+:::
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**`pivot_longer()` reshapes wide DHIS2 exports into the long format that R's analysis tools expect.**
+
+**`left_join()` is your primary tool for combining facility data with country indicators, training records, and other reference tables.**
+
+**Clean strings early --- inconsistent names break joins and grouping.**
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 6 --- Data Visualization with ggplot2**
+
+- The grammar of graphics: data, aesthetics, and geometries
+- Bar charts, scatter plots, line charts, and histograms
+- Mapping variables to color, size, and shape
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[R for Management Consultants | Chapter 5: Reshaping & Joining Datasets]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

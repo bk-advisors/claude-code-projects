@@ -1,0 +1,474 @@
+---
+title: "Chapter 8: Descriptive Statistics for Consultants"
+subtitle: "R for Management Consultants | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Calculate **means, medians, and proportions** with confidence intervals
+- Build **summary tables** suitable for stakeholder reports
+- Compute **correlation** between two variables and interpret the result
+- Run a **simple linear regression** with `lm()` and interpret the output
+- Understand the difference between **statistical significance** and **practical significance**
+- Connect descriptive statistics to the **causal reasoning** taught in inference-and-intervention
+:::
+
+
+## Chapter Overview
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #E24A3F;">Central<br>Tendency</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #005CB9;">Proportions</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">Confidence<br>Intervals</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">Correlation</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">Regression</div>
+</div>
+
+
+# Measures of Central Tendency {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Summarizing your data in one number</span>
+
+
+## Mean vs. Median
+
+```{r}
+#| label: central-tendency
+#| echo: true
+
+nmr_values <- c(12.5, 18.3, 22.1, 25.0, 27.5, 31.7, 35.2, 42.1, 45.3, 68.0)
+
+mean(nmr_values)    # 32.8 — pulled up by the 68.0 outlier
+median(nmr_values)  # 29.6 — resistant to outliers
+
+# When to use which?
+# Mean:   symmetric distributions, no extreme outliers
+# Median: skewed distributions, outliers present
+```
+
+. . .
+
+::: {.callout-box}
+NMR data across facilities is typically right-skewed (a few very high values). Report the median alongside the mean, and always note outliers.
+:::
+
+
+## Spread: Standard Deviation and IQR
+
+```{r}
+#| label: spread
+#| echo: true
+
+sd(nmr_values)   # standard deviation: 16.2
+IQR(nmr_values)  # interquartile range: 17.0
+
+# Quantiles
+quantile(nmr_values, probs = c(0.25, 0.50, 0.75))
+#  25%   50%   75%
+# 23.2  29.6  37.0
+
+# Range
+range(nmr_values)  # 12.5 68.0
+```
+
+. . .
+
+::: {.callout-box}
+**Standard deviation** assumes a roughly symmetric distribution. When data is skewed --- as MNH facility data often is --- the **IQR** (distance between the 25th and 75th percentiles) gives a more robust measure of spread.
+:::
+
+
+## Summary Statistics by Group
+
+```{r}
+#| label: group-stats
+#| echo: true
+
+library(dplyr)
+
+facility_data |>
+  group_by(country) |>
+  summarise(
+    n = n(),
+    mean_nmr = round(mean(nmr, na.rm = TRUE), 1),
+    median_nmr = round(median(nmr, na.rm = TRUE), 1),
+    sd_nmr = round(sd(nmr, na.rm = TRUE), 1),
+    min_nmr = min(nmr, na.rm = TRUE),
+    max_nmr = max(nmr, na.rm = TRUE)
+  )
+```
+
+. . .
+
+::: {.callout-box .green}
+**This is the table your stakeholders want.** A well-formatted group summary --- with n, mean, median, SD, and range --- answers most descriptive questions a ministry or donor will ask about program performance across countries.
+:::
+
+
+# Proportions & Cross-Tabulations {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">How many? What fraction?</span>
+
+
+## Calculating Proportions
+
+```{r}
+#| label: proportions
+#| echo: true
+
+# Proportion of facilities with CPAP
+mean(facility_data$has_cpap, na.rm = TRUE)  # e.g., 0.42 = 42%
+
+# Proportion by country
+facility_data |>
+  group_by(country) |>
+  summarise(
+    n = n(),
+    pct_cpap = round(mean(has_cpap, na.rm = TRUE) * 100, 1),
+    pct_trained = round(mean(training_completed, na.rm = TRUE) * 100, 1)
+  )
+```
+
+. . .
+
+::: {.callout-box}
+**`mean()` on a logical or 0/1 column gives the proportion.** This is a handy shortcut: `TRUE` counts as 1, `FALSE` as 0, so the mean is the fraction of `TRUE` values. Always report the sample size `n` alongside proportions.
+:::
+
+
+## Cross-Tabulations
+
+```{r}
+#| label: cross-tabs
+#| echo: true
+
+# Two-way frequency table
+table(facility_data$country, facility_data$facility_type)
+
+# Proportions (row percentages)
+prop.table(table(facility_data$country, facility_data$facility_type),
+           margin = 1) |>
+  round(2)
+
+# Tidyverse alternative
+facility_data |>
+  count(country, facility_type) |>
+  group_by(country) |>
+  mutate(pct = round(n / sum(n) * 100, 1))
+```
+
+. . .
+
+::: {.callout-box .orange}
+**Cross-tabs reveal composition differences.** If one country's facilities are 80% health posts while another is 50% hospitals, comparing raw NMR averages between countries is misleading --- facility type confounds the comparison.
+:::
+
+
+# Confidence Intervals {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">How certain are we?</span>
+
+
+## What Is a Confidence Interval?
+
+::: {.definition-box}
+A **95% confidence interval** means: if we repeated this data collection many times, 95% of the intervals would contain the true population value. It quantifies uncertainty.
+:::
+
+. . .
+
+```{r}
+#| label: ci-basic
+#| echo: true
+
+# 95% CI for mean NMR
+t.test(facility_data$nmr)
+
+# Extract just the confidence interval
+t.test(facility_data$nmr)$conf.int
+```
+
+. . .
+
+::: {.callout-box}
+**Always report confidence intervals alongside point estimates.** Telling a ministry "the mean NMR is 28.5" is less useful than "the mean NMR is 28.5 (95% CI: 24.1 -- 32.9)." The interval communicates how much you should trust the number.
+:::
+
+
+## Confidence Intervals by Group
+
+```{r}
+#| label: ci-group
+#| echo: true
+
+# CI for mean NMR by country
+facility_data |>
+  group_by(country) |>
+  summarise(
+    n = n(),
+    mean_nmr = mean(nmr, na.rm = TRUE),
+    se = sd(nmr, na.rm = TRUE) / sqrt(n()),
+    ci_lower = mean_nmr - 1.96 * se,
+    ci_upper = mean_nmr + 1.96 * se
+  )
+```
+
+. . .
+
+::: {.callout-box}
+**The standard error (SE) shrinks as your sample grows.** SE = SD / sqrt(n). More facilities in the sample means a narrower confidence interval and more precise estimates. This is why sample size matters for program evaluation.
+:::
+
+
+## Visualizing Confidence Intervals
+
+```{r}
+#| label: ci-plot
+#| echo: true
+
+library(ggplot2)
+
+country_ci <- facility_data |>
+  group_by(country) |>
+  summarise(
+    mean_nmr = mean(nmr, na.rm = TRUE),
+    se = sd(nmr, na.rm = TRUE) / sqrt(n()),
+    ci_lower = mean_nmr - 1.96 * se,
+    ci_upper = mean_nmr + 1.96 * se
+  )
+
+ggplot(country_ci, aes(x = reorder(country, mean_nmr), y = mean_nmr)) +
+  geom_point(size = 3, color = "#005CB9") +
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper),
+                width = 0.2, color = "#005CB9") +
+  coord_flip() +
+  labs(title = "Mean NMR by Country (with 95% CI)",
+       x = NULL, y = "NMR (per 1,000 live births)") +
+  theme_minimal(base_size = 14)
+```
+
+. . .
+
+::: {.callout-box .green}
+**Overlapping confidence intervals** suggest the difference between groups may not be statistically significant. **Non-overlapping intervals** strongly suggest a real difference.
+:::
+
+
+# Correlation {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">How strongly are two variables related?</span>
+
+
+## Pearson Correlation
+
+```{r}
+#| label: correlation
+#| echo: true
+
+# Correlation between delivery volume and NMR
+cor(facility_data$delivery_volume, facility_data$nmr,
+    use = "complete.obs")
+
+# Correlation test with p-value and CI
+cor.test(facility_data$delivery_volume, facility_data$nmr)
+
+# Correlation matrix for multiple variables
+facility_data |>
+  select(delivery_volume, nmr, mmr, anc_coverage) |>
+  cor(use = "complete.obs") |>
+  round(2)
+```
+
+
+## Interpreting Correlation
+
+| r Value | Strength | Example |
+|---------|----------|---------|
+| 0.0 -- 0.3 | Weak | ANC visits and facility cleanliness score |
+| 0.3 -- 0.6 | Moderate | Staffing level and delivery volume |
+| 0.6 -- 1.0 | Strong | Equipment availability and facility budget |
+
+. . .
+
+::: {.callout-box .red}
+**Correlation measures linear association. It does NOT imply causation.** Two variables can be correlated because a third variable drives both (confounding). The inference-and-intervention course covers this in depth.
+:::
+
+
+# Simple Linear Regression {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Modeling relationships</span>
+
+
+## lm() --- Fitting a Line
+
+```{r}
+#| label: lm-basic
+#| echo: true
+
+# Does delivery volume predict NMR?
+model <- lm(nmr ~ delivery_volume, data = facility_data)
+summary(model)
+```
+
+. . .
+
+::: {.callout-box}
+**`lm(y ~ x, data)` fits a linear model.** The formula `nmr ~ delivery_volume` asks: "How does NMR change, on average, for each unit increase in delivery volume?" The output gives you the intercept, slope, and measures of fit.
+:::
+
+
+## Reading the Output
+
+| Section | What It Tells You |
+|---------|-------------------|
+| **Coefficients: Estimate** | The slope and intercept. "For each additional delivery, NMR changes by ___." |
+| **Std. Error** | Uncertainty around the estimate |
+| **t value / Pr(>\|t\|)** | Statistical significance. p < 0.05 typically considered "significant." |
+| **R-squared** | Proportion of variance explained. 0.15 means 15% of NMR variation is explained by delivery volume. |
+| **F-statistic** | Overall model significance |
+
+. . .
+
+::: {.callout-box .orange}
+**A statistically significant result (small p-value) is not the same as a practically important result.** A coefficient of 0.01 might be significant with enough data, but adding one delivery reduces NMR by only 0.01 --- trivial in practice.
+:::
+
+
+## Multiple Regression
+
+```{r}
+#| label: lm-multiple
+#| echo: true
+
+# Multiple predictors
+model2 <- lm(nmr ~ delivery_volume + has_cpap + staffing_level + anc_coverage,
+             data = facility_data)
+summary(model2)
+
+# Compare models
+AIC(model, model2)  # lower AIC = better fit
+```
+
+. . .
+
+::: {.callout-box}
+**Adding predictors can improve model fit, but more is not always better.** Each additional variable should have a substantive reason for inclusion. AIC helps you compare models: a lower AIC indicates a better balance between fit and complexity.
+:::
+
+
+## Visualizing the Regression
+
+```{r}
+#| label: lm-plot
+#| echo: true
+
+ggplot(facility_data, aes(x = delivery_volume, y = nmr)) +
+  geom_point(alpha = 0.5, color = "#005CB9") +
+  geom_smooth(method = "lm", color = "#E24A3F", fill = "#E24A3F", alpha = 0.2) +
+  labs(title = "NMR vs. Delivery Volume",
+       subtitle = paste("R² =", round(summary(model)$r.squared, 3)),
+       x = "Monthly Delivery Volume",
+       y = "NMR (per 1,000 live births)") +
+  theme_minimal(base_size = 14)
+```
+
+. . .
+
+::: {.callout-box .green}
+**The shaded band is the confidence interval around the regression line.** A wider band means more uncertainty about the relationship. Points far from the line are poorly predicted by the model --- worth investigating individually.
+:::
+
+
+## Statistics to Causation: The Bridge
+
+::: {.callout-box}
+Everything in this chapter describes **associations** in data. To move from association to causation --- to answer "does X *cause* Y?" --- you need the causal modeling toolkit from the Inference and Intervention course. Descriptive statistics are the foundation; causal models are the structure you build on top.
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+**What this chapter covers**
+
+- Mean, median, SD, IQR
+- Proportions and cross-tabs
+- Confidence intervals
+- Correlation and regression
+- Association and prediction
+:::
+
+::: {.col}
+**What causal models add**
+
+- Confounders and colliders
+- DAGs (directed acyclic graphs)
+- Do-calculus and intervention
+- Counterfactual reasoning
+- Causal effect estimation
+:::
+:::
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Always report uncertainty:** means with confidence intervals, proportions with sample sizes.
+
+**Correlation measures association, not causation.** A strong correlation could be driven by a confounder.
+
+**`lm()` fits a linear model.** Read R-squared for explanatory power and coefficients for effect sizes --- but remember: regression alone cannot establish causation.
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 9 --- Reproducible Reports with Quarto**
+
+- Combining narrative, code, and charts in one document
+- Rendering to HTML, PDF, and DOCX for different audiences
+- Parameterized reports: one template, five country briefs
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[R for Management Consultants | Chapter 8: Descriptive Statistics for Consultants]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

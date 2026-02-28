@@ -1,0 +1,678 @@
+---
+title: "Chapter 6: Data Visualization with ggplot2"
+subtitle: "R for Management Consultants | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Explain the **grammar of graphics** --- data, aesthetics, and geometries
+- Build **bar charts** with `geom_col()` and `geom_bar()`
+- Create **scatter plots** with `geom_point()` and add trend lines
+- Plot **time series** with `geom_line()` for monthly and quarterly trends
+- Visualize **distributions** with `geom_histogram()` and `geom_boxplot()`
+- Choose the **right chart type** for common consulting questions
+:::
+
+
+## Chapter Overview
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;">Grammar of<br>Graphics</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">Bar<br>Charts</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #00A1DF;">Scatter<br>Plots</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">Line<br>Charts</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #E24A3F;">Histograms<br>& Box Plots</div>
+</div>
+
+
+# The Grammar of Graphics {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">A layered system for building any chart</span>
+
+
+## What Is the Grammar of Graphics?
+
+::: {.definition-box}
+The **grammar of graphics** is a framework that decomposes every chart into independent components: **data**, **aesthetic mappings**, and **geometric objects**. Instead of memorizing chart types, you combine these building blocks to create any visualization.
+:::
+
+. . .
+
+The three essential layers:
+
+| Layer | What It Does | Example |
+|-------|-------------|---------|
+| **Data** | The dataset you want to visualize | `facility_data` |
+| **Aesthetics** (`aes`) | Maps variables to visual properties | x-axis, y-axis, color, size |
+| **Geometry** (`geom_*`) | The visual shape drawn on the plot | Points, bars, lines |
+
+. . .
+
+::: {.callout-box .green}
+This is why ggplot2 is so powerful for consulting work: once you learn the grammar, you can build any chart --- not just the ones someone pre-built for you.
+:::
+
+
+## The Three-Layer Pattern
+
+```{r}
+#| label: three-layers
+#| echo: true
+
+library(ggplot2)
+
+# Layer 1: DATA — what are we plotting?
+ggplot(data = facility_data,
+
+# Layer 2: AESTHETICS — which variables map to which visual properties?
+       aes(x = country, y = nmr)) +
+
+# Layer 3: GEOMETRY — what shape represents the data?
+  geom_col()
+```
+
+. . .
+
+::: {.callout-box}
+Every ggplot follows this pattern: **`ggplot(data, aes(...)) + geom_*()`**. The `+` operator adds layers --- you can stack as many geometries, labels, and themes as you need.
+:::
+
+
+## Setting Up the Example Data
+
+```{r}
+#| label: setup-data
+#| echo: true
+
+library(tidyverse)
+
+# Country-level NMR summary (pre-calculated)
+country_summary <- tibble(
+  country = c("Ethiopia", "Tanzania", "Malawi", "Mozambique", "Kenya"),
+  avg_nmr = c(29.1, 25.3, 22.7, 31.8, 20.4),
+  total_deliveries = c(12500, 9800, 7200, 5400, 11300)
+)
+
+# Facility-level data
+facility_data <- tibble(
+  facility_id = paste0("F", sprintf("%03d", 1:20)),
+  country = rep(c("Ethiopia", "Tanzania", "Malawi", "Mozambique", "Kenya"), each = 4),
+  facility_type = rep(c("Hospital", "Health Center", "Health Center", "Health Post"), 5),
+  delivery_volume = c(320, 145, 160, 45, 280, 130, 155, 38,
+                      210, 95, 110, 32, 175, 80, 90, 28,
+                      290, 125, 140, 42),
+  nmr = c(25.3, 31.7, 28.9, 42.1, 22.8, 27.5, 24.3, 38.6,
+          19.8, 25.1, 22.4, 35.3, 28.7, 33.9, 30.1, 45.2,
+          18.5, 23.2, 20.7, 32.8)
+)
+
+# Monthly trend data
+monthly_trends <- tibble(
+  month = rep(seq(as.Date("2024-01-01"), as.Date("2024-12-01"), by = "month"), 3),
+  country = rep(c("Ethiopia", "Tanzania", "Malawi"), each = 12),
+  nmr = c(
+    29.1, 28.5, 27.8, 27.2, 26.5, 26.0, 25.3, 24.8, 24.1, 23.5, 23.0, 22.4,
+    25.3, 25.0, 24.6, 24.1, 23.7, 23.2, 22.8, 22.3, 21.9, 21.4, 21.0, 20.5,
+    22.7, 22.3, 21.8, 21.4, 20.9, 20.5, 20.0, 19.6, 19.1, 18.7, 18.2, 17.8
+  )
+)
+```
+
+
+## Aesthetics --- Mapping Variables to Visuals
+
+```{r}
+#| label: aesthetics-demo
+#| echo: true
+
+# x and y position
+ggplot(facility_data, aes(x = delivery_volume, y = nmr)) +
+  geom_point()
+
+# Add color to distinguish countries
+ggplot(facility_data, aes(x = delivery_volume, y = nmr, color = country)) +
+  geom_point()
+
+# Add size to encode a third variable
+ggplot(facility_data, aes(x = delivery_volume, y = nmr,
+                           color = country, size = delivery_volume)) +
+  geom_point(alpha = 0.7)
+```
+
+. . .
+
+::: {.callout-box .orange}
+Aesthetics inside `aes()` are **mapped to variables** --- ggplot2 picks colors and sizes automatically. Aesthetics outside `aes()` are **fixed** for all points (e.g., `geom_point(color = "red", size = 3)`).
+:::
+
+
+# Bar Charts {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Comparing categories with geom_col() and geom_bar()</span>
+
+
+## geom_col() --- Pre-Calculated Values
+
+```{r}
+#| label: geom-col-basic
+#| echo: true
+
+# When your data already has the values to plot (e.g., summary table)
+ggplot(country_summary, aes(x = country, y = avg_nmr)) +
+  geom_col(fill = "#005CB9") +
+  labs(
+    title = "Average Neonatal Mortality Rate by Country",
+    x = NULL,
+    y = "NMR (per 1,000 live births)"
+  )
+```
+
+. . .
+
+::: {.definition-box}
+**`geom_col()`** plots bars where the height equals the value in your data. Use it when you already have the numbers --- summary tables, pre-calculated means, or aggregated indicators.
+:::
+
+
+## geom_bar() --- Counting Rows
+
+```{r}
+#| label: geom-bar-count
+#| echo: true
+
+# When you want ggplot to COUNT the rows for you
+ggplot(facility_data, aes(x = facility_type)) +
+  geom_bar(fill = "#3E9B6E") +
+  labs(
+    title = "Number of Facilities by Type",
+    x = NULL,
+    y = "Count"
+  )
+```
+
+. . .
+
+::: {.callout-box}
+**`geom_bar()`** counts rows automatically --- you only provide `x`. Use it for frequency tables: how many facilities per type, how many countries per region, how many months with stockouts.
+:::
+
+
+## Stacked Bars --- Two Variables
+
+```{r}
+#| label: stacked-bars
+#| echo: true
+
+# Stacked bar: facility type counts by country
+ggplot(facility_data, aes(x = country, fill = facility_type)) +
+  geom_bar() +
+  scale_fill_manual(values = c(
+    "Hospital"      = "#005CB9",
+    "Health Center"  = "#3E9B6E",
+    "Health Post"    = "#FA7650"
+  )) +
+  labs(
+    title = "Facility Type Distribution by Country",
+    x = NULL,
+    y = "Number of Facilities",
+    fill = "Facility Type"
+  )
+```
+
+. . .
+
+::: {.callout-box .orange}
+Stacked bars show **composition** --- what share of facilities in each country are hospitals vs. health centers vs. health posts. Add `position = "fill"` inside `geom_bar()` to convert counts to proportions.
+:::
+
+
+## Horizontal Bars with reorder() and coord_flip()
+
+```{r}
+#| label: horizontal-bars
+#| echo: true
+
+# Horizontal bars, ordered by value — the consulting standard
+ggplot(country_summary, aes(x = reorder(country, avg_nmr), y = avg_nmr)) +
+  geom_col(fill = "#005CB9") +
+  coord_flip() +
+  labs(
+    title = "NMR by Country (Ranked)",
+    x = NULL,
+    y = "NMR (per 1,000 live births)"
+  )
+```
+
+. . .
+
+::: {.callout-box .green}
+**`reorder(country, avg_nmr)`** sorts the bars by value instead of alphabetically. **`coord_flip()`** turns them horizontal --- easier to read when you have long category labels. This is the standard chart format in most consulting slide decks.
+:::
+
+
+## Bar Chart Variations --- Summary
+
+| You have... | Use | Key argument |
+|-------------|-----|-------------|
+| Pre-calculated values (mean NMR) | `geom_col()` | `fill = "#005CB9"` |
+| Raw data to count | `geom_bar()` | (no y needed) |
+| Two categories | `geom_bar(aes(fill = ...))` | Stacked by default |
+| Side-by-side groups | `geom_bar(position = "dodge")` | Groups next to each other |
+| Proportions | `geom_bar(position = "fill")` | Bars sum to 100% |
+| Long labels | Add `coord_flip()` | Horizontal bars |
+
+
+# Scatter Plots {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Exploring relationships between two continuous variables</span>
+
+
+## geom_point() --- Basic Scatter Plot
+
+```{r}
+#| label: scatter-basic
+#| echo: true
+
+# Relationship between delivery volume and NMR
+ggplot(facility_data, aes(x = delivery_volume, y = nmr)) +
+  geom_point(color = "#005CB9", size = 3, alpha = 0.7) +
+  labs(
+    title = "Delivery Volume vs. Neonatal Mortality Rate",
+    x = "Monthly Delivery Volume",
+    y = "NMR (per 1,000 live births)"
+  )
+```
+
+. . .
+
+::: {.callout-box}
+Scatter plots answer: **"Is there a relationship between these two numbers?"** Here we are asking whether higher-volume facilities tend to have lower neonatal mortality rates --- a question that comes up frequently in MNH program evaluations.
+:::
+
+
+## Color by Country
+
+```{r}
+#| label: scatter-color
+#| echo: true
+
+# Add country as a color dimension
+ggplot(facility_data, aes(x = delivery_volume, y = nmr, color = country)) +
+  geom_point(size = 3, alpha = 0.7) +
+  scale_color_manual(values = c(
+    "Ethiopia"   = "#005CB9",
+    "Tanzania"   = "#3E9B6E",
+    "Malawi"     = "#00A1DF",
+    "Mozambique" = "#FA7650",
+    "Kenya"      = "#E24A3F"
+  )) +
+  labs(
+    title = "Delivery Volume vs. NMR by Country",
+    x = "Monthly Delivery Volume",
+    y = "NMR (per 1,000 live births)",
+    color = "Country"
+  )
+```
+
+. . .
+
+::: {.callout-box .green}
+Mapping `color = country` inside `aes()` lets you see whether the volume-NMR relationship holds across all countries or differs by context. Each country gets its own color automatically --- or you can assign specific brand colors with `scale_color_manual()`.
+:::
+
+
+## Adding a Trend Line with geom_smooth()
+
+```{r}
+#| label: scatter-trend
+#| echo: true
+
+# Add a linear trend line
+ggplot(facility_data, aes(x = delivery_volume, y = nmr)) +
+  geom_point(color = "#005CB9", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = TRUE, color = "#E24A3F", linewidth = 1) +
+  labs(
+    title = "Delivery Volume vs. NMR with Trend Line",
+    subtitle = "Linear regression fit with 95% confidence interval",
+    x = "Monthly Delivery Volume",
+    y = "NMR (per 1,000 live births)"
+  )
+```
+
+. . .
+
+::: {.callout-box .orange}
+**`geom_smooth(method = "lm")`** adds a linear regression line. The gray shaded band is the 95% confidence interval. Set `se = FALSE` to hide it. You can also use `method = "loess"` for a curved fit when the relationship is non-linear.
+:::
+
+
+## Trend Lines by Group
+
+```{r}
+#| label: scatter-trend-group
+#| echo: true
+
+# Separate trend line for each country
+ggplot(facility_data, aes(x = delivery_volume, y = nmr, color = country)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 1) +
+  scale_color_manual(values = c(
+    "Ethiopia"   = "#005CB9",
+    "Tanzania"   = "#3E9B6E",
+    "Malawi"     = "#00A1DF",
+    "Mozambique" = "#FA7650",
+    "Kenya"      = "#E24A3F"
+  )) +
+  labs(
+    title = "Volume-NMR Relationship by Country",
+    subtitle = "Each line is a separate linear fit per country",
+    x = "Monthly Delivery Volume",
+    y = "NMR (per 1,000 live births)",
+    color = "Country"
+  )
+```
+
+. . .
+
+::: {.callout-box}
+When `color = country` is in the global `aes()`, both `geom_point()` and `geom_smooth()` inherit it. Each country gets its own trend line --- making it easy to see whether the relationship is consistent or diverges across contexts.
+:::
+
+
+# Line Charts {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Tracking trends over time with geom_line()</span>
+
+
+## geom_line() --- Single Time Series
+
+```{r}
+#| label: line-single
+#| echo: true
+
+# Filter to one country
+ethiopia_trends <- monthly_trends |>
+  filter(country == "Ethiopia")
+
+# NMR trend for Ethiopia
+ggplot(ethiopia_trends, aes(x = month, y = nmr)) +
+  geom_line(color = "#005CB9", linewidth = 1.2) +
+  geom_point(color = "#005CB9", size = 2) +
+  labs(
+    title = "Neonatal Mortality Rate Trend --- Ethiopia",
+    subtitle = "Monthly NMR, January--December 2024",
+    x = NULL,
+    y = "NMR (per 1,000 live births)"
+  )
+```
+
+. . .
+
+::: {.callout-box}
+Line charts answer: **"How is this indicator changing over time?"** Adding `geom_point()` on top of `geom_line()` marks each data point, making it clear where the actual observations are.
+:::
+
+
+## Multiple Countries on One Chart
+
+```{r}
+#| label: line-multiple
+#| echo: true
+
+# NMR trends for all three countries
+ggplot(monthly_trends, aes(x = month, y = nmr, color = country)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c(
+    "Ethiopia" = "#005CB9",
+    "Tanzania" = "#3E9B6E",
+    "Malawi"   = "#00A1DF"
+  )) +
+  labs(
+    title = "NMR Trends by Country",
+    subtitle = "Monthly neonatal mortality rate, 2024",
+    x = NULL,
+    y = "NMR (per 1,000 live births)",
+    color = NULL
+  )
+```
+
+. . .
+
+::: {.callout-box .green}
+The `group` aesthetic tells ggplot2 which points to connect. When you use `color = country`, grouping is handled automatically. Use `scale_color_manual()` to assign BKA brand colors so each country is instantly recognizable.
+:::
+
+
+## Line Chart with Annotations
+
+```{r}
+#| label: line-annotated
+#| echo: true
+
+# Add reference line and annotation
+ggplot(monthly_trends, aes(x = month, y = nmr, color = country)) +
+  geom_line(linewidth = 1.2) +
+  geom_hline(yintercept = 12, linetype = "dashed", color = "#999999") +
+  annotate("text", x = as.Date("2024-10-01"), y = 13,
+           label = "SDG Target: 12", color = "#999999", size = 3.5) +
+  scale_color_manual(values = c(
+    "Ethiopia" = "#005CB9",
+    "Tanzania" = "#3E9B6E",
+    "Malawi"   = "#00A1DF"
+  )) +
+  labs(
+    title = "NMR Trends vs. SDG Target",
+    subtitle = "All countries still above the SDG 3.2 target of 12 per 1,000",
+    x = NULL,
+    y = "NMR (per 1,000 live births)",
+    color = NULL
+  )
+```
+
+. . .
+
+::: {.callout-box .orange}
+**`geom_hline()`** adds a horizontal reference line --- ideal for targets, thresholds, or benchmarks. **`annotate()`** places a text label at a specific position. These two layers turn a simple trend chart into a story about progress toward a goal.
+:::
+
+
+# Histograms & Box Plots {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Understanding distributions</span>
+
+
+## geom_histogram() --- Distribution of a Single Variable
+
+```{r}
+#| label: histogram-basic
+#| echo: true
+
+# Distribution of NMR across all facilities
+ggplot(facility_data, aes(x = nmr)) +
+  geom_histogram(binwidth = 5, fill = "#005CB9", color = "white") +
+  labs(
+    title = "Distribution of Neonatal Mortality Rates",
+    subtitle = "Across all reporting facilities (n = 20)",
+    x = "NMR (per 1,000 live births)",
+    y = "Number of Facilities"
+  )
+```
+
+. . .
+
+::: {.callout-box}
+Histograms answer: **"How are the values spread out?"** The `binwidth` argument controls the width of each bar. Too narrow and you see noise; too wide and you lose the shape. Start with a reasonable value and adjust.
+:::
+
+
+## Overlapping Histograms --- Comparing Groups
+
+```{r}
+#| label: histogram-overlap
+#| echo: true
+
+# Compare NMR distributions by facility type
+ggplot(facility_data, aes(x = nmr, fill = facility_type)) +
+  geom_histogram(binwidth = 5, alpha = 0.6, position = "identity", color = "white") +
+  scale_fill_manual(values = c(
+    "Hospital"      = "#005CB9",
+    "Health Center"  = "#3E9B6E",
+    "Health Post"    = "#FA7650"
+  )) +
+  labs(
+    title = "NMR Distribution by Facility Type",
+    x = "NMR (per 1,000 live births)",
+    y = "Number of Facilities",
+    fill = "Facility Type"
+  )
+```
+
+. . .
+
+::: {.callout-box .orange}
+Use `position = "identity"` with `alpha` (transparency) to overlay histograms. This reveals whether hospitals have a tighter NMR distribution than health posts --- a common finding in MNH program data.
+:::
+
+
+## geom_boxplot() --- Comparing Groups
+
+```{r}
+#| label: boxplot-country
+#| echo: true
+
+# NMR distribution by country
+ggplot(facility_data, aes(x = country, y = nmr, fill = country)) +
+  geom_boxplot(alpha = 0.7, show.legend = FALSE) +
+  scale_fill_manual(values = c(
+    "Ethiopia"   = "#005CB9",
+    "Tanzania"   = "#3E9B6E",
+    "Malawi"     = "#00A1DF",
+    "Mozambique" = "#FA7650",
+    "Kenya"      = "#E24A3F"
+  )) +
+  labs(
+    title = "NMR Distribution by Country",
+    x = NULL,
+    y = "NMR (per 1,000 live births)"
+  )
+```
+
+. . .
+
+::: {.definition-box}
+A **box plot** shows five summary statistics: minimum, first quartile (Q1), median, third quartile (Q3), and maximum. The box spans Q1 to Q3 (the middle 50% of values). Outliers appear as individual points beyond the whiskers.
+:::
+
+
+## Box Plot by Facility Type
+
+```{r}
+#| label: boxplot-facility-type
+#| echo: true
+
+# NMR by facility type within each country
+ggplot(facility_data, aes(x = country, y = nmr, fill = facility_type)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = c(
+    "Hospital"      = "#005CB9",
+    "Health Center"  = "#3E9B6E",
+    "Health Post"    = "#FA7650"
+  )) +
+  labs(
+    title = "NMR by Country and Facility Type",
+    subtitle = "Health posts consistently show higher NMR across countries",
+    x = NULL,
+    y = "NMR (per 1,000 live births)",
+    fill = "Facility Type"
+  )
+```
+
+. . .
+
+::: {.callout-box .green}
+Grouped box plots let you compare distributions across **two dimensions** at once: country and facility type. This reveals patterns like health posts having both higher and more variable NMR than hospitals --- a finding that drives resource allocation decisions.
+:::
+
+
+## Choosing the Right Chart
+
+| Question You Are Asking | Chart Type | Geom |
+|--------------------------|-----------|------|
+| How does indicator X compare across categories? | Bar chart | `geom_col()` |
+| How many facilities are in each group? | Bar chart (count) | `geom_bar()` |
+| Is there a relationship between X and Y? | Scatter plot | `geom_point()` |
+| How is this indicator changing over time? | Line chart | `geom_line()` |
+| How are values distributed? | Histogram | `geom_histogram()` |
+| How do distributions compare across groups? | Box plot | `geom_boxplot()` |
+
+. . .
+
+::: {.callout-box}
+Start with the **question**, not the chart type. The right visualization follows directly from what you are trying to show your stakeholders. If you are comparing categories, use bars. If you are showing a trend, use lines. If you are exploring a relationship, use points.
+:::
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Every ggplot follows the same pattern: `ggplot(data, aes(...)) + geom_*()`**
+
+**`geom_col()` for pre-calculated values, `geom_bar()` for counting rows, `geom_point()` for relationships, `geom_line()` for trends, `geom_histogram()` and `geom_boxplot()` for distributions.**
+
+**Start with the question you are answering --- the chart type follows from the question.**
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 7 --- Publication-Quality Charts**
+
+- Professional themes and the BK Advisors brand palette
+- Labels, scales, and axis formatting
+- Faceting with `facet_wrap()` for small multiples
+- Multi-panel layouts with `patchwork`
+- Exporting charts at presentation resolution with `ggsave()`
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[R for Management Consultants | Chapter 6: Data Visualization with ggplot2]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

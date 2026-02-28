@@ -1,0 +1,301 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,59610,e=>{"use strict";var t,r,n,i,a=e.i(43476),o=e.i(71645);e.i(47716);class s extends Map{constructor(e,t=c){if(super(),Object.defineProperties(this,{_intern:{value:new Map},_key:{value:t}}),null!=e)for(const[t,r]of e)this.set(t,r)}get(e){return super.get(l(this,e))}has(e){return super.has(l(this,e))}set(e,t){return super.set(function({_intern:e,_key:t},r){let n=t(r);return e.has(n)?e.get(n):(e.set(n,r),r)}(this,e),t)}delete(e){return super.delete(function({_intern:e,_key:t},r){let n=t(r);return e.has(n)&&(r=e.get(n),e.delete(n)),r}(this,e))}}function l({_intern:e,_key:t},r){let n=t(r);return e.has(n)?e.get(n):r}function c(e){return null!==e&&"object"==typeof e?e.valueOf():e}function h(e,t){switch(arguments.length){case 0:break;case 1:this.range(e);break;default:this.range(t).domain(e)}return this}let d=Symbol("implicit");function u(){var e=new s,t=[],r=[],n=d;function i(i){let a=e.get(i);if(void 0===a){if(n!==d)return n;e.set(i,a=t.push(i)-1)}return r[a%r.length]}return i.domain=function(r){if(!arguments.length)return t.slice();for(let n of(t=[],e=new s,r))e.has(n)||e.set(n,t.push(n)-1);return i},i.range=function(e){return arguments.length?(r=Array.from(e),i):r.slice()},i.unknown=function(e){return arguments.length?(n=e,i):n},i.copy=function(){return u(t,r).unknown(n)},h.apply(i,arguments),i}var x=e.i(91889),f=e.i(60208);function p(e){return e.x}function g(e){return e.y}var m=Math.PI*(3-Math.sqrt(5));function y(e,t,r,n){if(isNaN(t)||isNaN(r))return e;var i,a,o,s,l,c,h,d,u,x=e._root,f={data:n},p=e._x0,g=e._y0,m=e._x1,y=e._y1;if(!x)return e._root=f,e;for(;x.length;)if((c=t>=(a=(p+m)/2))?p=a:m=a,(h=r>=(o=(g+y)/2))?g=o:y=o,i=x,!(x=x[d=h<<1|c]))return i[d]=f,e;if(s=+e._x.call(null,x.data),l=+e._y.call(null,x.data),t===s&&r===l)return f.next=x,i?i[d]=f:e._root=f,e;do i=i?i[d]=[,,,,]:e._root=[,,,,],(c=t>=(a=(p+m)/2))?p=a:m=a,(h=r>=(o=(g+y)/2))?g=o:y=o;while((d=h<<1|c)==(u=(l>=o)<<1|s>=a))return i[u]=x,i[d]=f,e}function v(e,t,r,n,i){this.node=e,this.x0=t,this.y0=r,this.x1=n,this.y1=i}function b(e){return e[0]}function j(e){return e[1]}function w(e,t,r){var n=new _(null==t?b:t,null==r?j:r,NaN,NaN,NaN,NaN);return null==e?n:n.addAll(e)}function _(e,t,r,n,i,a){this._x=e,this._y=t,this._x0=r,this._y0=n,this._x1=i,this._y1=a,this._root=void 0}function N(e){for(var t={data:e.data},r=t;e=e.next;)r=r.next={data:e.data};return t}var M=w.prototype=_.prototype;function k(e){return function(){return e}}function A(e){return(e()-.5)*1e-6}function S(e){return e.x+e.vx}function z(e){return e.y+e.vy}M.copy=function(){var e,t,r=new _(this._x,this._y,this._x0,this._y0,this._x1,this._y1),n=this._root;if(!n)return r;if(!n.length)return r._root=N(n),r;for(e=[{source:n,target:r._root=[,,,,]}];n=e.pop();)for(var i=0;i<4;++i)(t=n.source[i])&&(t.length?e.push({source:t,target:n.target[i]=[,,,,]}):n.target[i]=N(t));return r},M.add=function(e){let t=+this._x.call(null,e),r=+this._y.call(null,e);return y(this.cover(t,r),t,r,e)},M.addAll=function(e){var t,r,n,i,a=e.length,o=Array(a),s=Array(a),l=1/0,c=1/0,h=-1/0,d=-1/0;for(r=0;r<a;++r)!(isNaN(n=+this._x.call(null,t=e[r]))||isNaN(i=+this._y.call(null,t)))&&(o[r]=n,s[r]=i,n<l&&(l=n),n>h&&(h=n),i<c&&(c=i),i>d&&(d=i));if(l>h||c>d)return this;for(this.cover(l,c).cover(h,d),r=0;r<a;++r)y(this,o[r],s[r],e[r]);return this},M.cover=function(e,t){if(isNaN(e*=1)||isNaN(t*=1))return this;var r=this._x0,n=this._y0,i=this._x1,a=this._y1;if(isNaN(r))i=(r=Math.floor(e))+1,a=(n=Math.floor(t))+1;else{for(var o,s,l=i-r||1,c=this._root;r>e||e>=i||n>t||t>=a;)switch(s=(t<n)<<1|e<r,(o=[,,,,])[s]=c,c=o,l*=2,s){case 0:i=r+l,a=n+l;break;case 1:r=i-l,a=n+l;break;case 2:i=r+l,n=a-l;break;case 3:r=i-l,n=a-l}this._root&&this._root.length&&(this._root=c)}return this._x0=r,this._y0=n,this._x1=i,this._y1=a,this},M.data=function(){var e=[];return this.visit(function(t){if(!t.length)do e.push(t.data);while(t=t.next)}),e},M.extent=function(e){return arguments.length?this.cover(+e[0][0],+e[0][1]).cover(+e[1][0],+e[1][1]):isNaN(this._x0)?void 0:[[this._x0,this._y0],[this._x1,this._y1]]},M.find=function(e,t,r){var n,i,a,o,s,l,c,h=this._x0,d=this._y0,u=this._x1,x=this._y1,f=[],p=this._root;for(p&&f.push(new v(p,h,d,u,x)),null==r?r=1/0:(h=e-r,d=t-r,u=e+r,x=t+r,r*=r);l=f.pop();)if((p=l.node)&&!((i=l.x0)>u)&&!((a=l.y0)>x)&&!((o=l.x1)<h)&&!((s=l.y1)<d))if(p.length){var g=(i+o)/2,m=(a+s)/2;f.push(new v(p[3],g,m,o,s),new v(p[2],i,m,g,s),new v(p[1],g,a,o,m),new v(p[0],i,a,g,m)),(c=(t>=m)<<1|e>=g)&&(l=f[f.length-1],f[f.length-1]=f[f.length-1-c],f[f.length-1-c]=l)}else{var y=e-this._x.call(null,p.data),b=t-this._y.call(null,p.data),j=y*y+b*b;if(j<r){var w=Math.sqrt(r=j);h=e-w,d=t-w,u=e+w,x=t+w,n=p.data}}return n},M.remove=function(e){if(isNaN(a=+this._x.call(null,e))||isNaN(o=+this._y.call(null,e)))return this;var t,r,n,i,a,o,s,l,c,h,d,u,x=this._root,f=this._x0,p=this._y0,g=this._x1,m=this._y1;if(!x)return this;if(x.length)for(;;){if((c=a>=(s=(f+g)/2))?f=s:g=s,(h=o>=(l=(p+m)/2))?p=l:m=l,t=x,!(x=x[d=h<<1|c]))return this;if(!x.length)break;(t[d+1&3]||t[d+2&3]||t[d+3&3])&&(r=t,u=d)}for(;x.data!==e;)if(n=x,!(x=x.next))return this;return((i=x.next)&&delete x.next,n)?i?n.next=i:delete n.next:t?(i?t[d]=i:delete t[d],(x=t[0]||t[1]||t[2]||t[3])&&x===(t[3]||t[2]||t[1]||t[0])&&!x.length&&(r?r[u]=x:this._root=x)):this._root=i,this},M.removeAll=function(e){for(var t=0,r=e.length;t<r;++t)this.remove(e[t]);return this},M.root=function(){return this._root},M.size=function(){var e=0;return this.visit(function(t){if(!t.length)do++e;while(t=t.next)}),e},M.visit=function(e){var t,r,n,i,a,o,s=[],l=this._root;for(l&&s.push(new v(l,this._x0,this._y0,this._x1,this._y1));t=s.pop();)if(!e(l=t.node,n=t.x0,i=t.y0,a=t.x1,o=t.y1)&&l.length){var c=(n+a)/2,h=(i+o)/2;(r=l[3])&&s.push(new v(r,c,h,a,o)),(r=l[2])&&s.push(new v(r,n,h,c,o)),(r=l[1])&&s.push(new v(r,c,i,a,h)),(r=l[0])&&s.push(new v(r,n,i,c,h))}return this},M.visitAfter=function(e){var t,r=[],n=[];for(this._root&&r.push(new v(this._root,this._x0,this._y0,this._x1,this._y1));t=r.pop();){var i=t.node;if(i.length){var a,o=t.x0,s=t.y0,l=t.x1,c=t.y1,h=(o+l)/2,d=(s+c)/2;(a=i[0])&&r.push(new v(a,o,s,h,d)),(a=i[1])&&r.push(new v(a,h,s,l,d)),(a=i[2])&&r.push(new v(a,o,d,h,c)),(a=i[3])&&r.push(new v(a,h,d,l,c))}n.push(t)}for(;t=n.pop();)e(t.node,t.x0,t.y0,t.x1,t.y1);return this},M.x=function(e){return arguments.length?(this._x=e,this):this._x},M.y=function(e){return arguments.length?(this._y=e,this):this._y};var P=e.i(34701);let H=["Position","Style","Text","Grouping"],T=[{id:"x",group:"Position",value:15,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Maps a variable to the ",(0,a.jsx)("b",{children:"horizontal (x) axis"})," of the plot.",(0,a.jsx)("br",{}),"Here, we map the continuous variable ",(0,a.jsx)("code",{children:"hwy"})," to the x-axis:"]})}),code:`
+library(ggplot2)
+
+ggplot(data = mpg) +
+  geom_point(
+    aes(x = hwy, y = class)
+  )`.trim()},{id:"y",group:"Position",value:15,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Maps a variable to the ",(0,a.jsx)("b",{children:"vertical (y) axis"})," of the plot.",(0,a.jsx)("br",{}),"Here, we map the continuous variable ",(0,a.jsx)("code",{children:"hwy"})," to the y-axis:"]})}),code:`
+library(ggplot2)
+
+ggplot(data = mpg) +
+  geom_point(
+    aes(x = class, y = hwy)
+  )`.trim()},{id:"xend",group:"Position",value:5,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Used with segments or arrows to set the ",(0,a.jsx)("b",{children:"end x-coordinate"}),".",(0,a.jsx)("br",{}),"Here, we showcase two different endpoints for x:"]})}),code:`
+library(ggplot2)
+
+segments <- data.frame(
+  x = 1, xend = c(1, 3),
+  y = 1, yend = 2)
+
+ggplot(data = segments) +
+  geom_segment(
+    aes(x = x, xend = xend,
+        y = y, yend = yend,
+        color = factor(xend))
+  )`.trim()},{id:"yend",group:"Position",value:5,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Used with segments or arrows to set the ",(0,a.jsx)("b",{children:"end y-coordinate"}),".",(0,a.jsx)("br",{}),"Here, we showcase two different endpoints for y:"]})}),code:`
+library(ggplot2)
+
+segments <- data.frame(
+  x = 1, xend = 2,
+  y = 1, yend = c(1, 3))
+
+ggplot(data = segments) +
+  geom_segment(
+    aes(x = x, xend = xend,
+        y = y, yend = yend,
+        color = factor(yend))
+  )`.trim()},{id:"xmin",group:"Position",value:4,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Specifies the ",(0,a.jsx)("b",{children:"left boundary"})," for rectangular geometries.",(0,a.jsx)("br",{}),"Here, the"," ",(0,a.jsxs)("b",{style:{color:"#f65348"},children:["red rectangle has a lower ",(0,a.jsx)("code",{className:"font-medium",children:"xmin"})]}),":"]})}),code:`
+library(ggplot2)
+
+boxes <- data.frame(
+  xmin = c(2, 0), xmax = c(9, 6),
+  ymin = c(0, 2), ymax = c(1, 6)
+)
+
+ggplot(data = boxes) +
+  geom_rect(
+    aes(xmin = xmin, xmax = xmax,
+        ymin = ymin, ymax = ymax,
+        fill = factor(xmin))
+  )`.trim()},{id:"xmax",group:"Position",value:4,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Specifies the ",(0,a.jsx)("b",{children:"right boundary"})," for rectangular geometries.",(0,a.jsx)("br",{}),"Here, the"," ",(0,a.jsxs)("b",{style:{color:"#01999d"},children:["cyan rectangle has a higher"," ",(0,a.jsx)("code",{className:"font-medium",children:"xmax"})]}),":"]})}),code:`
+library(ggplot2)
+
+boxes <- data.frame(
+  xmin = c(2, 0), xmax = c(9, 6),
+  ymin = c(0, 2), ymax = c(1, 6)
+)
+
+ggplot(data = boxes) +
+  geom_rect(
+    aes(xmin = xmin, xmax = xmax,
+        ymin = ymin, ymax = ymax,
+        fill = factor(xmax))
+  )`.trim()},{id:"ymin",group:"Position",value:4,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Specifies the ",(0,a.jsx)("b",{children:"bottom boundary"})," for rectangular geometries.",(0,a.jsx)("br",{}),"Here, the"," ",(0,a.jsxs)("b",{style:{color:"#f65348"},children:["red rectangle has a lower ",(0,a.jsx)("code",{className:"font-medium",children:"ymin"})]}),":"]})}),code:`
+library(ggplot2)
+
+boxes <- data.frame(
+  xmin = c(2, 0), xmax = c(9, 6),
+  ymin = c(0, 2), ymax = c(1, 6)
+)
+
+ggplot(data = boxes) +
+  geom_rect(
+    aes(xmin = xmin, xmax = xmax,
+        ymin = ymin, ymax = ymax,
+        fill = factor(ymin))
+  )`.trim()},{id:"ymax",group:"Position",value:4,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Specifies the ",(0,a.jsx)("b",{children:"upper boundary"})," for rectangular geometries.",(0,a.jsx)("br",{}),"Here, the"," ",(0,a.jsxs)("b",{style:{color:"#01999d"},children:["cyan rectangle has a higher"," ",(0,a.jsx)("code",{className:"font-medium",children:"ymax"})]}),":"]})}),code:`
+library(ggplot2)
+
+boxes <- data.frame(
+  xmin = c(2, 0), xmax = c(9, 6),
+  ymin = c(0, 2), ymax = c(1, 6)
+)
+
+ggplot(data = boxes) +
+  geom_rect(
+    aes(xmin = xmin, xmax = xmax,
+        ymin = ymin, ymax = ymax,
+        fill = factor(ymax))
+  )`.trim()},{id:"xintercept",group:"Position",value:3,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Defines the ",(0,a.jsx)("b",{children:"x coordinate for vertical lines"}),".",(0,a.jsx)("br",{}),"Here, we draw two vertical lines at"," ",(0,a.jsx)("b",{style:{color:"#f65348"},children:"25"})," and"," ",(0,a.jsx)("b",{style:{color:"#01999d"},children:"35"})," on the x-axis:"]})}),code:`
+library(ggplot2)
+
+intercepts <- data.frame(
+  intercept = c(25, 35), p = c(20, 40)
+)
+
+ggplot(data = intercepts) +
+  geom_point(aes(x = p, y = p)) +
+  geom_vline(
+    aes(xintercept = intercept,
+        color = factor(intercept))
+  )`.trim()},{id:"yintercept",group:"Position",value:3,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Defines the ",(0,a.jsx)("b",{children:"y coordinate for horizontal lines"}),".",(0,a.jsx)("br",{}),"Here, we draw two horizontal lines at"," ",(0,a.jsx)("b",{style:{color:"#f65348"},children:"25"})," and"," ",(0,a.jsx)("b",{style:{color:"#01999d"},children:"35"})," on the y-axis:"]})}),code:`library(ggplot2)
+
+intercepts <- data.frame(
+  intercept = c(25, 35), p = c(20, 40)
+)
+
+ggplot(data = intercepts) +
+  geom_point(aes(x = p, y = p)) +
+  geom_hline(
+    aes(yintercept = intercept,
+        color = factor(intercept))
+  )`.trim()},{id:"intercept",group:"Position",value:2,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Used in ",(0,a.jsx)("code",{children:"geom_abline()"})," to set"," ",(0,a.jsx)("b",{children:"where a line crosses the y-axis."}),(0,a.jsx)("br",{}),"Here, the"," ",(0,a.jsxs)("b",{style:{color:"#01999d"},children:["cyan line has the higher"," ",(0,a.jsx)("code",{className:"font-medium",children:"intercept"})]}),":"]})}),code:`
+library(ggplot2)
+
+diagonals <- data.frame(
+  intercept = c(0, 5), slope = c(1, .5), p = c(0, 10)
+)
+
+ggplot(data = diagonals) +
+  geom_point(aes(x = p, y = p)) +
+  geom_abline(
+    aes(intercept = intercept,
+        slope = slope,
+        color = factor(intercept))
+  )`.trim()},{id:"slope",group:"Position",value:2,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Used in ",(0,a.jsx)("code",{children:"geom_abline()"})," to define the"," ",(0,a.jsx)("b",{children:"tilt of the line"}),".",(0,a.jsx)("br",{}),"Here, the"," ",(0,a.jsxs)("b",{style:{color:"#01999d"},children:["cyan line has the steeper ",(0,a.jsx)("code",{className:"font-medium",children:"slope"})]}),":"]})}),code:`
+library(ggplot2)
+
+diagonals <- data.frame(
+  intercept = c(0, 5), slope = c(1, .5), p = c(0, 10)
+)
+
+ggplot(data = diagonals) +
+  geom_point(aes(x = p, y = p)) +
+  geom_abline(
+    aes(intercept = intercept,
+        slope = slope,
+        color = factor(slope))
+  )`.trim()},{id:"color",group:"Style",value:13,description:(0,a.jsx)("div",{children:(0,a.jsx)("p",{children:(0,a.jsxs)("div",{className:"relative",children:[(0,a.jsx)(P.Sidenote,{text:(0,a.jsxs)("span",{children:["Prefer British spelling? You can use ",(0,a.jsx)("code",{children:"colour"})," as well. Feeling lazy? ",(0,a.jsx)("code",{children:"col"})," works too!"]})}),(0,a.jsxs)("p",{children:["Sets the ",(0,a.jsx)("b",{children:"color"})," of geometries like points, lines, and outlines.",(0,a.jsx)("br",{}),"Here, we map ",(0,a.jsx)("code",{children:"Month"})," to ",(0,a.jsx)("code",{children:"color"})," for the points:"]})]})})}),code:`
+library(ggplot2)
+
+ggplot(data = airquality) +
+  geom_point(
+    aes(x = Temp, y = Ozone,
+        color = Month)
+  )`.trim()},{id:"fill",group:"Style",value:10,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Sets the ",(0,a.jsx)("b",{children:"fill color"})," for shapes like bars or filled points.",(0,a.jsx)("br",{}),"Here, we map ",(0,a.jsx)("code",{children:"class"})," to ",(0,a.jsx)("code",{children:"fill"})," to color the bars:"]})}),code:`
+library(ggplot2)
+
+ggplot(data = mpg) +
+  geom_bar(
+    aes(x = class, fill = class)
+  )`.trim()},{id:"alpha",group:"Style",value:6,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Controls the ",(0,a.jsx)("b",{children:"transparency"}),": 0 is fully transparent, 1 is opaque.",(0,a.jsx)("br",{}),"Here, we map ",(0,a.jsx)("code",{children:"Ozone"})," to ",(0,a.jsx)("code",{children:"alpha"})," to fade lower values:"]})}),code:`
+library(ggplot2)
+
+ggplot(data = airquality) +
+  aes(x = Temp, y = Ozone, alpha = Ozone) +
+  geom_point()`.trim()},{id:"size",group:"Style",value:9,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Controls the ",(0,a.jsx)("b",{children:"size"})," of geometries like points or lines.",(0,a.jsx)("br",{}),"Here, we map ",(0,a.jsx)("code",{children:"Wind"})," to ",(0,a.jsx)("code",{children:"size"})," to create a"," ",(0,a.jsx)("a",{href:"https://www.data-to-viz.com/graph/bubble.html",children:"bubble chart"}),":"]})}),code:`
+library(ggplot2)
+
+ggplot(data = airquality) +
+  geom_point(
+    aes(x = Temp, y = Ozone,
+        size = Wind),
+    alpha = 0.3
+  )`.trim()},{id:"shape",group:"Style",value:8,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Defines the ",(0,a.jsx)("b",{children:"shape of points"})," (also for boxplots, pointranges etc.).",(0,a.jsx)("br",{}),"Here, we map ",(0,a.jsx)("code",{children:"drv"})," to ",(0,a.jsx)("code",{children:"shape"})," for categorical variation:"]})}),code:`
+library(ggplot2)
+
+ggplot(data = mpg) +
+  geom_point(
+    aes(x = displ, y = hwy,
+        shape = drv)
+  )`.trim()},{id:"Linetype",group:"Style",value:8,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Determines the type of line (solid, dashed, dotted, etc.).",(0,a.jsx)("br",{}),"Here, we map ",(0,a.jsx)("code",{children:"group"})," to ",(0,a.jsx)("code",{children:"linetype"})," to encode the metrics:"]})}),code:`
+library(ggplot2)
+
+# note that values are drawn randomly each time
+df <- data.frame(
+  year = rep(2020:2025, each = 2),
+  value = rnorm(12),
+  group = rep(c("A", "B"), times = 6)
+)
+
+ggplot(data = df) +
+  geom_line(
+    aes(x = year, y = value,
+        linetype = group)
+  )`.trim()},{id:"Linewidth",group:"Appearance",value:5,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Controls the ",(0,a.jsx)("b",{children:"thickness of lines"})," in geometries like"," ",(0,a.jsx)("code",{children:"geom_line()"}),".",(0,a.jsx)("br",{}),"Here, we vary the linewidth based on tooth length."]})}),code:`
+library(ggplot2)
+
+# note that values are drawn randomly each time
+df <- data.frame(
+  year = rep(2020:2025, each = 2),
+  value = rnorm(12),
+  group = rep(c("A", "B"), times = 6)
+)
+
+ggplot(data = df) +
+  geom_line(
+    aes(x = year, y = value,
+        linewidth = group)
+  )`.trim()},{id:"stroke",group:"Style",value:5,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Controls the width of the border around shapes like filled points.",(0,a.jsx)("br",{}),"Here, we map ",(0,a.jsx)("code",{children:"Month"})," to ",(0,a.jsx)("code",{children:"stroke"})," using shape 21."]})}),code:`
+library(ggplot2)
+
+strokes <- data.frame(
+  x = rep(1:3, times = 3),
+  y = rep(1:3, each = 3),
+  stroke = 1:9
+)
+
+ggplot(data = strokes) +
+  geom_point(
+    aes(x = x, y = y, stroke = stroke),
+    shape = 21, size = 3
+  )`.trim()},{id:"Label",group:"Text",value:10,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:["Plot a ",(0,a.jsx)("b",{children:"variable as text labels"})," shown on the plot.",(0,a.jsx)("br",{}),"Here, we print five words in one line, each by each:"]})}),code:`
+library(ggplot2)
+
+labels <- data.frame(
+  x = 1:5, y = 1,
+  label = c("Lorem", "ipsum", "dolor", "sit", "amet")
+)
+
+ggplot(data = labels) +
+  geom_text(
+    aes(x = x, y = y,
+        label = label)
+  )`.trim()},{id:"angle",group:"Text",value:1,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:[(0,a.jsx)("b",{children:"Rotates text labels"})," by a given angle in degrees.",(0,a.jsx)("br",{}),"Here, we rotate our five words by 45° each step:"]})}),code:`
+library(ggplot2)
+
+labels <- data.frame(
+  x = 1:5, y = 1,
+  label = c("Lorem", "ipsum", "dolor", "sit", "amet"),
+  value = seq(0, 180, by = 45)
+)
+
+ggplot(data = labels) +
+  geom_text(
+    aes(x = x, y = y,
+        label = label, angle = value)
+  )`.trim()},{id:"hjust",group:"Text",value:5,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:[(0,a.jsx)("b",{children:"Horizontal justification"})," of text: 0 = left, 1 = right.",(0,a.jsx)("br",{}),"Here, the words change gradually from left- to right-aligned:"]})}),code:`
+library(ggplot2)
+
+labels <- data.frame(
+  x = 1:5, y = 1,
+  label = c("Lorem", "ipsum", "dolor", "sit", "amet"),
+  value = seq(0, 1, by = 0.25)
+)
+
+ggplot(data = labels) +
+  geom_text(
+    aes(x = x, y = y,
+        label = label, hjust = value)
+  )`.trim()},{id:"vjust",group:"Text",value:4,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:[(0,a.jsx)("b",{children:"Vertical justification"})," of text: 0 = bottom to 1 = top.",(0,a.jsx)("br",{}),"Here, the words change gradually from top- to bottom-aligned:"]})}),code:`
+library(ggplot2)
+
+labels <- data.frame(
+  x = 1:5, y = 1,
+  label = c("Lorem", "ipsum", "dolor", "sit", "amet"),
+  value = seq(0, 1, by = 0.25)
+)
+
+ggplot(data = labels) +
+  geom_text(
+    aes(x = x, y = y,
+        label = label, vjust = value)
+  )`.trim()},{id:"family",group:"Text",value:4,description:(0,a.jsxs)("div",{className:"relative",children:[(0,a.jsx)(P.Sidenote,{text:(0,a.jsx)("span",{children:"Note that specific typefaces need to be installed!"})}),(0,a.jsxs)("p",{children:["Font family used for text (e.g., ",(0,a.jsx)("code",{children:'"serif"'})," or actual typeface names).",(0,a.jsx)("br",{}),"Here, the the word are set to the three types of default typefaces:"]})]}),code:`
+library(ggplot2)
+
+labels <- data.frame(
+  x = 1:5, y = 1,
+  label = c("Lorem", "ipsum", "dolor", "sit", "amet"),
+  family = c("serif", "sans", "monospace", "sans", "serif")
+)
+
+ggplot(data = labels) +
+  geom_text(
+    aes(x = x, y = y,
+        label = label, family = family)
+  )`.trim()},{id:"fontface",group:"Text",value:3,description:(0,a.jsx)("div",{children:(0,a.jsxs)("p",{children:[(0,a.jsx)("b",{children:"Font style"}),' of the text like "bold" or "italic".',(0,a.jsx)("br",{}),"Here, labels are displayed in all available styles:"]})}),code:`
+library(ggplot2)
+
+labels <- data.frame(
+  x = 1:5, y = 1,
+  label = c("Lorem", "ipsum", "dolor", "sit", "amet"),
+  face = c("plain", "bold", "bold.italic", "italic", "plain")
+)
+
+ggplot(data = labels) +
+  geom_text(
+    aes(x = x, y = y,
+        label = label, fontface = face)
+  )`.trim()},{id:"group",group:"Grouping",value:8,description:(0,a.jsxs)("div",{className:"relative",children:[(0,a.jsx)(P.Sidenote,{text:(0,a.jsxs)("span",{children:["It's so special that we discuss it in detail in the lesson"," ",(0,a.jsx)("a",{href:"/module1/aesthetics-caveats",children:"Aesthetics: Caveats"}),"!"]})}),(0,a.jsxs)("p",{children:["Tells ",(0,a.jsx)("code",{children:"ggplot2"})," how to"," ",(0,a.jsx)("b",{children:"separate groups but without any encoding"}),".",(0,a.jsx)("br",{}),"Here, we connect lines for each metric using ",(0,a.jsx)("code",{children:"variable"}),":"]})]}),code:`
+library(ggplot2)
+
+ggplot(data = economics_long) +
+  geom_line(
+    aes(x = date, y = value01,
+        group = variable)
+  )`.trim()},{},{},{},{},{}],q=["#00978a","#d13760","#006e9a","#c69612"],C=u().domain(H).range(q),E=(e,t,r,n,i,a)=>{let o=u().domain(H).range(q);e.clearRect(0,0,t,r),n.forEach(t=>{t.x&&t.y&&(e.beginPath(),e.moveTo(t.x+12,t.y),e.arc(t.x,t.y,i(t.value),0,2*Math.PI),e.fillStyle=o(t.group),e.fill(),t.value>3&&(e.fillStyle="white",e.font="12px sans-serif",e.textAlign="center",e.textBaseline="middle",e.fillText(t.id,t.x,t.y)),a&&a?.id===t.id&&(e.beginPath(),e.arc(t.x,t.y,i(t.value),0,2*Math.PI),e.strokeStyle="black",e.lineWidth=1,e.stroke()))})},D=Math.sqrt(50),L=Math.sqrt(10),R=Math.sqrt(2);function O(e,t,r){let n,i,a,o=(t-e)/Math.max(0,r),s=Math.floor(Math.log10(o)),l=o/Math.pow(10,s),c=l>=D?10:l>=L?5:l>=R?2:1;return(s<0?(n=Math.round(e*(a=Math.pow(10,-s)/c)),i=Math.round(t*a),n/a<e&&++n,i/a>t&&--i,a=-a):(n=Math.round(e/(a=Math.pow(10,s)*c)),i=Math.round(t/a),n*a<e&&++n,i*a>t&&--i),i<n&&.5<=r&&r<2)?O(e,t,2*r):[n,i,a]}function B(e,t,r){return O(e*=1,t*=1,r*=1)[2]}function F(e,t){return null==e||null==t?NaN:e<t?-1:e>t?1:e>=t?0:NaN}function $(e,t){return null==e||null==t?NaN:t<e?-1:t>e?1:t>=e?0:NaN}function I(e){let t,r,n;function i(e,n,a=0,o=e.length){if(a<o){if(0!==t(n,n))return o;do{let t=a+o>>>1;0>r(e[t],n)?a=t+1:o=t}while(a<o)}return a}return 2!==e.length?(t=F,r=(t,r)=>F(e(t),r),n=(t,r)=>e(t)-r):(t=e===F||e===$?e:U,r=e,n=e),{left:i,center:function(e,t,r=0,a=e.length){let o=i(e,t,r,a-1);return o>r&&n(e[o-1],t)>-n(e[o],t)?o-1:o},right:function(e,n,i=0,a=e.length){if(i<a){if(0!==t(n,n))return a;do{let t=i+a>>>1;0>=r(e[t],n)?i=t+1:a=t}while(i<a)}return i}}}function U(){return 0}let W=I(F),G=W.right;W.left,I(function(e){return null===e?NaN:+e}).center;var Y=e.i(44307),X=e.i(52491);function K(e,t){return e*=1,t*=1,function(r){return Math.round(e*(1-r)+t*r)}}function V(e){return+e}var Z=[0,1];function J(e){return e}function Q(e,t){var r;return(t-=e*=1)?function(r){return(r-e)/t}:(r=isNaN(t)?NaN:.5,function(){return r})}function ee(e,t,r){var n=e[0],i=e[1],a=t[0],o=t[1];return i<n?(n=Q(i,n),a=r(o,a)):(n=Q(n,i),a=r(a,o)),function(e){return a(n(e))}}function et(e,t,r){var n=Math.min(e.length,t.length)-1,i=Array(n),a=Array(n),o=-1;for(e[n]<e[0]&&(e=e.slice().reverse(),t=t.slice().reverse());++o<n;)i[o]=Q(e[o],e[o+1]),a[o]=r(t[o],t[o+1]);return function(t){var r=G(e,t,1,n)-1;return a[r](i[r](t))}}function er(e,t){if((r=(e=t?e.toExponential(t-1):e.toExponential()).indexOf("e"))<0)return null;var r,n=e.slice(0,r);return[n.length>1?n[0]+n.slice(2):n,+e.slice(r+1)]}function en(e){return(e=er(Math.abs(e)))?e[1]:NaN}var ei=/^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;function ea(e){var t;if(!(t=ei.exec(e)))throw Error("invalid format: "+e);return new eo({fill:t[1],align:t[2],sign:t[3],symbol:t[4],zero:t[5],width:t[6],comma:t[7],precision:t[8]&&t[8].slice(1),trim:t[9],type:t[10]})}function eo(e){this.fill=void 0===e.fill?" ":e.fill+"",this.align=void 0===e.align?">":e.align+"",this.sign=void 0===e.sign?"-":e.sign+"",this.symbol=void 0===e.symbol?"":e.symbol+"",this.zero=!!e.zero,this.width=void 0===e.width?void 0:+e.width,this.comma=!!e.comma,this.precision=void 0===e.precision?void 0:+e.precision,this.trim=!!e.trim,this.type=void 0===e.type?"":e.type+""}function es(e,t){var r=er(e,t);if(!r)return e+"";var n=r[0],i=r[1];return i<0?"0."+Array(-i).join("0")+n:n.length>i+1?n.slice(0,i+1)+"."+n.slice(i+1):n+Array(i-n.length+2).join("0")}ea.prototype=eo.prototype,eo.prototype.toString=function(){return this.fill+this.align+this.sign+this.symbol+(this.zero?"0":"")+(void 0===this.width?"":Math.max(1,0|this.width))+(this.comma?",":"")+(void 0===this.precision?"":"."+Math.max(0,0|this.precision))+(this.trim?"~":"")+this.type};let el={"%":(e,t)=>(100*e).toFixed(t),b:e=>Math.round(e).toString(2),c:e=>e+"",d:function(e){return Math.abs(e=Math.round(e))>=1e21?e.toLocaleString("en").replace(/,/g,""):e.toString(10)},e:(e,t)=>e.toExponential(t),f:(e,t)=>e.toFixed(t),g:(e,t)=>e.toPrecision(t),o:e=>Math.round(e).toString(8),p:(e,t)=>es(100*e,t),r:es,s:function(e,r){var n=er(e,r);if(!n)return e+"";var i=n[0],a=n[1],o=a-(t=3*Math.max(-8,Math.min(8,Math.floor(a/3))))+1,s=i.length;return o===s?i:o>s?i+Array(o-s+1).join("0"):o>0?i.slice(0,o)+"."+i.slice(o):"0."+Array(1-o).join("0")+er(e,Math.max(0,r+o-1))[0]},X:e=>Math.round(e).toString(16).toUpperCase(),x:e=>Math.round(e).toString(16)};function ec(e){return e}var eh=Array.prototype.map,ed=["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];function eu(e){return function(t){return t<0?-Math.pow(-t,e):Math.pow(t,e)}}function ex(e){return e<0?-Math.sqrt(-e):Math.sqrt(e)}function ef(e){return e<0?-e*e:e*e}n=(r=function(e){var r,n,i,a=void 0===e.grouping||void 0===e.thousands?ec:(r=eh.call(e.grouping,Number),n=e.thousands+"",function(e,t){for(var i=e.length,a=[],o=0,s=r[0],l=0;i>0&&s>0&&(l+s+1>t&&(s=Math.max(1,t-l)),a.push(e.substring(i-=s,i+s)),!((l+=s+1)>t));)s=r[o=(o+1)%r.length];return a.reverse().join(n)}),o=void 0===e.currency?"":e.currency[0]+"",s=void 0===e.currency?"":e.currency[1]+"",l=void 0===e.decimal?".":e.decimal+"",c=void 0===e.numerals?ec:(i=eh.call(e.numerals,String),function(e){return e.replace(/[0-9]/g,function(e){return i[+e]})}),h=void 0===e.percent?"%":e.percent+"",d=void 0===e.minus?"−":e.minus+"",u=void 0===e.nan?"NaN":e.nan+"";function x(e){var r=(e=ea(e)).fill,n=e.align,i=e.sign,x=e.symbol,f=e.zero,p=e.width,g=e.comma,m=e.precision,y=e.trim,v=e.type;"n"===v?(g=!0,v="g"):el[v]||(void 0===m&&(m=12),y=!0,v="g"),(f||"0"===r&&"="===n)&&(f=!0,r="0",n="=");var b="$"===x?o:"#"===x&&/[boxX]/.test(v)?"0"+v.toLowerCase():"",j="$"===x?s:/[%p]/.test(v)?h:"",w=el[v],_=/[defgprs%]/.test(v);function N(e){var o,s,h,x=b,N=j;if("c"===v)N=w(e)+N,e="";else{var M=(e*=1)<0||1/e<0;if(e=isNaN(e)?u:w(Math.abs(e),m),y&&(e=function(e){e:for(var t,r=e.length,n=1,i=-1;n<r;++n)switch(e[n]){case".":i=t=n;break;case"0":0===i&&(i=n),t=n;break;default:if(!+e[n])break e;i>0&&(i=0)}return i>0?e.slice(0,i)+e.slice(t+1):e}(e)),M&&0==+e&&"+"!==i&&(M=!1),x=(M?"("===i?i:d:"-"===i||"("===i?"":i)+x,N=("s"===v?ed[8+t/3]:"")+N+(M&&"("===i?")":""),_){for(o=-1,s=e.length;++o<s;)if(48>(h=e.charCodeAt(o))||h>57){N=(46===h?l+e.slice(o+1):e.slice(o))+N,e=e.slice(0,o);break}}}g&&!f&&(e=a(e,1/0));var k=x.length+e.length+N.length,A=k<p?Array(p-k+1).join(r):"";switch(g&&f&&(e=a(A+e,A.length?p-N.length:1/0),A=""),n){case"<":e=x+e+N+A;break;case"=":e=x+A+e+N;break;case"^":e=A.slice(0,k=A.length>>1)+x+e+N+A.slice(k);break;default:e=A+x+e+N}return c(e)}return m=void 0===m?6:/[gprs]/.test(v)?Math.max(1,Math.min(21,m)):Math.max(0,Math.min(20,m)),N.toString=function(){return e+""},N}return{format:x,formatPrefix:function(e,t){var r=x(((e=ea(e)).type="f",e)),n=3*Math.max(-8,Math.min(8,Math.floor(en(t)/3))),i=Math.pow(10,-n),a=ed[8+n/3];return function(e){return r(i*e)+a}}}}({thousands:",",grouping:[3],currency:["$",""]})).format,i=r.formatPrefix;let ep=({width:e,height:t,data:r,setSelectedNode:s})=>{let l=r.map(e=>({...e})),c=(0,o.useRef)(null),d=(0,o.useRef)(null),[y,v]=function(e,t){let r,n;for(let t of e)null!=t&&(void 0===r?t>=t&&(r=n=t):(r>t&&(r=t),n<t&&(n=t)));return[r,n]}(l.map(e=>e.value)),b=(function(){return(function e(){var t,r,a,o,s=(r=(t=function(){var e,t,r,n,i,a,o=Z,s=Z,l=Y.interpolate,c=J;function h(){var e,t,r,l=Math.min(o.length,s.length);return c!==J&&(e=o[0],t=o[l-1],e>t&&(r=e,e=t,t=r),c=function(r){return Math.max(e,Math.min(t,r))}),n=l>2?et:ee,i=a=null,d}function d(t){return null==t||isNaN(t*=1)?r:(i||(i=n(o.map(e),s,l)))(e(c(t)))}return d.invert=function(r){return c(t((a||(a=n(s,o.map(e),X.interpolateNumber)))(r)))},d.domain=function(e){return arguments.length?(o=Array.from(e,V),h()):o.slice()},d.range=function(e){return arguments.length?(s=Array.from(e),h()):s.slice()},d.rangeRound=function(e){return s=Array.from(e),l=K,h()},d.clamp=function(e){return arguments.length?(c=!!e||J,h()):c!==J},d.interpolate=function(e){return arguments.length?(l=e,h()):l},d.unknown=function(e){return arguments.length?(r=e,d):r},function(r,n){return e=r,t=n,h()}}())(J,J),a=1,r.exponent=function(e){return arguments.length?1==(a=+e)?t(J,J):.5===a?t(ex,ef):t(eu(a),eu(1/a)):a},o=r.domain,r.ticks=function(e){var t=o();return function(e,t,r){if(t*=1,e*=1,!((r*=1)>0))return[];if(e===t)return[e];let n=t<e,[i,a,o]=n?O(t,e,r):O(e,t,r);if(!(a>=i))return[];let s=a-i+1,l=Array(s);if(n)if(o<0)for(let e=0;e<s;++e)l[e]=-((a-e)/o);else for(let e=0;e<s;++e)l[e]=(a-e)*o;else if(o<0)for(let e=0;e<s;++e)l[e]=-((i+e)/o);else for(let e=0;e<s;++e)l[e]=(i+e)*o;return l}(t[0],t[t.length-1],null==e?10:e)},r.tickFormat=function(e,t){var r=o();return function(e,t,r,a){let o,s;var l,c,h,d,u,x=(c=e,h=+t,c*=1,d=+r,s=(o=h<c)?B(h,c,d):B(c,h,d),(o?-1:1)*(s<0?-(1/s):s));switch((a=ea(null==a?",f":a)).type){case"s":var f=Math.max(Math.abs(e),Math.abs(t));return null!=a.precision||isNaN(u=Math.max(0,3*Math.max(-8,Math.min(8,Math.floor(en(f)/3)))-en(Math.abs(x))))||(a.precision=u),i(a,f);case"":case"e":case"g":case"p":case"r":null!=a.precision||isNaN(u=Math.max(0,en(Math.abs(Math.max(Math.abs(e),Math.abs(t)))-(l=Math.abs(l=x)))-en(l))+1)||(a.precision=u-("e"===a.type));break;case"f":case"%":null!=a.precision||isNaN(u=Math.max(0,-en(Math.abs(x))))||(a.precision=u-("%"===a.type)*2)}return n(a)}(r[0],r[r.length-1],null==e?10:e,t)},r.nice=function(e){null==e&&(e=10);var t,n,i=o(),a=0,s=i.length-1,l=i[a],c=i[s],h=10;for(c<l&&(n=l,l=c,c=n,n=a,a=s,s=n);h-- >0;){if((n=B(l,c,e))===t)return i[a]=l,i[s]=c,o(i);if(n>0)l=Math.floor(l/n)*n,c=Math.ceil(c/n)*n;else if(n<0)l=Math.ceil(l*n)/n,c=Math.floor(c*n)/n;else break;t=n}return r},r);return s.copy=function(){return e().domain(s.domain()).range(s.range()).interpolate(s.interpolate()).clamp(s.clamp()).unknown(s.unknown()).exponent(s.exponent())},h.apply(s,arguments),s}).apply(null,arguments).exponent(.5)})().domain([y,v]).range([4,85]),j=u().domain(H).range([30,e/3,2*e/3-60,3*e/4]),_=()=>(function(e){let t;var r,n=1,i=.001,a=1-Math.pow(.001,1/300),o=0,s=.6,l=new Map,c=(0,f.timer)(u),h=(0,x.dispatch)("tick","end"),d=(t=1,()=>(t=(1664525*t+0x3c6ef35f)%0x100000000)/0x100000000);function u(){p(),h.call("tick",r),n<i&&(c.stop(),h.call("end",r))}function p(t){var i,c,h=e.length;void 0===t&&(t=1);for(var d=0;d<t;++d)for(n+=(o-n)*a,l.forEach(function(e){e(n)}),i=0;i<h;++i)null==(c=e[i]).fx?c.x+=c.vx*=s:(c.x=c.fx,c.vx=0),null==c.fy?c.y+=c.vy*=s:(c.y=c.fy,c.vy=0);return r}function g(){for(var t,r=0,n=e.length;r<n;++r){if((t=e[r]).index=r,null!=t.fx&&(t.x=t.fx),null!=t.fy&&(t.y=t.fy),isNaN(t.x)||isNaN(t.y)){var i=10*Math.sqrt(.5+r),a=r*m;t.x=i*Math.cos(a),t.y=i*Math.sin(a)}(isNaN(t.vx)||isNaN(t.vy))&&(t.vx=t.vy=0)}}function y(t){return t.initialize&&t.initialize(e,d),t}return null==e&&(e=[]),g(),r={tick:p,restart:function(){return c.restart(u),r},stop:function(){return c.stop(),r},nodes:function(t){return arguments.length?(e=t,g(),l.forEach(y),r):e},alpha:function(e){return arguments.length?(n=+e,r):n},alphaMin:function(e){return arguments.length?(i=+e,r):i},alphaDecay:function(e){return arguments.length?(a=+e,r):+a},alphaTarget:function(e){return arguments.length?(o=+e,r):o},velocityDecay:function(e){return arguments.length?(s=1-e,r):1-s},randomSource:function(e){return arguments.length?(d=e,l.forEach(y),r):d},force:function(e,t){return arguments.length>1?(null==t?l.delete(e):l.set(e,y(t)),r):l.get(e)},find:function(t,r,n){var i,a,o,s,l,c=0,h=e.length;for(null==n?n=1/0:n*=n,c=0;c<h;++c)(o=(i=t-(s=e[c]).x)*i+(a=r-s.y)*a)<n&&(l=s,n=o);return l},on:function(e,t){return arguments.length>1?(h.on(e,t),r):h.on(e)}}})(l).force("collide",(function(e){var t,r,n,i=1,a=1;function o(){for(var e,o,l,c,h,d,u,x=t.length,f=0;f<a;++f)for(e=0,o=w(t,S,z).visitAfter(s);e<x;++e)u=(d=r[(l=t[e]).index])*d,c=l.x+l.vx,h=l.y+l.vy,o.visit(p);function p(e,t,r,a,o){var s=e.data,x=e.r,f=d+x;if(s){if(s.index>l.index){var p=c-s.x-s.vx,g=h-s.y-s.vy,m=p*p+g*g;m<f*f&&(0===p&&(m+=(p=A(n))*p),0===g&&(m+=(g=A(n))*g),m=(f-(m=Math.sqrt(m)))/m*i,l.vx+=(p*=m)*(f=(x*=x)/(u+x)),l.vy+=(g*=m)*f,s.vx-=p*(f=1-f),s.vy-=g*f)}return}return t>c+f||a<c-f||r>h+f||o<h-f}}function s(e){if(e.data)return e.r=r[e.data.index];for(var t=e.r=0;t<4;++t)e[t]&&e[t].r>e.r&&(e.r=e[t].r)}function l(){if(t){var n,i,a=t.length;for(n=0,r=Array(a);n<a;++n)r[(i=t[n]).index]=+e(i,n,t)}}return"function"!=typeof e&&(e=k(null==e?1:+e)),o.initialize=function(e,r){t=e,n=r,l()},o.iterations=function(e){return arguments.length?(a=+e,o):a},o.strength=function(e){return arguments.length?(i=+e,o):i},o.radius=function(t){return arguments.length?(e="function"==typeof t?t:k(+t),l(),o):e},o})().radius(e=>b(e.value)+1)).force("charge",(function(){var e,t,r,n,i,a=k(-30),o=1,s=1/0,l=.81;function c(r){var i,a=e.length,o=w(e,p,g).visitAfter(d);for(n=r,i=0;i<a;++i)t=e[i],o.visit(u)}function h(){if(e){var t,r,n=e.length;for(t=0,i=Array(n);t<n;++t)i[(r=e[t]).index]=+a(r,t,e)}}function d(e){var t,r,n,a,o,s=0,l=0;if(e.length){for(n=a=o=0;o<4;++o)(t=e[o])&&(r=Math.abs(t.value))&&(s+=t.value,l+=r,n+=r*t.x,a+=r*t.y);e.x=n/l,e.y=a/l}else{(t=e).x=t.data.x,t.y=t.data.y;do s+=i[t.data.index];while(t=t.next)}e.value=s}function u(e,a,c,h){if(!e.value)return!0;var d=e.x-t.x,u=e.y-t.y,x=h-a,f=d*d+u*u;if(x*x/l<f)return f<s&&(0===d&&(f+=(d=A(r))*d),0===u&&(f+=(u=A(r))*u),f<o&&(f=Math.sqrt(o*f)),t.vx+=d*e.value*n/f,t.vy+=u*e.value*n/f),!0;if(!e.length&&!(f>=s)){(e.data!==t||e.next)&&(0===d&&(f+=(d=A(r))*d),0===u&&(f+=(u=A(r))*u),f<o&&(f=Math.sqrt(o*f)));do e.data!==t&&(x=i[e.data.index]*n/f,t.vx+=d*x,t.vy+=u*x);while(e=e.next)}}return c.initialize=function(t,n){e=t,r=n,h()},c.strength=function(e){return arguments.length?(a="function"==typeof e?e:k(+e),h(),c):a},c.distanceMin=function(e){return arguments.length?(o=e*e,c):Math.sqrt(o)},c.distanceMax=function(e){return arguments.length?(s=e*e,c):Math.sqrt(s)},c.theta=function(e){return arguments.length?(l=e*e,c):Math.sqrt(l)},c})().strength(30)).force("center",(function(e,t){var r,n=1;function i(){var i,a,o=r.length,s=0,l=0;for(i=0;i<o;++i)s+=(a=r[i]).x,l+=a.y;for(s=(s/o-e)*n,l=(l/o-t)*n,i=0;i<o;++i)a=r[i],a.x-=s,a.y-=l}return null==e&&(e=0),null==t&&(t=0),i.initialize=function(e){r=e},i.x=function(t){return arguments.length?(e=+t,i):e},i.y=function(e){return arguments.length?(t=+e,i):t},i.strength=function(e){return arguments.length?(n=+e,i):n},i})(e/2,t/2).strength(.6)).force("y",(function(e){var t,r,n,i=k(.1);function a(e){for(var i,a=0,o=t.length;a<o;++a)i=t[a],i.vy+=(n[a]-i.y)*r[a]*e}function o(){if(t){var a,o=t.length;for(a=0,r=Array(o),n=Array(o);a<o;++a)r[a]=isNaN(n[a]=+e(t[a],a,t))?0:+i(t[a],a,t)}}return"function"!=typeof e&&(e=k(null==e?0:+e)),a.initialize=function(e){t=e,o()},a.strength=function(e){return arguments.length?(i="function"==typeof e?e:k(+e),o(),a):i},a.y=function(t){return arguments.length?(e="function"==typeof t?t:k(+t),o(),a):e},a})(t/2).strength(.5)).force("x",(function(e){var t,r,n,i=k(.1);function a(e){for(var i,a=0,o=t.length;a<o;++a)i=t[a],i.vx+=(n[a]-i.x)*r[a]*e}function o(){if(t){var a,o=t.length;for(a=0,r=Array(o),n=Array(o);a<o;++a)r[a]=isNaN(n[a]=+e(t[a],a,t))?0:+i(t[a],a,t)}}return"function"!=typeof e&&(e=k(null==e?0:+e)),a.initialize=function(e){t=e,o()},a.strength=function(e){return arguments.length?(i="function"==typeof e?e:k(+e),o(),a):i},a.x=function(t){return arguments.length?(e="function"==typeof t?t:k(+t),o(),a):e},a})(e=>j(e.group)).strength(.3)).alphaDecay(.1).velocityDecay(.6);(0,o.useEffect)(()=>{let r=c.current,n=r?.getContext("2d");if(!r||!n)return;r.addEventListener("click",N);let i=_().on("tick",()=>{E(n,e,t,l,b,null)});return d.current=i,()=>{r.removeEventListener("click",N),i.stop()}},[e,t]);let N=r=>{let n=c.current,i=n?.getContext("2d");if(!n||!i)return;let a=n.getBoundingClientRect(),o=r.clientX-a.left,h=r.clientY-a.top;for(let r of l){if(!r.x||!r.y)continue;let n=r.x-o,a=r.y-h,c=b(r.value);if(n*n+a*a<c*c){r.value+=2,d.current?.stop(),d.current=null,d.current=_().alpha(.3).on("tick",()=>{E(i,e,t,l,b,r)}),s(r);return}}};return(0,a.jsx)("div",{children:(0,a.jsx)("canvas",{ref:c,style:{width:e,height:t},width:e,height:t})})};var eg=e.i(28604);e.s(["CirclePackingSection",0,()=>{let[e,t]=(0,o.useState)(null);return(0,a.jsxs)(a.Fragment,{children:[(0,a.jsxs)("p",{children:["Now that you understand the philosophy behind aesthetics and how to use them, you're probably wondering what is the ",(0,a.jsx)("b",{children:"exhaustive list"})," of those aesthetics."]}),(0,a.jsx)("p",{children:"Turns out, there are quite a few of them! We’ve grouped them into categories and added a small code sandbox for each so you can see them in action."}),(0,a.jsxs)("ul",{children:[(0,a.jsxs)("li",{children:[(0,a.jsx)("b",{style:{color:C("Position")},children:"Position"})," aesthetics control where things appear on the plot — placing bars, points, and lines."]}),(0,a.jsxs)("li",{children:[(0,a.jsx)("b",{style:{color:C("Style")},children:"Style"})," aesthetics define how things look: color, shape, size, and other visual cues that can also carry meaning."]}),(0,a.jsxs)("li",{children:[(0,a.jsx)("b",{style:{color:C("Text")},children:"Text"})," aesthetics help you control labels — what appears as labels, how the they're are aligned, and how they're styled."]}),(0,a.jsxs)("li",{children:[(0,a.jsx)("b",{style:{color:C("Grouping")},children:"Grouping"})," tells"," ",(0,a.jsx)("code",{children:"ggplot2"})," how to connect data across categories. It's a bit of a special case — so we’ll talk about it in more detail later."]})]}),(0,a.jsx)("div",{className:"full-bleed flex justify-center",children:(0,a.jsx)(ep,{data:T,width:1200,height:400,selectedNode:e,setSelectedNode:t})}),e&&(0,a.jsxs)("div",{children:[(0,a.jsx)("code",{children:e.id}),(0,a.jsx)("div",{className:"text-sm mt-4",children:e.description})]}),e&&(0,a.jsx)("div",{className:"full-bleed flex justify-center mt-8",children:(0,a.jsx)("div",{className:"w-full",style:{maxWidth:1e3},children:(0,a.jsx)(eg.ResponsiveREditor,{initialRCode:e.code,height:360},e.id)})})]})}],59610)},1687,e=>{"use strict";var t=e.i(43476),r=e.i(31539),n=e.i(71645),i=e.i(28604),a=e.i(77183),o=e.i(94179);let s=["displ","year","cyl","cty","hwy"],l=({assignments:e,setAssignments:r})=>(0,t.jsx)(a.DndContext,{onDragEnd:function(e){let{over:t,active:n}=e;t&&r(e=>({...e,[t.id]:n.id}))},children:(0,t.jsxs)("div",{className:"grid grid-cols-12 gap-1 items-center",children:[(0,t.jsxs)("div",{className:"col-span-7",children:[(0,t.jsx)("span",{className:"text-sm text-slate-500",children:"Available columns"}),(0,t.jsx)("div",{className:"flex gap-2 h-14 p-4 rounded-sm items-center bg-slate-50",children:s.map(e=>(0,t.jsx)(c,{id:e},e))})]}),(0,t.jsx)("div",{className:"col-span-1 flex justify-center",children:"→"}),(0,t.jsx)("div",{className:"col-span-4  grid grid-cols-2 gap-4",children:["x","y"].map(r=>(0,t.jsx)(h,{id:r,value:e[r]},r))})]})});function c({id:e}){let{attributes:r,listeners:n,setNodeRef:i,transform:s}=(0,a.useDraggable)({id:e});return(0,t.jsx)(o.Badge,{ref:i,...n,...r,className:"cursor-move rounded-sm h-6",style:{transform:s?`translate(${s.x}px, ${s.y}px)`:void 0},children:e})}function h({id:e,value:r}){let{isOver:n,setNodeRef:i}=(0,a.useDroppable)({id:e});return(0,t.jsxs)("div",{children:[(0,t.jsx)("span",{className:"text-sm text-slate-500",children:e+"-axis"}),(0,t.jsxs)("div",{ref:i,className:`h-14 p-2 flex flex-row rounded-sm shadow-none items-center border-2 bg-slate-50 ${n?"border-black":"border-slate-50"}`,children:[r&&(0,t.jsx)(o.Badge,{className:"cursor-move rounded-sm h-6",children:r}),!r&&(0,t.jsx)("span",{className:"text-xs text-slate-500",children:"Drag here"})]})]})}let d=()=>{let[e,r]=(0,n.useState)({}),a=`
+library(ggplot2)
+
+ggplot(data = mpg) +
+  aes(x = ${e.x}, y = ${e.y}) +
+  geom_point()`.trim();return(0,t.jsxs)(t.Fragment,{children:[(0,t.jsx)(l,{assignments:e,setAssignments:r}),(0,t.jsx)("div",{className:"full-bleed flex items-center justify-center",children:(0,t.jsx)("div",{className:"w-full max-w-[1000px] mt-4",children:(0,t.jsx)(i.ResponsiveREditor,{initialRCode:e.x&&e.y?a:"# Please drag and drop some variables above!",height:400},e.x+"-"+e.y)})})]})};e.s(["TopOfPost",0,()=>(0,t.jsxs)(t.Fragment,{children:[(0,t.jsx)("h2",{children:"💄 What Exactly Are Aesthetics?"}),(0,t.jsx)("p",{children:"In essence, an aesthetic is a link between a variable in your data and a visual feature of the plot. For example:"}),(0,t.jsxs)("ul",{children:[(0,t.jsx)("li",{children:"the position of points along the axes,"}),(0,t.jsx)("li",{children:"the fill color of bars, or"}),(0,t.jsx)("li",{children:"the type or width of a line."})]}),(0,t.jsxs)("p",{children:["The important part? You’re not setting these properties manually — you define them by linking it to your data using the ",(0,t.jsx)("code",{children:"aes()"})," ","function. Once the mapping is in place, ",(0,t.jsx)("code",{children:"ggplot2"})," takes care of translating your data into the aesthetics of your choice.",(0,t.jsx)("br",{}),(0,t.jsx)("br",{})]}),(0,t.jsxs)("p",{className:"font-pally text-set1-purple font-bold text-lg !mt-2",children:["That’s the magic of aesthetic mapping:",(0,t.jsx)("br",{}),"It’s always driven by data!"]}),(0,t.jsxs)("p",{children:[(0,t.jsx)("br",{}),"Let’s begin with the simplest type of mapping: specifying which columns define the positions along the axes. If you followed the previous lesson, this will feel familiar!",(0,t.jsx)("br",{}),(0,t.jsx)("br",{})]}),(0,t.jsxs)("p",{className:"font-bricolage font-bold",children:["Drag and drop columns of the"," ",(0,t.jsx)(r.DatasetPreviewButton,{url:"mpg.csv",name:"mpg"})," dataset onto the x- and y-axes:",(0,t.jsx)("br",{}),(0,t.jsx)("br",{})]}),(0,t.jsx)(d,{}),(0,t.jsx)("h2",{children:"🎨 Adding More Aesthetics"}),(0,t.jsx)("p",{children:"Let’s take it one step further. You can map additional aesthetics to make your plots more informative — for example, by linking the color, shape, or size of your points to variables in your dataset."})]})],1687)}]);

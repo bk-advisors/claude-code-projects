@@ -1,0 +1,407 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,23899,e=>{"use strict";var s=e.i(43476),t=e.i(52255),i=e.i(28604),n=e.i(31539);let l=[{whyItMatters:(0,s.jsx)(s.Fragment,{children:(0,s.jsxs)("div",{children:[(0,s.jsxs)("p",{children:["Legends don’t always need to sit outside the chart. Placing them"," ",(0,s.jsx)("b",{children:"inside the panel"})," can save space and keep the viewer’s focus on the data itself."]}),(0,s.jsx)("p",{children:"This is especially handy in presentations or dashboards, where every inch of plotting space counts."})]})}),toDo:(0,s.jsxs)("div",{children:[(0,s.jsxs)("p",{children:["Move the legend ",(0,s.jsx)("b",{children:"inside the plot"}),", in the ",(0,s.jsx)("b",{children:"top-left corner"}),"."]}),(0,s.jsxs)("p",{children:[(0,s.jsx)("u",{children:(0,s.jsx)("b",{children:"Hint:"})})," ","Combine ",(0,s.jsx)("code",{children:"legend.position"})," with"," ",(0,s.jsx)("code",{children:"legend.position.inside"})," and"," ",(0,s.jsx)("code",{children:"legend.justification"}),"for precise placement inside the panel."]})]}),practiceSandbox:`library(ggplot2)
+
+df <- data.frame(
+  group = rep(c("A", "B", "C"), each = 5),
+  step = rep(1:5, 3),
+  value = c(4, 5, 8, 2, 6, 1, 4, 5, 4, 9, 0, 3, 2, 5, 5)
+)
+
+ggplot(df) +
+  aes(x = step, y = value, color = group) +
+  geom_line(linewidth = 1.5) +
+  geom_point(size = 5) +
+  theme_minimal(base_size = 16) +
+  theme(
+    legend.position = "right"
+  )
+  `.trim(),solutionSandbox:`library(ggplot2)
+
+df <- data.frame(
+  group = rep(c("A", "B", "C"), each = 5),
+  step = rep(1:5, 3),
+  value = c(4, 5, 8, 2, 6, 1, 4, 5, 4, 9, 0, 3, 2, 5, 5)
+)
+
+ggplot(df) +
+  aes(x = step, y = value, color = group) +
+  geom_line(linewidth = 1.5) +
+  geom_point(size = 5) +
+  theme_minimal(base_size = 16) +
+  theme(
+    legend.position = "inside",
+    legend.position.inside = c(.1, 1),
+    legend.justification = c(0, 1)
+  )
+  `.trim(),id:"M2-L5-legend-position-inside-topleft"},{whyItMatters:(0,s.jsx)(s.Fragment,{children:(0,s.jsxs)("div",{children:[(0,s.jsxs)("p",{children:["Not all legend tweaks happen inside ",(0,s.jsx)("code",{children:"theme()"}),"! The"," ",(0,s.jsxs)("b",{children:[(0,s.jsx)("code",{children:"scale_*()"})," and ",(0,s.jsx)("code",{children:"guide_*()"})," functions are just as important"," "]}),"in shaping how your legends look and behave."]}),(0,s.jsxs)("p",{children:[(0,s.jsx)("b",{children:"Well-named legends reduce mental load"})," and make your plots easier to interpret at a glance."]})]})}),toDo:(0,s.jsxs)("div",{children:[(0,s.jsxs)("p",{children:["Rename the ",(0,s.jsx)("b",{children:"legend title"})," for ",(0,s.jsx)("code",{children:"color"})," in the scatterplot showing bill measurements of penguins to"," ",(0,s.jsx)("b",{children:"“Penguin Species”"}),"."]}),(0,s.jsx)("p",{children:"This improves clarity and makes the legend title more human-readable than the variable name from the dataset."}),(0,s.jsxs)("p",{children:[(0,s.jsx)("u",{children:(0,s.jsx)("b",{children:"Hint:"})})," ","Add the ",(0,s.jsx)("code",{children:"name"})," argument inside"," ",(0,s.jsx)("code",{children:"scale_color_discrete()"})," to customize the title."]})]}),practiceSandbox:`library(ggplot2)
+penguins <- read.csv("https://www.ggplot2-uncharted.com/data/palmerpenguins.csv")
+
+ggplot(penguins) +
+  aes(x = bill_length_mm, y = bill_depth_mm, color = species) +
+  geom_point(size = 3, alpha = 0.6) +
+  theme_minimal(base_size = 14)
+  `.trim(),solutionSandbox:`library(ggplot2)
+penguins <- read.csv("https://www.ggplot2-uncharted.com/data/palmerpenguins.csv")
+
+ggplot(penguins) +
+  aes(x = bill_length_mm, y = bill_depth_mm, color = species) +
+  geom_point(size = 3, alpha = 0.6) +
+  scale_color_discrete(name = "Penguin Species") +
+  theme_minimal(base_size = 14)
+  `.trim(),id:"M2-L5-legend-rename-title"},{whyItMatters:(0,s.jsx)(s.Fragment,{children:(0,s.jsxs)("div",{children:[(0,s.jsxs)("p",{children:["When points are small, their legend symbols can become"," ",(0,s.jsx)("b",{children:"too tiny to read"}),"."]}),(0,s.jsx)("p",{children:"You can and should fix this by overriding the legend’s default aesthetics."})]})}),toDo:(0,s.jsxs)("div",{children:[(0,s.jsxs)("p",{children:["Make the circles in the legend ",(0,s.jsx)("b",{children:"bigger"})," so each group is clearly visible."]}),(0,s.jsxs)("p",{children:[(0,s.jsx)("u",{children:(0,s.jsx)("b",{children:"Hint:"})})," ","Use ",(0,s.jsx)("code",{children:"guides()"})," and ",(0,s.jsx)("code",{children:"override.aes"})," to adjust symbol size."]})]}),practiceSandbox:`library(ggplot2)
+
+set.seed(1)
+df <- data.frame(
+  x = c(rnorm(500, 1), rnorm(500, 3), rnorm(500, 5)),
+  y = c(rnorm(500, 1), rnorm(500, 3), rnorm(500, 5)),
+  group = rep(c("A", "B", "C"), each = 500)
+)
+
+ggplot(df) +
+  aes(x = x, y = y, color = group) +
+  geom_point(size = .8, alpha = .7) +
+  theme_minimal(base_size = 14)
+  `.trim(),solutionSandbox:`library(ggplot2)
+
+set.seed(1)
+df <- data.frame(
+  x = c(rnorm(500, 1), rnorm(500, 3), rnorm(500, 5)),
+  y = c(rnorm(500, 1), rnorm(500, 3), rnorm(500, 5)),
+  group = rep(c("A", "B", "C"), each = 500)
+)
+
+ggplot(df) +
+  aes(x = x, y = y, color = group) +
+  geom_point(size = .8, alpha = .7) +
+  guides(
+    color = guide_legend(
+      override.aes = list(size = 4)
+    )
+  ) +
+  theme_minimal(base_size = 14)
+  `.trim(),id:"M2-L5-legend-bigger-symbols"},{whyItMatters:(0,s.jsx)(s.Fragment,{children:(0,s.jsxs)("div",{children:[(0,s.jsxs)("p",{children:["Legends are helpful, but they can also become distracting. In presentations or multi-step storyboards, you often want"," ",(0,s.jsx)("b",{children:"consistency when building up plots step by step"}),". That way, your audience won’t be thrown off by a legend that keeps shifting or competing for attention while you talk through the graphic."]}),(0,s.jsxs)("p",{children:["To remove a specific legend, address the corresponding scale directly with",(0,s.jsx)("code",{children:'guide = "none"'}),". This allows you to keep your plot clean while giving you"," ",(0,s.jsx)("b",{children:"full control over which guides remain visible"}),"."]})]})}),toDo:(0,s.jsxs)("div",{children:[(0,s.jsxs)("p",{children:["Let's imagine this chart is part of a presentation with a narrative arc. You have introduced the scatterplot showing the"," ",(0,s.jsx)(n.DatasetPreviewButton,{url:"palmerpenguins.csv",name:"palmerpenguins"})," ","data of bill and flipper lengths for the three different species."]}),(0,s.jsxs)("p",{children:["Now, we highlight the penguins weight 5 kilogram or more by turning hollow circles into solid dots by mapping a threshold of"," ",(0,s.jsx)("code",{children:"body_mass_g"})," to ",(0,s.jsx)("code",{children:"shape"}),"."]}),(0,s.jsxs)("p",{children:["Your task: As the legend is too crowded (and also should stay put across slides)"," ",(0,s.jsx)("b",{children:"remove the size legend — but keep the species legend!"})]}),(0,s.jsxs)("p",{children:[(0,s.jsx)("b",{children:(0,s.jsx)("u",{children:"Hint:"})})," ","You need to address the respective scale and add"," ",(0,s.jsx)("code",{children:'guide = "none"'}),"."]})]}),practiceSandbox:`library(ggplot2)
+penguins <- read.csv("https://www.ggplot2-uncharted.com/data/palmerpenguins.csv")
+
+ggplot(penguins) +
+  aes(x = flipper_length_mm, y = bill_length_mm) +
+  geom_point(
+    aes(shape = body_mass_g > 5000,
+        color = species),
+    size = 4
+  ) +
+  scale_shape_manual(values = c(1, 19)) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top")
+`.trim(),solutionSandbox:`library(ggplot2)
+penguins <- read.csv("https://www.ggplot2-uncharted.com/data/palmerpenguins.csv")
+
+ggplot(penguins) +
+  aes(x = flipper_length_mm, y = bill_length_mm) +
+  geom_point(
+    aes(shape = body_mass_g > 5000,
+        color = species),
+    size = 4
+  ) +
+  scale_shape_manual(
+    values = c(1, 19),
+    guide = "none" # remove size legend
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top")
+`.trim(),id:"M2-L5-legend-remove-via-scale"},{whyItMatters:(0,s.jsx)(s.Fragment,{children:(0,s.jsxs)("div",{children:[(0,s.jsxs)("p",{children:["Legends should reflect what’s actually in the plot. Using"," ",(0,s.jsxs)("b",{children:[(0,s.jsx)("code",{children:"override.aes"})," lets you tweak symbol, size, or opacity in the legend"]})," ","so it stays consistent and avoids confusing your audience."]}),(0,s.jsx)("p",{children:"Setting a clear, human-readable legend title reinforces clarity and helps the audience immediately understand the visual story."})]})}),toDo:(0,s.jsxs)("div",{children:[(0,s.jsx)("p",{children:"Another detail of the legend in the penguins scatterplot that could cause confusion: the legend shows filled dots, even though two of the three species don’t have them in the plot."}),(0,s.jsxs)("p",{children:["We can fix this by"," ",(0,s.jsxs)("b",{children:["passing ",(0,s.jsx)("code",{children:"list(shape = 1)"})," to the"," ",(0,s.jsx)("code",{children:"override.aes"})," argument"]}),", which lets you adjust geom attributes specifically for the legend."]}),(0,s.jsxs)("p",{children:["To apply this, ",(0,s.jsx)("b",{children:"first add a color scale"}),", then explicitly map the guide using ",(0,s.jsx)("code",{children:"guide = guide_legend()"})," and include the"," ",(0,s.jsx)("code",{children:"override.aes"})," argument."]}),(0,s.jsxs)("p",{children:["While updating the color scale, also"," ",(0,s.jsx)("b",{children:'change the legend title to "Species:"'}),"."]})]}),practiceSandbox:`library(ggplot2)
+penguins <- read.csv("https://www.ggplot2-uncharted.com/data/palmerpenguins.csv")
+
+ggplot(penguins) +
+  aes(x = flipper_length_mm, y = bill_length_mm) +
+  geom_point(
+    aes(shape = body_mass_g > 5000,
+        color = species),
+    size = 4
+  ) +
+  scale_shape_manual(
+    values = c(1, 19),
+    guide = "none"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top")
+`.trim(),solutionSandbox:`library(ggplot2)
+penguins <- read.csv("https://www.ggplot2-uncharted.com/data/palmerpenguins.csv")
+
+ggplot(penguins) +
+  aes(x = flipper_length_mm, y = bill_length_mm) +
+  geom_point(
+    aes(shape = body_mass_g > 5000,
+        color = species),
+    size = 4
+  ) +
+  scale_color_discrete(
+    guide = guide_legend(
+      override.aes = list(shape = 1)
+    ),
+    name = "Species:"
+  ) +
+  scale_shape_manual(
+    values = c(1, 19),
+    guide = "none"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top")
+`.trim(),id:"M2-L5-legend-override-aes"},{whyItMatters:(0,s.jsx)(s.Fragment,{children:(0,s.jsxs)("div",{children:[(0,s.jsx)("p",{children:"Using color to distinguish many categories is tricky — often a maximum of 5–8 qualitative colors is recommended, depending on whom you ask."}),(0,s.jsx)("p",{children:"Sorting the legend so that the entries follow the order of the lines at the end of the timesieres helps readers immediately connect each color to its line. This is often a good idea in general, not just when there are many groups, because it reduces cognitive load and makes the chart easier to interpret."})]})}),toDo:(0,s.jsxs)("div",{children:[(0,s.jsxs)("p",{children:["The BRICS CO₂ emissions over time are plotted using lines colored by"," ",(0,s.jsx)("code",{children:"country"}),". With 10 countries, so the use of a color encoding is not ideal. (But maybe our boss told us to do so...)"]}),(0,s.jsxs)("p",{children:["Let's make it easier for readers to match colors to countries:"," ",(0,s.jsx)("b",{children:"sort the legend so that the orders corresponds to the order of the lines, the per-capita emissions in the most recent year."})," ","Use"," ",(0,s.jsxs)("b",{children:[(0,s.jsx)("code",{children:"fct_reorder()"})," from the ",(0,s.jsx)("code",{children:"forcats"})," package"]}),"to achieve that."]}),(0,s.jsxs)("p",{children:["You can call the ",(0,s.jsx)("code",{children:"fct_reorder()"})," directly in"," ",(0,s.jsx)("code",{children:"aes()"})," — however, the function is reflected in the legend as well. Here, we can ",(0,s.jsx)("b",{children:"omit the legend title"})," as the category names are self-explanatory. Adjust the label accordingly."]}),(0,s.jsxs)("p",{children:[(0,s.jsx)("b",{children:(0,s.jsx)("u",{children:"Hint:"})})," ","The ",(0,s.jsx)("code",{children:"fct_reorder()"})," from the ",(0,s.jsx)("code",{children:"forcats"})," function is handy to reorder factors (here ",(0,s.jsx)("code",{children:"country"})," (here"," ",(0,s.jsx)("code",{children:"co2_pcap"}),"). Using ",(0,s.jsx)("code",{children:".fun = last"})," sorts by the most recent value, and ",(0,s.jsx)("code",{children:".desc = TRUE"})," ensures the legend matches the line order from high to low."]})]}),practiceSandbox:`library(ggplot2)
+library(dplyr)
+library(forcats)
+
+brics <- read.csv("https://www.ggplot2-uncharted.com/data/gapminder-brics.csv")
+
+ggplot(brics, aes(x = year, y = co2_pcap)) +
+  geom_line(
+    aes(color = country),
+    key_glyph = "timeseries"
+  )`.trim(),solutionSandbox:`library(ggplot2)
+library(dplyr)
+library(forcats)
+
+brics <- read.csv("https://www.ggplot2-uncharted.com/data/gapminder-brics.csv")
+
+ggplot(brics, aes(x = year, y = co2_pcap)) +
+  geom_line(
+    aes(color = fct_reorder(
+      country, co2_pcap,
+      .fun = last, .desc = TRUE
+    )),
+    key_glyph = "timeseries"
+  ) +
+  labs(color = NULL)`.trim(),id:"M2-L5-legend-sort-categories",pkgs:["dplyr","forcats"]},{whyItMatters:(0,s.jsx)(s.Fragment,{children:(0,s.jsxs)("div",{children:[(0,s.jsxs)("p",{children:["Legends for continuous data can take different forms. Choosing a suitable ",(0,s.jsx)("code",{children:"guide"})," helps you communicate the underlying structure of your data more effectively."]}),(0,s.jsxs)("p",{children:["Switching from the default colorbar to a"," ",(0,s.jsx)("b",{children:"colorsteps groups the values into discrete steps"})," ",(0,s.jsx)("u",{children:"in the legend"}),". Since IMDb ratings come on a 1–10 scale, this makes it easier for readers to interpret color ranges as meaningful rating levels — without affecting the smooth color transitions in the heatmap itself."]}),(0,s.jsxs)("p",{children:["(In case you argue that the heatmap colors should be binned as well: simply use the binned scale ",(0,s.jsx)("code",{children:"scale_fill_fermenter()"})," ","instead.)"]})]})}),toDo:(0,s.jsxs)("div",{children:[(0,s.jsxs)("p",{children:["Adjust the colors and legend in the heatmap showing"," ",(0,s.jsx)(n.DatasetPreviewButton,{url:"simpsons_episodes.csv",name:"IMDb ratings for Simpsons episodes"}),"."]}),(0,s.jsxs)("p",{children:["Apply a diverging color palette from the ",(0,s.jsx)("code",{children:"RColorBrewer"})," ","package. Then, convert the default ",(0,s.jsx)("code",{children:"colorbar"})," into a"," ",(0,s.jsx)("code",{children:"colorsteps"}),"guide using the ",(0,s.jsx)("code",{children:"guide"})," argument. Finally, give the legend a clear, human-readable title."]}),(0,s.jsxs)("p",{children:[(0,s.jsx)("u",{children:"Reminder:"})," Continuous ColorBrewer palettes are included in",(0,s.jsx)("code",{children:"ggplot2"})," and can be added with"," ",(0,s.jsx)("code",{children:"scale_color_distiller()"}),"or ",(0,s.jsx)("code",{children:"scale_fill_distiller()"}),"."]}),(0,s.jsxs)("p",{children:[(0,s.jsx)("u",{children:(0,s.jsx)("b",{children:"Bonus Task:"})})," ","Move the x-axis to the top so readers encounter that information first — a small tweak that can subtly guide the viewer’s attention."]})]}),practiceSandbox:`library(ggplot2)
+simpsons <- read.csv("https://www.ggplot2-uncharted.com/data/simpsons_episodes.csv")
+
+ggplot(data = simpsons, aes(x = factor(number_in_season), y = factor(season))) +
+  geom_tile(aes(fill = imdb_rating)) +
+  scale_y_discrete(limits = rev) +
+  labs(x = "Episode", y = "Season") +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+`.trim(),solutionSandbox:`library(ggplot2)
+simpsons <- read.csv("https://www.ggplot2-uncharted.com/data/simpsons_episodes.csv")
+
+ggplot(data = simpsons, aes(x = factor(number_in_season), y = factor(season))) +
+  geom_tile(aes(fill = imdb_rating)) +
+  scale_y_discrete(limits = rev) +
+  # modify how fill is shown
+  scale_fill_distiller(
+    palette = "PuOr", # change color gradient
+    direction = 1,    # ... and flip it
+    na.value = "white",
+    name = "IMDb rating", # add clean label
+    guide = guide_colorsteps() # create binned legend
+  ) +
+  # move x-axis to the top (bonus)
+  scale_x_discrete(position = "top") +
+  labs(x = "Episode", y = "Season") +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+`.trim(),id:"M2-L5-legend-guide-colorsteps"},{whyItMatters:(0,s.jsx)(s.Fragment,{children:(0,s.jsxs)("div",{children:[(0,s.jsx)("p",{children:"Sometimes the default legend key sizes aren’t ideal. They can be too narrow or short to read comfortably — or may simply not fit your design."}),(0,s.jsxs)("p",{children:["Adjusting the width and height with",(0,s.jsx)("b",{children:(0,s.jsx)("code",{children:"legend.key.size"})})," ","which applies the same value to both,"," ",(0,s.jsxs)("b",{children:["or individually with ",(0,s.jsx)("code",{children:"legend.key.width"})," and"," ",(0,s.jsx)("code",{children:"legend.key.height"})]}),", gives you precise control over how the keys appear."]}),(0,s.jsxs)("p",{children:["These values require the ",(0,s.jsx)("code",{children:"unit()"})," function to specify the measurement. This approach works not only for discrete keys but also for gradient legends like colorbars or colorsteps."]})]})}),toDo:(0,s.jsxs)("div",{children:[(0,s.jsx)("p",{children:"The legend shows lines for each group, but they may be hard to see alongside the points."}),(0,s.jsxs)("p",{children:[(0,s.jsx)("b",{children:"Find the legend option that controls the key width"})," and increase it so the lines are depicted clearly."]}),(0,s.jsxs)("p",{children:[(0,s.jsx)("u",{children:(0,s.jsx)("b",{children:"Hint:"})})," ","You need to pass the width as a number with an associated unit, like"," ",(0,s.jsx)("code",{children:'unit(4, "lines")'}),"."]}),(0,s.jsxs)("p",{children:[(0,s.jsx)("u",{children:(0,s.jsx)("b",{children:"Bonus Task:"})})," ","In addition, increase the spacing between the legend keys so that they're clearly spearated."]})]}),practiceSandbox:`library(ggplot2)
+
+df <- data.frame(
+  group = rep(c("A", "B", "C"), each = 5),
+  step = rep(1:5, 3),
+  value = c(4, 5, 8, 2, 6, 1, 4, 5, 4, 9, 0, 3, 2, 5, 5)
+)
+
+ggplot(df) +
+  aes(x = step, y = value, color = group) +
+  geom_line(linewidth = 1.5) +
+  geom_point(size = 5) +
+  theme_minimal(base_size = 16) +
+  labs(color = NULL) +
+  theme(
+    legend.position = "inside",
+    legend.position.inside = c(.05, .99),
+    legend.justification = c(0, 1)
+  )
+  `.trim(),solutionSandbox:`library(ggplot2)
+
+df <- data.frame(
+  group = rep(c("A", "B", "C"), each = 5),
+  step = rep(1:5, 3),
+  value = c(4, 5, 8, 2, 6, 1, 4, 5, 4, 9, 0, 3, 2, 5, 5)
+)
+
+ggplot(df) +
+  aes(x = step, y = value, color = group) +
+  geom_line(linewidth = 1.5) +
+  geom_point(size = 5) +
+  labs(color = NULL) +
+  theme_minimal(base_size = 16) +
+  theme(
+    legend.position = "inside",
+    legend.position.inside = c(.05, .99),
+    legend.justification = c(0, 1),
+    legend.key.width = unit(4, "lines"),
+    legend.key.spacing.y = unit(.5, "lines") # bonus
+  )
+  `.trim(),id:"M2-L5-legend-key-width"}];var a=e.i(34942),r=e.i(90538),o=e.i(53200),d=e.i(22016),c=e.i(71645),h=e.i(70840),p=e.i(67881),g=e.i(83847),x=e.i(59377),m=e.i(34701);let u=()=>{let[e,t]=(0,c.useState)("left"),[n,l]=(0,c.useState)("c(0.5, 0.5)"),[a,r]=(0,c.useState)("c(0, 0)");return(0,s.jsxs)(s.Fragment,{children:[(0,s.jsx)("h3",{children:"1️⃣ Legend position"}),(0,s.jsxs)("p",{children:["Everything starts with"," ",(0,s.jsx)("code",{children:(0,s.jsx)("b",{className:"text-set1-teal",children:"legend.position"})}),". It decides ",(0,s.jsx)("b",{children:"where"})," your legend appears around the plot."]}),(0,s.jsxs)("ul",{className:"arrow",children:[(0,s.jsxs)("li",{children:["Standard values are"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>t("top"),children:"top"}),","," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>t("bottom"),children:"bottom"}),","," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>t("left"),children:"left"}),", and"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>t("right"),children:"right"}),". These place the legend ",(0,s.jsx)("b",{children:"outside"})," the plotting area."]}),(0,s.jsxs)("li",{children:["You can place it ",(0,s.jsx)("b",{children:"inside"})," the panel using"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>t("inside"),children:"inside"}),"."]}),(0,s.jsxs)("li",{children:["You can also ",(0,s.jsx)("b",{children:"remove"})," the legend entirely with"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>t("none"),children:"none"}),"."]})]}),(0,s.jsxs)("p",{children:["When the legend is ",(0,s.jsx)("b",{children:"positioned at the top or bottom"}),", it defaults to a horizontal layout to make better use of space."]}),(0,s.jsxs)("p",{children:["When the legend is ",(0,s.jsx)("b",{children:"positioned inside"}),", you can use"," ",(0,s.jsx)("code",{children:(0,s.jsx)("b",{className:"text-set1-teal",children:"legend.position.inside = c(x, y)"})})," ","to set coordinates between ",(0,s.jsx)("code",{children:"0"})," (left/bottom) and"," ",(0,s.jsx)("code",{children:"1"})," (right/top). For example,"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>{t("inside"),l("c(0,0)")},children:"c(0,0)"})," ","places it in the bottom-left corner."]}),(0,s.jsxs)("p",{children:["By default, ",(0,s.jsx)("code",{children:"ggplot2"})," ",(0,s.jsx)("b",{children:"anchors the center"})," of the legend to those coordinates. You can change this anchor with"," ",(0,s.jsx)("code",{children:(0,s.jsx)("b",{className:"text-set1-teal",children:"legend.justification"})}),". It accepts a vector or a keyword — for instance,"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>{t("inside"),l("c(0.5, 0.5)"),r("c(1, 1)")},children:"c(1, 1)"})," ","pins the top-right corner, while"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>{t("inside"),l("c(0.5, 0.5)"),r("center")},children:"center"})," ","aligns it by its midpoint."]}),(0,s.jsxs)("div",{className:"grid grid-cols-2 gap-4 mt-8",children:[(0,s.jsxs)("div",{className:"flex flex-col gap-2",children:[(0,s.jsxs)("div",{children:[(0,s.jsx)("span",{className:"text-sm text-gray-500 tracking-wider",children:"Position"}),(0,s.jsx)(h.LegendPositionAttributeEditor,{legendPositionElement:e,setLegendPositionElement:t,hasLabel:!1})]}),"inside"===e&&(0,s.jsxs)("div",{children:[(0,s.jsx)("span",{className:"text-sm text-gray-500 tracking-wider",children:"Position Inside"}),(0,s.jsx)(h.Vector2ValuesAttributeEditor,{vector2ValuesElement:n,setVector2ValuesElement:l})]})]}),(0,s.jsxs)("div",{children:[(0,s.jsx)("span",{className:"text-sm text-gray-500 tracking-wider",children:"Justification"}),(0,s.jsx)(h.LegendJustificationAttributeEditor,{legendJustificationElement:a,setLegendJustificationElement:r})]})]}),(0,s.jsx)("p",{className:"font-pally font-bold",children:"👆 Use the controls above to place the legend in the top-left corner of the panel 👇"}),(0,s.jsx)("div",{className:"full-bleed mt-6",children:(0,s.jsx)("div",{className:"max-w-[1000px] mx-auto",children:(0,s.jsx)(i.ResponsiveREditor,{initialRCode:`library(ggplot2)
+
+df <- data.frame(
+  step = rep(1:3, each = 3),
+  value = 1:9,
+  group = rep(c("A", "B", "C"), 3)
+)
+
+ggplot(df) +
+  aes(x = step, y = value, color = group) +
+  geom_line() +
+  geom_point(size = 3) +
+  theme_grey(base_size = 16) +
+  theme(
+    legend.position = "${e}",${"inside"===e?`
+    legend.position.inside = ${n},`:""}
+    legend.justification = ${a.startsWith("c(")?`${a}`:`"${a}"`}
+  )`,height:350})})}),(0,s.jsx)("div",{className:"bg-set2-teal/20 text-sm p-4 border border-set2-teal mt-8 mb-12 font-bricolage",children:(0,s.jsxs)("p",{children:[(0,s.jsx)("b",{children:"Tip:"})," Place the legend close to the top of your visualization so viewers read it ",(0,s.jsx)("u",{children:"before"})," diving into the actual data 👌",(0,s.jsx)("br",{})]})})]})},j=()=>{let[e,t]=(0,c.useState)("vertical");return(0,s.jsxs)(s.Fragment,{children:[(0,s.jsx)("h3",{children:"2️⃣ Legend orientation"}),(0,s.jsxs)("p",{children:["In the example above, the three groups (",(0,s.jsx)("code",{children:"A"}),", ",(0,s.jsx)("code",{children:"B"}),", and ",(0,s.jsx)("code",{children:"C"}),") appear stacked vertically. That’s because"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>t("vertical"),children:"vertical"})," ","is the default layout. To arrange them side-by-side, switch to"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>t("horizontal"),children:"horizontal"}),"."]}),(0,s.jsxs)("div",{className:"mt-4",children:[(0,s.jsx)("span",{className:"text-sm text-gray-500 tracking-wider",children:"Direction"}),(0,s.jsx)(h.DirectionAttributeEditor,{directionElement:e,setDirectionElement:t})]}),(0,s.jsx)("div",{className:"full-bleed mt-2",children:(0,s.jsx)("div",{className:"max-w-[1000px] mx-auto",children:(0,s.jsx)(i.ResponsiveREditor,{initialRCode:`library(ggplot2)
+
+df <- data.frame(
+  step = rep(1:3, each = 3),
+  value = 1:9,
+  group = rep(c("A", "B", "C"), 3)
+)
+
+ggplot(df) +
+  aes(x = step, y = value, color = group) +
+  geom_line() +
+  geom_point(size = 3) +
+  theme_grey(base_size = 16) +
+  theme(
+    legend.direction = "${e}"
+  )
+`,height:350})})}),(0,s.jsx)("p",{children:"Now that the legend is properly positioned, let's move on to customizing it."})]})},b=()=>{let[e,t]=(0,c.useState)({}),[n,l]=(0,c.useState)({}),[a,r]=(0,c.useState)("top"),[o,d]=(0,c.useState)(void 0),[u,j]=(0,c.useState)({}),[b,y]=(0,c.useState)({value:16,unit:"pt"}),[f,v]=(0,c.useState)({value:16,unit:"pt"}),[w,_]=(0,c.useState)({}),k=[];Object.keys(e).length>0&&k.push(`  legend.title = ${(0,g.textElementToR)(e)}`),Object.keys(n).length>0&&k.push(`  legend.text = ${(0,g.textElementToR)(n)}`),Object.keys(w).length>0&&k.push(`  legend.background = ${(0,g.rectElementToR)(w)}`),Object.keys(u).length>0&&k.push(`  legend.key = ${(0,g.rectElementToR)(u)}`),Object.keys(b).length>0&&k.push(`  legend.key.size = ${(0,g.unitElementToR)(b)}`),Object.keys(f).length>0&&k.push(`  legend.key.spacing = ${(0,g.unitElementToR)(f)}`),o&&k.push(`  legend.text.position = ${(0,g.legendPositionElementToR)(o)}`),k.push(`  legend.title.position = ${(0,g.legendPositionElementToR)(a)}`);let N=`theme(
+  ${k.join(",\n  ")}
+)`;return(0,s.jsxs)(s.Fragment,{children:[(0,s.jsx)("h3",{children:"3️⃣ Fine-tuning"}),(0,s.jsxs)("div",{className:"relative mt-4",children:[(0,s.jsx)("div",{className:"absolute -translate-x-62",children:(0,s.jsx)("img",{src:"/img/legend-schema.png",width:200})}),(0,s.jsxs)("p",{children:["A good starting point is the title."," ",(0,s.jsx)("code",{children:(0,s.jsx)("b",{className:"text-set1-teal",children:"title"})})," ","is an ",(0,s.jsx)("code",{children:"element_text"})," object, which means you can adjust its color, size, and other common text properties. For instance, let's make it"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>t({...e,colour:"red"}),children:(0,s.jsx)("span",{className:"text-red-400",children:"red"})}),"."]}),(0,s.jsx)(m.Sidenote,{text:(0,s.jsxs)("p",{children:["To change the actual legend title, use ",(0,s.jsx)("code",{children:"labs()"})," or the"," ",(0,s.jsx)("code",{children:"name"})," argument in ",(0,s.jsx)("code",{children:"scale_*()"}),"."]})})]}),(0,s.jsxs)("p",{children:["Then there is"," ",(0,s.jsx)("b",{className:"text-set1-teal",children:(0,s.jsx)("code",{children:"legend.text"})})," ","that customizes the text of the legend, but not the title. For instance, let's give it a size of"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>l({...e,size:21}),children:"21"}),"."]}),(0,s.jsxs)("p",{children:["Next come the keys."," ",(0,s.jsx)("b",{className:"text-set1-teal",children:(0,s.jsx)("code",{children:"legend.key"})})," ","controls the rectangle that surrounds all the legend key items. Each item also has its own area, and you can adjust its dimensions using"," ",(0,s.jsx)("b",{className:"text-set1-teal",children:(0,s.jsx)("code",{children:"legend.key.size"})}),(0,s.jsxs)("span",{className:"text-xs",children:["( or separately with"," ",(0,s.jsx)("b",{className:"text-set1-teal",children:(0,s.jsx)("code",{children:"legend.key.width"})})," ","and"," ",(0,s.jsx)("b",{className:"text-set1-teal",children:(0,s.jsx)("code",{children:"legend.key.height"})})]}),"). Let's make it"," ",(0,s.jsxs)(p.Button,{variant:"outline",size:"xs",onClick:()=>{y({...b,value:32}),j({...u,fill:"red"})},children:["big and ",(0,s.jsx)("span",{className:"text-red-400",children:"red"}),"!"]}),"!"]}),(0,s.jsx)("p",{children:"At this point, you might be wondering how to customize the marker itself — but you can’t! The legend symbols are automatically generated to reflect what’s actually shown on the plot."}),(0,s.jsxs)("div",{className:"flex justify-center gap-1 mt-8",children:[(0,s.jsxs)(x.Popover,{children:[(0,s.jsx)(x.PopoverTrigger,{asChild:!0,children:(0,s.jsx)(p.Button,{variant:"outline",children:"Title"})}),(0,s.jsxs)(x.PopoverContent,{className:"w-[400px]",children:[(0,s.jsx)("span",{className:"text-xs font-bold",children:"legend.title"}),(0,s.jsx)(h.TextAttributeEditor,{textElement:e,setTextElement:t}),(0,s.jsx)("div",{className:"mt-2",children:(0,s.jsx)("span",{className:"text-xs font-bold",children:"legend.title.position"})}),(0,s.jsx)(h.LegendTextPositionAttributeEditor,{legendTextPositionElement:a,setLegendTextPositionElement:r})]})]}),(0,s.jsxs)(x.Popover,{children:[(0,s.jsx)(x.PopoverTrigger,{asChild:!0,children:(0,s.jsx)(p.Button,{variant:"outline",children:"Text"})}),(0,s.jsxs)(x.PopoverContent,{className:"w-[400px]",children:[(0,s.jsx)("div",{className:"mt-2",children:(0,s.jsx)("span",{className:"text-xs font-bold",children:"legend.text"})}),(0,s.jsx)(h.TextAttributeEditor,{textElement:n,setTextElement:l}),(0,s.jsx)("div",{className:"mt-2",children:(0,s.jsx)("span",{className:"text-xs font-bold",children:"legend.text.position"})}),(0,s.jsx)(h.LegendTextPositionAttributeEditor,{legendTextPositionElement:o,setLegendTextPositionElement:d})]})]}),(0,s.jsxs)(x.Popover,{children:[(0,s.jsx)(x.PopoverTrigger,{asChild:!0,children:(0,s.jsx)(p.Button,{variant:"outline",children:"Keys"})}),(0,s.jsxs)(x.PopoverContent,{className:"w-[400px]",children:[(0,s.jsx)("span",{className:"text-xs font-bold",children:"legend.key"}),(0,s.jsx)(h.RectAttributeEditor,{rectElement:u,setRectElement:j}),(0,s.jsx)("div",{className:"mt-2",children:(0,s.jsx)("span",{className:"text-xs font-bold",children:"legend.key.size"})}),(0,s.jsx)(h.UnitAttributeEditor,{unitElement:b,setUnitElement:y}),(0,s.jsx)("div",{className:"mt-2",children:(0,s.jsx)("span",{className:"text-xs font-bold",children:"legend.key.spacing"})}),(0,s.jsx)(h.UnitAttributeEditor,{unitElement:f,setUnitElement:v})]})]}),(0,s.jsxs)(x.Popover,{children:[(0,s.jsx)(x.PopoverTrigger,{asChild:!0,children:(0,s.jsx)(p.Button,{variant:"outline",children:"Background"})}),(0,s.jsxs)(x.PopoverContent,{className:"w-[400px]",children:[(0,s.jsx)("span",{className:"text-xs font-bold",children:"legend.background"}),(0,s.jsx)(h.RectAttributeEditor,{rectElement:w,setRectElement:_})]})]})]}),(0,s.jsx)("div",{className:"full-bleed mt-2",children:(0,s.jsx)("div",{className:"max-w-[1000px] mx-auto",children:(0,s.jsx)(i.ResponsiveREditor,{initialRCode:`library(ggplot2)
+
+df <- data.frame(
+  step = rep(1:3, each = 3),
+  value = 1:9,
+  group = rep(c("A", "B", "C"), 3)
+)
+
+ggplot(df) +
+  aes(x = step, y = value, color = group) +
+  geom_line() +
+  geom_point(size = 3) +
+  ${N}
+`,height:350})})})]})},y=()=>{let[e,t]=(0,c.useState)({}),[n,l]=(0,c.useState)(),[a,r]=(0,c.useState)(),o=[];Object.keys(e).length>0&&o.push(`legend.box.background = ${(0,g.rectElementToR)(e)}`),n&&o.push(`  legend.box = "${n}"`),a&&o.push(`  legend.box.just = "${a}"`);let d=o.length>0?`+
+  theme(
+  ${o.join(",\n  ")}
+  )`:"";return(0,s.jsxs)(s.Fragment,{children:[(0,s.jsx)("h3",{children:"4️⃣ Multi Legend"}),(0,s.jsxs)("p",{children:["If you map both ",(0,s.jsx)("code",{children:"color"})," and ",(0,s.jsx)("code",{children:"size"})," to your data, ggplot2 creates two separate legends. You can control how these legends are arranged and styled ",(0,s.jsx)("b",{children:"relative to each other"}),"."]}),(0,s.jsxs)("div",{className:"relative mt-4",children:[(0,s.jsxs)("p",{children:["By default, multiple legends are grouped inside a ",(0,s.jsx)("b",{children:"box"}),": a container that you can customize using"," ",(0,s.jsx)("b",{className:"text-set1-teal",children:(0,s.jsx)("code",{children:"legend.box.background"})}),". For example, you can change its background to"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>t({...e,fill:"red"}),children:(0,s.jsx)("span",{className:"text-red-400",children:"red"})})," ","or draw a"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>t({colour:"black",size:1}),children:(0,s.jsx)("span",{children:"black border"})}),"."]}),(0,s.jsx)(m.Sidenote,{text:(0,s.jsx)("p",{children:"If you change the legend box background, keep in mind that the individual legends still have a white background."})})]}),(0,s.jsxs)("p",{children:["You can also control the legend’s orientation. This is done with the"," ",(0,s.jsx)("b",{className:"text-set1-teal",children:(0,s.jsx)("code",{children:"legend.box"})})," ","argument, which can be set to"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>l("horizontal"),children:(0,s.jsx)("span",{children:"horizontal"})})," ","or"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>l("vertical"),children:(0,s.jsx)("span",{children:"vertical"})}),"."]}),(0,s.jsxs)("p",{children:["Next, you can adjust how multiple legends are aligned with"," ",(0,s.jsx)("b",{className:"text-set1-teal",children:(0,s.jsx)("code",{children:"legend.box.just"})}),". Try"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>r("left"),children:(0,s.jsx)("span",{children:"left"})}),","," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>r("right"),children:(0,s.jsx)("span",{children:"right"})}),", and"," ",(0,s.jsx)(p.Button,{variant:"outline",size:"xs",onClick:()=>r("center"),children:(0,s.jsx)("span",{children:"center"})})," ","to see the difference!"]}),(0,s.jsxs)("div",{className:"flex justify-center gap-1 mt-8",children:[(0,s.jsxs)(x.Popover,{children:[(0,s.jsx)(x.PopoverTrigger,{asChild:!0,children:(0,s.jsx)(p.Button,{variant:"outline",children:"Background"})}),(0,s.jsxs)(x.PopoverContent,{className:"w-[400px]",children:[(0,s.jsx)("span",{className:"text-xs font-bold",children:"legend.box.background"}),(0,s.jsx)(h.RectAttributeEditor,{rectElement:e,setRectElement:t})]})]}),(0,s.jsxs)(x.Popover,{children:[(0,s.jsx)(x.PopoverTrigger,{asChild:!0,children:(0,s.jsx)(p.Button,{variant:"outline",children:"Orientation"})}),(0,s.jsxs)(x.PopoverContent,{className:"w-[400px]",children:[(0,s.jsx)("span",{className:"text-xs font-bold",children:"legend.box"}),(0,s.jsx)(h.DirectionAttributeEditor,{directionElement:n??"horizontal",setDirectionElement:l})]})]}),(0,s.jsxs)(x.Popover,{children:[(0,s.jsx)(x.PopoverTrigger,{asChild:!0,children:(0,s.jsx)(p.Button,{variant:"outline",children:"Justification"})}),(0,s.jsxs)(x.PopoverContent,{className:"w-[400px]",children:[(0,s.jsx)("span",{className:"text-xs font-bold",children:"legend.just"}),(0,s.jsx)(h.LegendBoxJustAttributeEditor,{legendBoxJustElement:a,setLegendBoxJustElement:r})]})]})]}),(0,s.jsx)("div",{className:"full-bleed mt-2",children:(0,s.jsx)("div",{className:"max-w-[1000px] mx-auto",children:(0,s.jsx)(i.ResponsiveREditor,{initialRCode:`library(ggplot2)
+
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point( aes(color = drv, size = cty), alpha = .5) +
+  scale_size_continuous(range = c(1, 15)) ${d}
+  `.trim(),height:400})})})]})};var f=e.i(19737),v=e.i(92253),w=e.i(2332),_=e.i(47163);let k=()=>{let[e,t]=(0,c.useState)(1),i=(0,c.useRef)([]);return(0,c.useEffect)(()=>{let e=new IntersectionObserver(e=>{e.forEach(e=>{e.isIntersecting&&t(Number(e.target.id))})},{root:null,threshold:.1,rootMargin:"-40% 0px -40% 0px"});return i.current.forEach(s=>{s&&e.observe(s)}),()=>e.disconnect()},[]),(0,s.jsx)("div",{className:"full-bleed flex justify-center mx-2",children:(0,s.jsxs)("div",{className:"grid grid-cols-12 gap-8",style:{maxWidth:1100},children:[(0,s.jsxs)("div",{className:"col-span-6 inline-block",children:[(0,s.jsx)(w.Spacing,{}),(0,s.jsxs)("div",{id:"0",ref:e=>i.current[0]=e,className:(0,_.cn)(0===e?"opacity-100":"opacity-20","transition-opacity duration-500"),children:[(0,s.jsx)(S,{number:0}),(0,s.jsxs)("p",{children:["We start with a familiar setup — the classic"," ",(0,s.jsx)(n.DatasetPreviewButton,{name:"gapminder",url:"gapminder-2022.csv"})," ","chart you’ve seen a few times throughout the last lessons."]}),(0,s.jsx)(v.CodeBlock,{code:N}),(0,s.jsxs)("p",{children:["Now, how can we make the legend ",(0,s.jsx)("b",{children:"clearer"}),","," ",(0,s.jsx)("b",{children:"more informative"}),", and ",(0,s.jsx)("b",{children:"more aesthetically pleasing"}),"? 🤔"]})]}),(0,s.jsx)(w.Spacing,{}),(0,s.jsx)(w.Spacing,{}),(0,s.jsxs)("div",{id:"1",ref:e=>i.current[1]=e,className:(0,_.cn)(1===e?"opacity-100":"opacity-20","transition-opacity duration-500"),children:[(0,s.jsx)(S,{number:1}),(0,s.jsxs)("p",{children:["Let’s start by refining the legend"," ",(0,s.jsx)("b",{className:"simple-highlight-teal",children:" titles "}),"."]}),(0,s.jsxs)("p",{children:["The"," ",(0,s.jsx)("b",{children:(0,s.jsx)("code",{children:"labs()"})})," ","function lets you define"," ",(0,s.jsx)("b",{children:"all labels, including legend titles"}),", in one place — a cleaner and more readable approach than setting them individually with the ",(0,s.jsx)("code",{children:"name"})," argument inside each"," ",(0,s.jsx)("code",{children:"scale_*()"})," function."]}),(0,s.jsx)(v.CodeBlock,{code:z})]}),(0,s.jsx)(w.Spacing,{}),(0,s.jsx)(w.Spacing,{}),(0,s.jsxs)("div",{id:"2",ref:e=>i.current[2]=e,className:(0,_.cn)(2===e?"opacity-100":"opacity-20","transition-opacity duration-500"),children:[(0,s.jsx)(S,{number:2}),(0,s.jsxs)("p",{children:["Next, let’s polish how the mapped variables appear by adjusting their ",(0,s.jsx)("b",{className:"simple-highlight-teal",children:" scales "}),"."]}),(0,s.jsxs)("p",{children:["For the ",(0,s.jsx)("code",{children:"size"})," aesthetic, we use"," ",(0,s.jsx)("code",{children:"scale_size_area()"})," to ensure the ",(0,s.jsx)("b",{children:"circle areas"})," ","reflect population accurately. Inside the ",(0,s.jsx)("code",{children:"scale"}),", we define meaningful breaks and replace large numbers with clear labels like “10 Million” or “1 Billion.”"]}),(0,s.jsx)(v.CodeBlock,{code:T})]}),(0,s.jsx)(w.Spacing,{}),(0,s.jsx)(w.Spacing,{}),(0,s.jsxs)("div",{id:"3",ref:e=>i.current[3]=e,className:(0,_.cn)(3===e?"opacity-100":"opacity-20","transition-opacity duration-500"),children:[(0,s.jsx)(S,{number:3}),(0,s.jsxs)("p",{children:["Then, we use"," ",(0,s.jsx)("b",{children:(0,s.jsx)("b",{children:(0,s.jsx)("code",{children:"theme()"})})})," ","to fine-tune the"," ",(0,s.jsx)("b",{className:"simple-highlight-teal",children:" overall legend layout "}),"."]}),(0,s.jsx)("p",{children:"We move the legends to the top, align them to the left, and stack them vertically. Titles appear above the keys, labels below, and text styling uses bold typography for clarity."}),(0,s.jsx)("p",{children:"Tweaking spacing and key dimensions enhances readability and gives the chart a clean, professional balance."}),(0,s.jsx)(v.CodeBlock,{code:C})]}),(0,s.jsx)(w.Spacing,{}),(0,s.jsx)(w.Spacing,{}),(0,s.jsxs)("div",{id:"4",ref:e=>i.current[4]=e,className:(0,_.cn)(4===e?"opacity-100":"opacity-20","transition-opacity duration-500"),children:[(0,s.jsx)(S,{number:4}),(0,s.jsxs)("p",{children:["Finally,"," ",(0,s.jsx)("b",{children:(0,s.jsx)("code",{children:"guide_*()"})})," ","functions control the"," ",(0,s.jsx)("b",{className:"simple-highlight-teal",children:" legend-specific details "}),", allowing you to fine-tune each legend independently."]}),(0,s.jsxs)("p",{children:["You can include a ",(0,s.jsx)("code",{children:"guide_*()"})," call inside"," ",(0,s.jsx)("code",{children:"guides()"})," — as we do here — or pass it directly through the ",(0,s.jsx)("code",{children:"guide"})," argument of the corresponding",(0,s.jsx)("code",{children:"scale_*()"}),"."]}),(0,s.jsx)(v.CodeBlock,{code:E})]}),(0,s.jsx)(w.Spacing,{}),(0,s.jsx)(w.Spacing,{})]}),(0,s.jsx)("div",{className:"col-span-6 relative",children:(0,s.jsx)("div",{className:"sticky top-40 flex justify-center mt-60",children:(0,s.jsx)("img",{src:`/img/legendEvolution${e}.png`,className:"w-full h-auto object-contain",alt:""})})})]})})},N=`
+ggplot(gapminder) +
+  aes(
+    x = gdp_pcap,
+    y = life_exp,
+    fill = continent,
+    size = pop
+  ) +
+  geom_point(shape = 21, alpha = .7) +
+  scale_fill_brewer(palette = "Dark2") +
+  scale_x_log10(
+    labels = scales::label_number(suffix = " Int$")
+  )
+`.trim(),z=`
+labs(
+  x = "GDP per capita (price and inflation adjusted)",
+  y = "Life Expectancy (years)",
+  fill = "Continent:",
+  size = "Population:"
+)
+`.trim(),T=`
+scale_size_area(
+  max_size = 18, # adjust bubble sizes
+  breaks = c(.001, .01, .1, .25, .5, 1)*10^9, # change bubble steps
+  labels = c(paste(c(1, 10, 100, 250, 500), "Million"), "1 Billion") # polish key labels
+)
+`.trim(),C=`
+  theme_light(base_family = "Roboto") +
+  theme(
+    legend.position = "top",                    # move legends to the top
+    legend.box.just = "left",                   # left-align both legends
+    legend.justification = "left",              # left-align legends with panel
+    legend.box = "vertical",                    # place legends below each other
+    legend.title.position = "top",              # place title above the dots
+    legend.text.position = "bottom",            # place labels below dots
+    legend.title = element_text(face = "bold"), # style legend titles
+    legend.key.width = unit(.08, "npc"),        # increase key width
+    legend.spacing = unit(.2, "lines")          # decrease spacing between legends
+  )
+`.trim(),E=`
+guides(
+  fill = guide_legend(
+    order = 1,                                # place fill legend first
+    override.aes = list(size = 5)             # increase dot size
+  ),
+  size = guide_legend(
+    theme = theme(
+      legend.text = element_text(family = "Roboto Mono"), # use tabular font
+      legend.key.width = unit(.14, "npc")     # increase space for key labels
+    ),
+    nrow = 1                                  # prohibit wrapping into two lines
+  )
+)
+`.trim(),S=({number:e})=>(0,s.jsx)("div",{className:"border flex justify-center items-center p-1 border-black rounded-full h-8 w-8 text-md font-bold",children:e});e.s(["Content",0,()=>(0,s.jsxs)(s.Fragment,{children:[(0,s.jsxs)("p",{children:["We'll now walk through the main legend customization options in"," ",(0,s.jsx)("code",{children:"theme()"})," — one step at a time."]}),(0,s.jsx)("h2",{children:"🎛️ A Step-by-Step Guide"}),(0,s.jsxs)("p",{children:["The ",(0,s.jsx)("code",{children:"theme()"})," system in ",(0,s.jsx)("code",{children:"ggplot2"})," is impressively flexible — and one of its more intricate sub-systems are the"," ",(0,s.jsx)("code",{children:"legend.*"})," options. You can style legends in many different ways, which is powerful but can also get a bit confusing. Instead of memorizing dozens of arguments, let’s build a clear mental model together."]}),(0,s.jsxs)("p",{children:["As mentioned in the section above, all of these ",(0,s.jsx)("code",{children:"theme()"})," ","options can be applied globally (added as a component to your plot) or locally via the ",(0,s.jsx)("code",{children:"theme"})," argument inside a"," ",(0,s.jsx)("code",{children:"guide_*()"})," function. We’ll revisit the differences when working with multiple legends later."]}),(0,s.jsx)(u,{}),(0,s.jsx)(j,{}),(0,s.jsxs)("div",{children:[(0,s.jsx)("br",{}),(0,s.jsx)("br",{}),(0,s.jsx)("br",{})]}),(0,s.jsx)(b,{}),(0,s.jsxs)("div",{children:[(0,s.jsx)("br",{}),(0,s.jsx)("br",{}),(0,s.jsx)("br",{})]}),(0,s.jsx)(y,{}),(0,s.jsx)("h2",{children:"⚜️ The Reign of the Legend "}),(0,s.jsx)("p",{children:"Let’s bring it all together: scales, themes, labels, and guides."}),(0,s.jsx)("p",{children:"You’ve seen each of these in isolation; now it’s time to make them work in harmony."}),(0,s.jsx)(k,{}),(0,s.jsx)(w.Spacing,{}),(0,s.jsxs)("div",{className:"bg-set2-red/20 text-sm p-4 border border-set2-red my-0 font-bricolage",children:[(0,s.jsx)("p",{className:"mb-3",children:(0,s.jsx)("b",{children:"Custom Fonts for Custom Look 🧰"})}),(0,s.jsxs)("p",{children:["The advanced example above makes use of custom fonts to style the plots. To make them work on your system, please install"," ",(0,s.jsx)(d.default,{href:"https://fonts.google.com/specimen/Roboto",target:"_blank",children:"Roboto"})," ","and"," ",(0,s.jsx)(d.default,{href:"https://fonts.google.com/specimen/Roboto+Mono",target:"_blank",children:"Roboto Mono"})," ","on your system! Then install the font files like any other system font."]})]}),(0,s.jsx)("p",{children:(0,s.jsx)("br",{})}),(0,s.jsx)("h2",{children:"🔑 Dressing Up Legend Keys"}),(0,s.jsxs)("p",{children:["By default, ",(0,s.jsx)("code",{children:"ggplot2"})," chooses legend key glyphs that match the geom and aesthetic you’re using. Lines appear as lines, boxplots as little boxes, and points as points. Most of the time, this is exactly what you need."]}),(0,s.jsxs)("p",{children:["But sometimes, you might want the legend to show something slightly different — for example, a line in the plot but a simplified symbol in the legend. That’s where ",(0,s.jsx)("code",{children:"key_glyph"})," comes in. It lets you override the default and assign a different kind of glyph to a layer’s legend key."]}),(0,s.jsxs)("p",{children:["Here’s a quick example using a time-series of the"," ",(0,s.jsx)(n.DatasetPreviewButton,{url:"gapminder-brics.csv",name:"Gapminder data for BRICS countries"})," ","dataset:"]}),(0,s.jsx)("div",{className:"full-bleed flex justify-center my-10",children:(0,s.jsx)("div",{className:"w-full",style:{maxWidth:1e3},children:(0,s.jsx)(i.ResponsiveREditor,{initialRCode:`library(ggplot2)
+brics <- read.csv("https://www.ggplot2-uncharted.com/data/gapminder-brics.csv")
+
+ggplot(brics, aes(x = year, y = co2_pcap)) +
+  geom_line(
+    aes(color = country),
+    key_glyph = "timeseries"
+  )`.trim(),height:380})})}),(0,s.jsxs)("p",{children:["Using ",(0,s.jsx)("code",{children:"key_glyph"})," is handy when your legend needs to communicate the data more clearly than the default representation. It can be especially useful in complex plots or when combining multiple geoms where the default glyphs might be misleading or visually crowded."]}),(0,s.jsx)("h2",{children:"😰 Common Struggles"}),(0,s.jsx)("p",{children:"These FAQs cover the “why is this happening?” moments that we often see in workshops and consulting sessions. They should help you approach these situations more confidently if they come up."}),(0,s.jsxs)(r.Accordion,{type:"single",collapsible:!0,className:"w-full mt-4",children:[(0,s.jsxs)(r.AccordionItem,{value:"item-1",children:[(0,s.jsx)(r.AccordionTrigger,{children:"How can I hide the legend?"}),(0,s.jsx)(r.AccordionContent,{className:"flex flex-col gap-4 text-balance",children:(0,s.jsxs)("div",{className:"bg-set2-teal/20 text-sm p-4 border border-set2-teal mt-0 font-bricolage",children:[(0,s.jsxs)("p",{children:["As you may have realized by now, there are several approaches to remove legends in ",(0,s.jsx)("code",{children:"ggplot2"}),". They"," ",(0,s.jsx)("b",{children:"operate at different hierarchical levels"}),", which determines what scope of the legend is removed:"]}),(0,s.jsxs)("ol",{className:"numbers font-bold text-set1-teal",children:[(0,s.jsxs)("li",{className:"mt-6 mb-4",children:[(0,s.jsx)("code",{children:"show.legend = FALSE"})," in ",(0,s.jsx)("code",{children:"geom_*()"})," and"," ",(0,s.jsx)("code",{children:"stat_*()"}),(0,s.jsx)("br",{}),(0,s.jsxs)("span",{className:"font-normal text-black",children:["Hides the legend only for this specific ",(0,s.jsx)("b",{children:"layer"}),". Other layers with mapped aesthetics will still generate legends."]})]}),(0,s.jsxs)("li",{className:"mb-4",children:[(0,s.jsx)("code",{children:'guide = "none"'})," or ",(0,s.jsx)("code",{children:"guide = NULL"})," in"," ",(0,s.jsx)("code",{children:"scale_*()"}),(0,s.jsx)("br",{}),(0,s.jsxs)("span",{className:"font-normal text-black",children:["Suppresses the legend for this particular ",(0,s.jsx)("b",{children:"aesthetic"})," ","across the entire plot, no matter how many layers use it."]})]}),(0,s.jsxs)("li",{children:[(0,s.jsx)("code",{children:'theme(legend.position = "none")'}),(0,s.jsx)("br",{}),(0,s.jsxs)("span",{className:"font-normal text-black",children:["Removes ",(0,s.jsx)("b",{children:"all"})," legends in the plot, overriding any other settings. Once set, no legend will appear, even if individual layers or scales try to create one."]})]})]}),(0,s.jsx)("p",{children:"Understanding the hierarchy helps you decide whether you want to remove a single layer’s legend, a specific aesthetic’s legend, or all legends at once."})]})})]}),(0,s.jsxs)(r.AccordionItem,{value:"item-2",children:[(0,s.jsx)(r.AccordionTrigger,{children:"Why does my code create two separate legends?"}),(0,s.jsx)(r.AccordionContent,{className:"flex flex-col gap-4 text-balance",children:(0,s.jsxs)("div",{className:"bg-set2-teal/20 text-sm p-4 border border-set2-teal mt-0 font-bricolage",children:[(0,s.jsxs)("p",{children:[(0,s.jsx)("b",{children:"Visual aesthetics mapped to the same variable"})," will share a ",(0,s.jsx)("b",{children:"single combined legend"})," if they:"]}),(0,s.jsxs)("ol",{className:"numbers",children:[(0,s.jsxs)("li",{children:["use the ",(0,s.jsx)("b",{children:"same type of guide"}),","]}),(0,s.jsxs)("li",{children:["have the ",(0,s.jsx)("b",{children:"same title"})," (name), and"]}),(0,s.jsxs)("li",{children:["share the ",(0,s.jsx)("b",{children:"same breaks and labels"}),"."]})]}),(0,s.jsxs)("p",{children:["For example, mapping the same categorical variable to"," ",(0,s.jsx)("code",{children:"fill"})," and ",(0,s.jsx)("code",{children:"shape"})," creates one merged legend by default. Changing the title of just one aesthetic (using"," ",(0,s.jsxs)("code",{children:["scale_","<","aes",">",'_*(name = "',"<","title",">",'")']})," ","or",(0,s.jsxs)("code",{children:["labs(","<","aes",">",' = "',"<","title",">",'")']}),") separates them. The same happens if you modify the breaks or labels for only one of them."]}),(0,s.jsxs)("p",{className:"mb-6",children:["By contrast, when the same variable is mapped to aesthetics that use different guide types — for instance, mapping a continuous variable to both ",(0,s.jsx)("code",{children:"fill"})," and ",(0,s.jsx)("code",{children:"size"})," —"," ",(0,s.jsx)("code",{children:"ggplot2"})," will produce two separate legends. A continuous fill scale usually creates a colorbar, while a size aesthetic produces a legend with distinct keys. These"," ",(0,s.jsx)("b",{children:"won’t be merged unless you explicitly set their guide types to match"}),"."]}),(0,s.jsxs)("p",{children:["Of course, aesthetics mapped to ",(0,s.jsx)("b",{children:"different variables"})," will always produce ",(0,s.jsx)("b",{children:"separate legends"}),", even if they use the same type of guide."]})]})})]}),(0,s.jsxs)(r.AccordionItem,{value:"item-3",children:[(0,s.jsx)(r.AccordionTrigger,{children:"How can I rename categories in the legend?"}),(0,s.jsx)(r.AccordionContent,{className:"flex flex-col gap-4 text-balance",children:(0,s.jsxs)("div",{className:"bg-set2-teal/20 text-sm p-4 border border-set2-teal mt-0 font-bricolage",children:[(0,s.jsxs)("p",{className:"mb-6",children:["If you just want to"," ",(0,s.jsx)("b",{children:"change how categories appear in the legend"}),", you can rename them through the corresponding ",(0,s.jsx)("code",{children:"scale_*()"})," ","function."]}),(0,s.jsxs)("p",{children:["For example"," ",(0,s.jsx)("code",{children:'scale_color_discrete(labels = c("P. adeliae", "P. antarctica", "P. papua"))'})," ","will override the information stored in the ",(0,s.jsx)("code",{children:"species"})," ","column of the"," ",(0,s.jsx)(n.DatasetPreviewButton,{url:"palmerpenguins.csv",name:"penguins"})," ","dataset and display those labels in the color legend."]}),(0,s.jsxs)("p",{className:"mb-6",children:["To avoid mismatches, it is best practice to pass a named vector that aligns with the stored categories, like"," ",(0,s.jsx)("code",{children:'c(Adelie = "P. adeliae", Chinstrap = "P. antarctica", Gentoo = "P. papua")'})]}),(0,s.jsxs)("p",{children:["Alternatively, you can relabel them directly in your data or when mapping the variable inside ",(0,s.jsx)("code",{children:"aes()"}),"."]})]})})]}),(0,s.jsxs)(r.AccordionItem,{value:"item-4",children:[(0,s.jsx)(r.AccordionTrigger,{children:"Can I change the order of categories in the legend?"}),(0,s.jsx)(r.AccordionContent,{className:"flex flex-col gap-4 text-balance",children:(0,s.jsxs)("div",{className:"bg-set2-teal/20 text-sm p-4 border border-set2-teal mt-0 font-bricolage",children:[(0,s.jsxs)("p",{className:"mb-6",children:[(0,s.jsx)("b",{children:"Discrete variables are listed in ascending order or by factor levels"})," ","in both positional and visual guides — meaning along an axis or inside legends."]}),(0,s.jsxs)("p",{children:["If you want to simply ",(0,s.jsx)("b",{children:"switch the order"}),", you can use"," ",(0,s.jsx)("code",{children:"reverse = TRUE"})," in the respective"," ",(0,s.jsx)("code",{children:"guide_*()"})," function."]}),(0,s.jsxs)("p",{className:"mb-6",children:["To ",(0,s.jsx)("b",{children:"create a custom order"}),", you can use R’s base"," ",(0,s.jsx)("code",{children:"factor()"})," function to define custom levels. The"," ",(0,s.jsx)("code",{children:"forcats"})," package provides handier helpers like"," ",(0,s.jsx)("code",{children:"fct_reorder()"}),", ",(0,s.jsx)("code",{children:"fct_inorder()"}),", or"," ",(0,s.jsx)("code",{children:"fct_infreq()"})," for more flexible reordering."]}),(0,s.jsx)("p",{children:"For instance, you might want to rank legend entries by another variable — say, reorder penguin species by their average body mass — directly when mapping the variable:"}),(0,s.jsx)("p",{children:(0,s.jsx)("code",{children:"aes(color = fct_reorder(species, body_mass_g, .fun = mean))"})}),(0,s.jsxs)("p",{children:["Because the variable is reordered ",(0,s.jsx)("u",{children:"before"})," plotting, the legend will automatically follow the updated order."]})]})})]})]}),(0,s.jsx)(o.DidYouKnowCard,{title:"You have another legend moment you struggle with?",content:(0,s.jsxs)("p",{children:["Don’t hesitate to ping us on the"," ",(0,s.jsx)("a",{href:"https://discord.com/channels/1371405022041997332/1375043871997825075",target:"_blank",children:(0,s.jsx)("b",{className:"font-bricolage",children:"#help-and-support"})})," ","Discord channel — we’ll help you out and update this FAQ list so it keeps growing and stays relevant for everyone."]})}),(0,s.jsx)("h2",{children:"⚠️ Sometimes We Don’t Need Legends"}),(0,s.jsxs)("p",{children:["Legends are useful, but they aren’t always the most readable or efficient way to communicate information. They force readers to look"," ",(0,s.jsx)("b",{children:"back and forth"})," between the legend and the chart, adding unnecessary mental load."]}),(0,s.jsx)("p",{children:"Two simple alternatives often work much better:"}),(0,s.jsxs)("ul",{children:[(0,s.jsxs)("li",{children:[(0,s.jsx)("b",{children:"Direct labeling"}),": place labels on or near the data points"]}),(0,s.jsxs)("li",{children:[(0,s.jsx)("b",{children:"Color-coded titles"}),": great for charts with just a few groups"]})]}),(0,s.jsx)("p",{children:"Cédric loves these techniques and uses them extensively. See them in action in the carousel below!"}),(0,s.jsxs)(f.Carousel,{className:"w-full",children:[(0,s.jsx)(f.CarouselContent,{children:["/img/example-direct-landuse.png","/img/example-direct-bib.png","/img/example-direct-penguins-mod.png","/img/example-direct-mens-world.png","/img/example-direct-cars.png","/img/example-direct-magic.png","/img/example-direct-christmas.png","/img/example-direct-bayern.png","/img/example-direct-bayern-2.png","/img/example-direct-news.png","/img/example-direct-rstats.png","/img/example-direct-bigmac.png","/img/example-direct-boxoffice.png","/img/example-direct-meetings.png","/img/example-direct-friends.png","/img/example-direct-grammys.png","/img/example-direct-ngtld.png","/img/example-direct-valentine.png","/img/example-direct-outcomes.png"].map((e,t)=>(0,s.jsx)(f.CarouselItem,{className:"flex items-center",children:(0,s.jsx)("img",{src:e})},t))}),(0,s.jsx)(f.CarouselPrevious,{className:"-translate-x-12 bg-set2-teal/70"}),(0,s.jsx)(f.CarouselNext,{className:"translate-x-12 bg-set2-teal/70"})]}),(0,s.jsxs)("p",{children:["Mix approaches as needed: place a colorbar for numeric gradients close to the chart so your audience can ",(0,s.jsx)("b",{children:"quickly match the colors"})," they see; label categories directly at the end of lines to"," ",(0,s.jsx)("b",{children:"draw attention"})," to the most recent data; or highlight groups with circles and labels in scatterplots to ",(0,s.jsx)("b",{children:"emphasize patterns"}),"."]}),(0,s.jsx)("div",{className:"bg-set2-teal/20 text-sm p-4 border border-set2-teal mt-12 mb-10 font-bricolage",children:(0,s.jsxs)("p",{children:["We will cover lots of labelling option in various lesson in the upcoming module 3 when we talk about"," ",(0,s.jsx)(d.default,{href:"/module3/annotations",children:"annotations"}),","," ",(0,s.jsx)(d.default,{href:"/module3/smart-labeling",children:"smart labeling"}),", and"," ",(0,s.jsx)(d.default,{href:"/module3/styling-text",children:"styling text"})," 🙌"]})}),(0,s.jsx)("h2",{id:"exercises",children:"🏆 Exercises"}),(0,s.jsxs)("p",{children:["Let’s get hands-on with legends! These exercises cover the common tweaks you’ll use over and over, so you feel confident applying them in any plot.",(0,s.jsx)("br",{}),(0,s.jsx)("br",{}),(0,s.jsx)("br",{})]}),(0,s.jsx)("div",{className:"full-bleed flex justify-center",children:(0,s.jsx)("div",{className:"max-w-[1000px] w-full",children:(0,s.jsx)(a.ExerciseAccordion,{exercises:[{title:(0,s.jsx)("span",{children:"Inside Job"}),content:(0,s.jsx)(t.ExerciseDoubleSandbox,{exercise:l.find(e=>"M2-L5-legend-position-inside-topleft"===e.id)})},{title:(0,s.jsx)("span",{children:"Specify Species"}),content:(0,s.jsx)(t.ExerciseDoubleSandbox,{exercise:l.find(e=>"M2-L5-legend-rename-title"===e.id)})},{title:(0,s.jsx)("span",{children:"Make this key bigger!"}),content:(0,s.jsx)(t.ExerciseDoubleSandbox,{exercise:l.find(e=>"M2-L5-legend-bigger-symbols"===e.id)})},{title:(0,s.jsx)("span",{children:"Hide and Seek"}),content:(0,s.jsx)(t.ExerciseDoubleSandbox,{exercise:l.find(e=>"M2-L5-legend-remove-via-scale"===e.id)})},{title:(0,s.jsx)("span",{children:"It's a Match"}),content:(0,s.jsx)(t.ExerciseDoubleSandbox,{exercise:l.find(e=>"M2-L5-legend-override-aes"===e.id)})},{title:(0,s.jsx)("span",{children:"Sort and Guide"}),content:(0,s.jsx)(t.ExerciseDoubleSandbox,{exercise:l.find(e=>"M2-L5-legend-sort-categories"===e.id)})},{title:(0,s.jsx)("span",{children:"Heat Bin"}),content:(0,s.jsx)(t.ExerciseDoubleSandbox,{exercise:l.find(e=>"M2-L5-legend-guide-colorsteps"===e.id)})},{title:(0,s.jsx)("span",{children:"Wide Lines, Clear Keys"}),content:(0,s.jsx)(t.ExerciseDoubleSandbox,{exercise:l.find(e=>"M2-L5-legend-key-width"===e.id)})}]})})})]})],23899)},94682,e=>{"use strict";var s=e.i(43476),t=e.i(28604),i=e.i(34701),n=e.i(27341),l=e.i(22016);e.s(["TopOfPost",0,()=>(0,s.jsxs)(s.Fragment,{children:[(0,s.jsx)("h2",{children:"👑 The Birth of a Legend"}),(0,s.jsx)("p",{children:"The legend translates your visual mappings into meaning, showing what each encoding like color, shape, or linetype stands for. Like a good map key, it helps readers find their way through your plot."}),(0,s.jsxs)("div",{className:"relative",children:[(0,s.jsx)(i.Sidenote,{text:(0,s.jsxs)("span",{children:["Legends only appear for ",(0,s.jsx)("b",{children:"mapped aesthetics"}),", not constant ones."]})}),(0,s.jsxs)("p",{children:[(0,s.jsx)("code",{children:"ggplot2"})," creates legends automatically whenever you"," ",(0,s.jsx)("b",{children:"map"})," an aesthetic like ",(0,s.jsx)("code",{children:"color"}),", ",(0,s.jsx)("code",{children:"shape"}),", or ",(0,s.jsx)("code",{children:"linetype"}),". If not specified explicitly, the legend will appear on the right of the panel, centered, and with a vertical orientation."]})]}),(0,s.jsxs)("p",{children:["This is where"," ",(0,s.jsx)("b",{className:"simple-highlight-teal",children:" legend styling "})," ","comes in. You can shape legends from ",(0,s.jsx)("b",{children:"three"})," different “spots” in"," ",(0,s.jsx)("code",{children:"ggplot2"})," — each handling a different layer of control:"]}),(0,s.jsxs)("ul",{className:"arrow",children:[(0,s.jsxs)("li",{children:[(0,s.jsxs)("div",{className:"relative mt-2",children:[(0,s.jsx)(i.Sidenote,{text:(0,s.jsxs)("span",{children:["In discrete legends these appear as ",(0,s.jsx)("b",{children:"keys"}),", while in colorbars and binned legends they are shown as"," ",(0,s.jsx)("b",{children:"tick marks"}),"."]})}),(0,s.jsxs)("p",{children:[(0,s.jsx)("b",{children:(0,s.jsx)("code",{children:"scale_*()"})}),(0,s.jsx)("br",{}),"Control the ",(0,s.jsx)("b",{children:"labels and values"})," that appear in the legend: how many there are, their order, what they display, and how they’re formatted — including fully overwriting labels if desired."]})]}),(0,s.jsx)("div",{className:"bg-set2-purple/20 text-sm p-4 border border-set2-purple mt-3 mb-10 font-bricolage",children:(0,s.jsxs)("p",{children:["We already talked about adjusting a scale's ",(0,s.jsx)("code",{children:"name"}),","," ",(0,s.jsx)("code",{children:"breaks"}),", ",(0,s.jsx)("code",{children:"labels"}),", ",(0,s.jsx)("code",{children:"values"}),","," ",(0,s.jsx)("code",{children:"limits"}),", and more in the"," ",(0,s.jsx)(l.default,{href:"/module1/scales",children:"dedicated “Scales” lesson"}),"."]})})]}),(0,s.jsxs)("li",{children:[(0,s.jsx)("b",{children:(0,s.jsx)("code",{children:"theme()"})}),(0,s.jsxs)("div",{className:"mt-2",children:["Modify the ",(0,s.jsx)("b",{children:"overall style"}),": where the legends are placed, whether their orientations, and visual details like spacing, margins, and text justification or alignment. Changes apply to"," ",(0,s.jsx)("b",{children:"all legends"}),"."]}),(0,s.jsx)("div",{className:"bg-set2-purple/20 text-sm p-4 border border-set2-purple mt-3 mb-10 font-bricolage",children:(0,s.jsxs)("p",{children:["You’ve seen some of these legend tweaks already in the"," ",(0,s.jsx)("b",{children:"Theme Attribute Explorer"})," and in exercise 3 of the"," ",(0,s.jsx)(l.default,{href:"/module2/custom-themes",children:"“Custom Themes” lesson"}),"."]})})]}),(0,s.jsxs)("li",{children:[(0,s.jsx)("b",{children:(0,s.jsx)("code",{children:"guide_*()"})}),(0,s.jsxs)("div",{className:"mt-2",children:["Fine-tune ",(0,s.jsx)("b",{children:"layout and appearance"}),": number of rows or columns, reversing order, or even overriding aesthetics (for example, making small points appear larger in the legend)."]}),(0,s.jsxs)("div",{className:"mt-2",children:["Specify ",(0,s.jsx)("code",{children:"theme"})," options inside the guide to customize a single legend without affecting the others."]}),(0,s.jsx)("br",{}),(0,s.jsx)("br",{})]})]}),(0,s.jsx)("div",{className:"flex justify-center items-center mt-8 mb-2",children:(0,s.jsx)("p",{className:"font-bricolage font-medium",children:"Style a legend with..."})}),(0,s.jsx)("div",{className:"full-bleed mb-8",children:(0,s.jsxs)(n.Tabs,{defaultValue:"scale",className:"relative",children:[(0,s.jsx)("div",{className:"flex justify-center items-center",children:(0,s.jsxs)(n.TabsList,{children:[(0,s.jsx)(n.TabsTrigger,{value:"scale",children:(0,s.jsx)("code",{children:"scale_*()"})}),(0,s.jsx)(n.TabsTrigger,{value:"theme",children:(0,s.jsx)("code",{children:"theme()"})}),(0,s.jsx)(n.TabsTrigger,{value:"guide",children:(0,s.jsx)("code",{children:"guide_*()"})})]})}),(0,s.jsx)("br",{}),(0,s.jsxs)(n.TabsContent,{value:"scale",className:"wrapper",children:[(0,s.jsx)("div",{className:"text-align: center;",children:(0,s.jsx)("p",{className:"font-bricolage font-medium",children:"Customize legend titles and labels: replace species names with full Latin names, set custom tick marks, and label body mass values with units."})}),(0,s.jsx)("div",{className:"full-bleed flex justify-center my-4",children:(0,s.jsx)("div",{className:"w-full max-w-[1000px]",children:(0,s.jsx)(t.ResponsiveREditor,{initialRCode:`library(ggplot2)
+penguins <- read.csv("https://www.ggplot2-uncharted.com/data/palmerpenguins.csv")
+
+ggplot(penguins) +
+  aes(x = bill_length_mm, y = bill_depth_mm,
+      color = species, size = body_mass_g) +
+  geom_point(shape = 16, alpha = .6) +
+  theme_light() +
+  # adjust labels in color legend
+  scale_color_discrete(
+    name = "Species:",
+    labels = c("Pygoscelis adeliae", "Pygoscelis antarctica", "Pygoscelis papua")
+  ) +
+  # adjust labels and values in size legend
+  scale_size(
+    name = "Body mass:",
+    range = c(.5, 5),
+    breaks = quantile(penguins$body_mass_g, na.rm = TRUE),
+    labels = scales::label_number(suffix = " g")
+  )`,height:390})})})]}),(0,s.jsxs)(n.TabsContent,{value:"theme",className:"wrapper",children:[(0,s.jsx)("div",{className:"text-align: center;",children:(0,s.jsx)("p",{className:"font-bricolage font-medium",children:"Move and style the legend: place it on top, set labels in monospace, add subtle grey outlines, and position titles above the keys."})}),(0,s.jsx)("div",{className:"full-bleed flex justify-center my-4",children:(0,s.jsx)("div",{className:"w-full max-w-[1000px]",children:(0,s.jsx)(t.ResponsiveREditor,{initialRCode:`library(ggplot2)
+penguins <- read.csv("https://www.ggplot2-uncharted.com/data/palmerpenguins.csv")
+
+ggplot(penguins) +
+  aes(x = bill_length_mm, y = bill_depth_mm,
+      color = species, size = body_mass_g) +
+  geom_point(shape = 16, alpha = .6) +
+  theme_light() +
+  # adjust legend position and style
+  theme(
+    legend.position = "top",
+    legend.title.position = "top",
+    legend.text = element_text(family = "monospace"),
+    legend.key = element_rect(color = "grey80")
+  )`,height:390})})})]}),(0,s.jsxs)(n.TabsContent,{value:"guide",className:"wrapper",children:[(0,s.jsx)("div",{className:"text-align: center;",children:(0,s.jsx)("p",{className:"font-bricolage font-medium",children:"Fine-tune layout and appearance: create a binned guide with modified text for size, larger dots with flipped order for color, and reorder legends."})}),(0,s.jsx)("div",{className:"full-bleed flex justify-center my-4",children:(0,s.jsx)("div",{className:"w-full max-w-[1000px]",children:(0,s.jsx)(t.ResponsiveREditor,{initialRCode:`library(ggplot2)
+penguins <- read.csv("https://www.ggplot2-uncharted.com/data/palmerpenguins.csv")
+
+ggplot(penguins) +
+  aes(x = bill_length_mm, y = bill_depth_mm,
+      color = species, size = body_mass_g) +
+  geom_point(shape = 16, alpha = .6) +
+  theme_light() +
+  # adjust legend order and style each separately
+  guides(
+    size = guide_bins(
+      order = 1,
+      theme = theme(legend.text = element_text(family = "monospace"))
+    ),
+    color = guide_legend(
+      reverse = TRUE,
+      override.aes = list(size = 5)
+    )
+  )`,height:390})})})]})]})})]})])}]);

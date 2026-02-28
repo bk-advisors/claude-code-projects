@@ -1,0 +1,357 @@
+---
+title: "Chapter 1: Why R for Management Consultants"
+subtitle: "R for Management Consultants | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Explain why R is a valuable tool for management consultants in global health
+- Navigate the RStudio interface (console, script editor, environment, files)
+- Execute basic R commands in the console
+- Understand the difference between R scripts and the console
+- Install and load R packages
+:::
+
+## Chapter Overview
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #E24A3F;">Excel<br>Limits</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #005CB9;">Why<br>R?</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">RStudio<br>Tour</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">First<br>Commands</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">Packages</div>
+</div>
+
+
+# The Limits of Spreadsheets {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Why Excel is not enough for serious analysis</span>
+
+
+## The Spreadsheet Trap
+
+A consultant working on an MNH program across five countries receives monthly DHIS2 data extracts.
+
+. . .
+
+::: {.incremental}
+- Each country sends a different Excel format, each month a new file
+- With 60 Excel files a year, the consultant spends more time copying and pasting than analyzing
+- One misplaced column, one accidental overwrite, and a month of work is compromised
+:::
+
+. . .
+
+::: {.callout-box}
+**If your analysis can't be repeated exactly by someone else clicking one button, it's not reproducible --- and in global health, non-reproducible analysis is a liability.**
+:::
+
+
+## Excel vs. R: A Practical Comparison
+
+| Task | Excel | R |
+|------|-------|---|
+| Combine 60 monthly data files | Copy-paste, error-prone | 3 lines of code |
+| Recalculate when data updates | Redo everything manually | Re-run the script |
+| Audit trail | None (who changed cell B47?) | Full version history |
+| Handle 100,000+ rows | Slows down, crashes | No problem |
+| Reproduce for a colleague | "Let me walk you through..." | "Run this script" |
+
+
+## When to Keep Using Excel
+
+::: {.incremental}
+- Quick look at a small dataset (fewer than 100 rows)
+- One-off calculations that won't be repeated
+- Sharing with stakeholders who need to edit values interactively
+:::
+
+. . .
+
+::: {.callout-box .green}
+**R doesn't replace Excel.** It replaces the parts of Excel that waste your time and introduce errors.
+:::
+
+
+# What Makes R Different {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Free, reproducible, and built for data</span>
+
+
+## R in One Sentence
+
+::: {.definition-box}
+**R** is a free, open-source programming language designed for statistical computing and data visualization. It's used by epidemiologists, economists, data scientists, and --- increasingly --- management consultants.
+:::
+
+. . .
+
+::: {.incremental}
+- Free and open-source (no license fees, ever)
+- 20,000+ packages for every analytical task imaginable
+- Publication-quality charts with ggplot2
+- Reproducible reports with Quarto (this course!)
+- Active community of global health researchers and analysts
+:::
+
+
+## Who Uses R in Global Health?
+
+::: {.example-block}
+[WHO]{.example-label}
+
+WHO uses R for disease surveillance dashboards and epidemic modeling.
+:::
+
+::: {.example-block}
+[IHME]{.example-label}
+
+The Global Burden of Disease study (IHME) runs on R.
+:::
+
+::: {.example-block}
+[DHS Program]{.example-label}
+
+DHS Program produces country-level MNH indicator reports using R.
+:::
+
+::: {.example-block}
+[Donor Requirements]{.example-label}
+
+Many donors now require reproducible analysis pipelines --- R delivers this.
+:::
+
+
+# The RStudio Tour {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Your new workspace</span>
+
+
+## The Four Panes of RStudio
+
+| Pane | Location | Purpose |
+|------|----------|---------|
+| **Source Editor** | Top-left | Write and save R scripts |
+| **Console** | Bottom-left | Run commands interactively |
+| **Environment** | Top-right | See your data and variables |
+| **Files / Plots / Help** | Bottom-right | Browse files, view charts, read documentation |
+
+. . .
+
+::: {.callout-box}
+**Think of the Source Editor as your notebook and the Console as your calculator.** Write in the notebook, test in the calculator.
+:::
+
+
+## Your First R Commands
+
+```{r}
+#| label: first-commands
+#| echo: true
+
+# R as a calculator
+2 + 3
+10 * 5.5
+100 / 7
+
+# Storing a value
+maternal_deaths <- 45
+total_deliveries <- 1200
+
+# Computing a rate
+mmr <- (maternal_deaths / total_deliveries) * 100000
+mmr
+```
+
+
+## Naming Things Well
+
+```{r}
+#| label: naming
+#| echo: true
+
+# Good names — descriptive, lowercase, underscores
+neonatal_deaths <- 23
+facility_count <- 48
+anc_coverage_pct <- 0.72
+
+# Bad names — unclear, inconsistent
+x <- 23          # What is x?
+FC <- 48          # Abbreviations confuse
+ANCcov <- 0.72   # Mixed case is hard to read
+```
+
+. . .
+
+::: {.callout-box .orange}
+**You'll read your code more often than you write it.** Name variables so your future self --- or your colleague --- can understand them without comments.
+:::
+
+
+# Scripts vs. Console {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Write once, run forever</span>
+
+
+## Console: The Calculator
+
+::: {.incremental}
+- The console runs one command at a time
+- Results disappear when you close RStudio
+- Great for quick exploration and testing
+- Like scratch paper --- useful, but not permanent
+:::
+
+
+## Scripts: The Notebook
+
+An R script (.R file) saves every command you write.
+
+::: {.incremental}
+- Run the entire script to reproduce your analysis
+- Share with colleagues --- they get identical results
+- The foundation of reproducible analysis
+:::
+
+. . .
+
+```{r}
+#| label: script-example
+#| echo: true
+
+# ── MNH Indicator Calculation ──────────────────────
+# This script calculates key MNH indicators
+# from facility-level delivery data.
+
+# Input data
+live_births <- 1150
+stillbirths <- 50
+neonatal_deaths <- 28
+maternal_deaths <- 3
+total_deliveries <- live_births + stillbirths
+
+# Calculate indicators
+stillbirth_rate <- (stillbirths / total_deliveries) * 1000
+nmr <- (neonatal_deaths / live_births) * 1000
+mmr <- (maternal_deaths / live_births) * 100000
+
+# Display results
+stillbirth_rate  # per 1,000 total deliveries
+nmr              # per 1,000 live births
+mmr              # per 100,000 live births
+```
+
+
+# Packages --- Extending R {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Standing on the shoulders of 20,000 packages</span>
+
+
+## What Are Packages?
+
+::: {.definition-box}
+A **package** is a collection of functions that someone else has written and shared. Installing a package is like adding a new app to your phone --- it gives R new capabilities.
+:::
+
+. . .
+
+::: {.incremental}
+- `install.packages("dplyr")` --- download once (like buying an app)
+- `library(dplyr)` --- load each session (like opening the app)
+:::
+
+
+## The Packages We'll Use
+
+| Package | Purpose | Chapter |
+|---------|---------|---------|
+| `readr` | Import CSV files | 3 |
+| `dplyr` | Transform data (filter, summarize) | 4 |
+| `tidyr` | Reshape data (pivot) | 5 |
+| `ggplot2` | Create charts | 6--7 |
+| `scales` | Format axes (%, commas) | 7 |
+| `patchwork` | Combine multiple charts | 7 |
+| `knitr` | Tables in reports | 9 |
+
+. . .
+
+```{r}
+#| label: install-packages
+#| echo: true
+
+# Install the tidyverse (includes dplyr, ggplot2, tidyr, readr, stringr)
+install.packages("tidyverse")
+
+# Load it
+library(tidyverse)
+```
+
+. . .
+
+::: {.callout-box .green}
+**The tidyverse** is a collection of packages designed to work together. Installing it gives you most of what you need for this entire course.
+:::
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**R replaces the repetitive, error-prone parts of Excel with reproducible scripts.**
+
+**RStudio organizes your workflow into four panes:** editor, console, environment, and files/plots.
+
+**Packages extend R's capabilities.** The tidyverse is your core toolkit for this course.
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 2 --- R Building Blocks**
+
+- Vectors: storing multiple values
+- Data types: numeric, character, logical, factor
+- Functions: reusable calculations
+- Getting help: `?function_name` and online resources
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[R for Management Consultants | Chapter 1: Why R for Management Consultants]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

@@ -1,0 +1,547 @@
+---
+title: "Chapter 4: Data Transformation with dplyr"
+subtitle: "R for Management Consultants | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Use the **pipe operator** (`|>`) to chain operations into readable workflows
+- **Filter** rows based on conditions with `filter()`
+- **Select** and rename columns with `select()` and `rename()`
+- **Create new columns** with `mutate()` and `case_when()`
+- **Summarize** data by groups with `summarise()` and `group_by()`
+- **Sort** results with `arrange()`
+:::
+
+
+## Chapter Overview
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #E24A3F;">The<br>Pipe</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #005CB9;">filter()</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">select()</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">mutate()</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">summarise() +<br>group_by()</div>
+</div>
+
+
+# The Pipe Operator {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Chaining operations into readable workflows</span>
+
+
+## The Pipe: `|>`
+
+::: {.definition-box}
+The **pipe operator** `|>` takes the result of one function and passes it as the first argument to the next. It reads like a sentence: "Take this, then do that, then do that."
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.bad-example}
+[Without pipes: nested, inside-out]{.example-label}
+
+```{r}
+#| label: pipe-bad
+#| echo: true
+
+# Hard to read — you must start
+# from the innermost function
+round(mean(facility_data$nmr,
+           na.rm = TRUE), 1)
+```
+:::
+:::
+
+::: {.col}
+::: {.good-example}
+[With pipes: step by step, left to right]{.example-label}
+
+```{r}
+#| label: pipe-good
+#| echo: true
+
+# Reads top to bottom, like English
+facility_data$nmr |>
+  mean(na.rm = TRUE) |>
+  round(1)
+```
+:::
+:::
+:::
+
+
+## Pipe Workflows
+
+```{r}
+#| label: pipe-workflow
+#| echo: true
+
+library(dplyr)
+
+# A typical analysis workflow reads like English:
+facility_data |>                           # Start with data
+  filter(country == "Ethiopia") |>         # Keep Ethiopian facilities
+  filter(!is.na(nmr)) |>                   # Remove missing NMR
+  summarise(                               # Calculate summary stats
+    n_facilities = n(),
+    avg_nmr = mean(nmr),
+    avg_deliveries = mean(delivery_volume)
+  )
+```
+
+. . .
+
+::: {.callout-box .green}
+**Read the pipe as "and then."** Take facility_data, AND THEN filter to Ethiopia, AND THEN remove missing NMR, AND THEN summarize.
+:::
+
+
+# filter() --- Subset Rows {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Keeping only the rows you need</span>
+
+
+## filter() Basics
+
+```{r}
+#| label: filter-basic
+#| echo: true
+
+library(dplyr)
+
+# Facilities in Ethiopia
+facility_data |>
+  filter(country == "Ethiopia")
+
+# Facilities with NMR above 30 (critical)
+facility_data |>
+  filter(nmr > 30)
+
+# Hospitals only
+facility_data |>
+  filter(facility_type == "Hospital")
+```
+
+. . .
+
+::: {.callout-box}
+**`filter()` keeps rows where the condition is `TRUE` and drops everything else.** Think of it as a sieve --- only rows that pass the test come through.
+:::
+
+
+## Combining Conditions
+
+```{r}
+#| label: filter-combine
+#| echo: true
+
+# AND: both conditions must be true (use & or comma)
+facility_data |>
+  filter(country == "Tanzania", nmr > 25)
+
+# OR: at least one condition true
+facility_data |>
+  filter(country == "Ethiopia" | country == "Kenya")
+
+# IN: match any value in a list
+facility_data |>
+  filter(country %in% c("Ethiopia", "Kenya", "Malawi"))
+
+# NOT: exclude
+facility_data |>
+  filter(facility_type != "Health Post")
+```
+
+
+## Practical Filters
+
+```{r}
+#| label: filter-practical
+#| echo: true
+
+# High-risk facilities: high NMR + no CPAP
+facility_data |>
+  filter(nmr > 30, has_cpap == FALSE)
+
+# Active facilities with sufficient data
+facility_data |>
+  filter(delivery_volume >= 20, !is.na(nmr))
+
+# Facilities that completed training
+facility_data |>
+  filter(training_completed == TRUE)
+```
+
+. . .
+
+::: {.callout-box .orange}
+**Always check for missing values.** `filter(nmr > 30)` silently drops rows where `nmr` is `NA`. Use `!is.na()` explicitly when you want to keep or remove missing data.
+:::
+
+
+# select() --- Pick Columns {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Choosing the variables you need</span>
+
+
+## select() Basics
+
+```{r}
+#| label: select-basic
+#| echo: true
+
+# Keep specific columns
+facility_data |>
+  select(facility_id, country, nmr, delivery_volume)
+
+# Remove columns (use minus sign)
+facility_data |>
+  select(-has_ultrasound, -region)
+
+# Select a range
+facility_data |>
+  select(facility_id:facility_type)
+```
+
+. . .
+
+```{r}
+#| label: select-helpers
+#| echo: true
+
+# Helper functions — powerful shortcuts
+facility_data |>
+  select(starts_with("has_"))   # has_cpap, has_ultrasound
+
+facility_data |>
+  select(where(is.numeric))     # all numeric columns
+```
+
+
+## rename() --- Better Column Names
+
+```{r}
+#| label: rename
+#| echo: true
+
+# Rename specific columns: new_name = old_name
+facility_data |>
+  rename(
+    neonatal_mortality = nmr,
+    maternal_mortality = mmr,
+    facility = facility_id
+  )
+
+# Clean messy DHIS2 column names
+# janitor::clean_names() is useful for this (not covered in detail)
+```
+
+. . .
+
+::: {.callout-box}
+**DHIS2 exports often have column names with spaces, dots, or inconsistent casing.** `rename()` lets you fix these one at a time; `janitor::clean_names()` fixes them all at once.
+:::
+
+
+# mutate() --- Create New Columns {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Computing new variables from existing ones</span>
+
+
+## mutate() Basics
+
+```{r}
+#| label: mutate-basic
+#| echo: true
+
+facility_data |>
+  mutate(
+    # Calculate stillbirth rate from existing columns
+    total_births = delivery_volume,
+
+    # Convert coverage from proportion to percentage
+    anc_pct = anc_coverage * 100,
+
+    # Flag high-risk facilities
+    high_risk = nmr > 30
+  )
+```
+
+. . .
+
+::: {.callout-box .green}
+**`mutate()` adds new columns while keeping all existing ones.** Each new column can reference columns you just created in the same `mutate()` call.
+:::
+
+
+## case_when() --- Conditional Logic
+
+```{r}
+#| label: case-when
+#| echo: true
+
+facility_data |>
+  mutate(
+    # Classify NMR into categories
+    nmr_category = case_when(
+      nmr <= 12            ~ "On Track (SDG Target)",
+      nmr <= 25            ~ "Needs Improvement",
+      nmr <= 40            ~ "High Risk",
+      nmr > 40             ~ "Critical",
+      TRUE                 ~ "Unknown"
+    ),
+
+    # Classify facility size
+    size = case_when(
+      delivery_volume >= 150 ~ "High Volume",
+      delivery_volume >= 50  ~ "Medium Volume",
+      TRUE                   ~ "Low Volume"
+    )
+  )
+```
+
+. . .
+
+::: {.callout-box}
+**`case_when()` is R's version of nested IF statements in Excel, but cleaner.** Conditions are evaluated top to bottom --- the first match wins.
+:::
+
+
+## Practical mutate() Examples
+
+```{r}
+#| label: mutate-practical
+#| echo: true
+
+facility_data |>
+  mutate(
+    # Equipment readiness score (0-2)
+    equip_score = as.integer(has_cpap) + as.integer(has_ultrasound),
+
+    # ANC coverage gap (distance from 80% target)
+    anc_gap = pmax(0.80 - anc_coverage, 0),
+
+    # Combined risk flag
+    priority = (nmr > 25) & (staffing_level == "Low")
+  )
+```
+
+. . .
+
+::: {.callout-box .orange}
+**In MNH analysis, `mutate()` is where you turn raw data into decision-ready indicators.** Coverage gaps, risk flags, readiness scores --- these are the columns that drive recommendations.
+:::
+
+
+# summarise() + group_by() --- Aggregate Data {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">From raw data to insights</span>
+
+
+## summarise() Basics
+
+```{r}
+#| label: summarise-basic
+#| echo: true
+
+facility_data |>
+  summarise(
+    n = n(),
+    avg_nmr = mean(nmr, na.rm = TRUE),
+    median_nmr = median(nmr, na.rm = TRUE),
+    avg_deliveries = mean(delivery_volume, na.rm = TRUE),
+    total_deliveries = sum(delivery_volume, na.rm = TRUE),
+    pct_with_cpap = mean(has_cpap, na.rm = TRUE) * 100
+  )
+```
+
+. . .
+
+::: {.callout-box}
+**`summarise()` collapses many rows into a single summary row.** Without `group_by()`, it summarizes the entire dataset at once.
+:::
+
+
+## group_by() + summarise() --- The Power Combination
+
+```{r}
+#| label: group-summarise
+#| echo: true
+
+# Summary by country
+facility_data |>
+  group_by(country) |>
+  summarise(
+    n_facilities = n(),
+    avg_nmr = round(mean(nmr, na.rm = TRUE), 1),
+    avg_deliveries = round(mean(delivery_volume, na.rm = TRUE), 0),
+    pct_trained = round(mean(training_completed, na.rm = TRUE) * 100, 1)
+  )
+```
+
+. . .
+
+```{r}
+#| label: group-summarise-two
+#| echo: true
+
+# Summary by country AND facility type
+facility_data |>
+  group_by(country, facility_type) |>
+  summarise(
+    n = n(),
+    avg_nmr = mean(nmr, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+. . .
+
+::: {.callout-box .green}
+**`group_by() |> summarise()` is the R equivalent of a pivot table in Excel.** It's the most important pattern in dplyr --- you'll use it in almost every analysis.
+:::
+
+
+## arrange() --- Sort Results
+
+```{r}
+#| label: arrange
+#| echo: true
+
+# Sort by NMR (lowest first — best performing)
+facility_data |>
+  arrange(nmr)
+
+# Sort by NMR descending (highest first — worst performing)
+facility_data |>
+  arrange(desc(nmr))
+
+# Sort by country, then by NMR within country
+facility_data |>
+  arrange(country, desc(nmr))
+```
+
+
+## count() --- Quick Frequency Tables
+
+```{r}
+#| label: count
+#| echo: true
+
+# How many facilities per country?
+facility_data |>
+  count(country)
+
+# How many per country and facility type?
+facility_data |>
+  count(country, facility_type)
+
+# Sort by frequency
+facility_data |>
+  count(country, sort = TRUE)
+```
+
+. . .
+
+::: {.callout-box}
+**`count()` is a shortcut for `group_by() |> summarise(n = n())`.** Use it whenever you need a quick frequency table.
+:::
+
+
+## Putting It All Together
+
+```{r}
+#| label: full-pipeline
+#| echo: true
+
+# Country-level MNH dashboard summary
+facility_data |>
+  filter(!is.na(nmr), delivery_volume >= 10) |>
+  mutate(
+    nmr_status = case_when(
+      nmr <= 12 ~ "On Track",
+      nmr <= 25 ~ "Progress",
+      TRUE      ~ "Off Track"
+    )
+  ) |>
+  group_by(country) |>
+  summarise(
+    facilities = n(),
+    avg_nmr = round(mean(nmr), 1),
+    pct_on_track = round(mean(nmr_status == "On Track") * 100, 1),
+    total_deliveries = sum(delivery_volume)
+  ) |>
+  arrange(desc(avg_nmr))
+```
+
+. . .
+
+::: {.key-takeaway}
+**This single pipeline replaces dozens of Excel steps:** filtering, calculating, categorizing, grouping, and sorting --- all in one readable chain.
+:::
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**The pipe (`|>`) chains operations into readable workflows** that replace nested functions and manual Excel steps.
+
+**`filter()`, `select()`, `mutate()`, `summarise()`, and `group_by()` are the five dplyr verbs** that handle 90% of data transformation tasks.
+
+**`group_by() |> summarise()` is your pivot table replacement** --- learn it well.
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 5 --- Reshaping & Joining Datasets**
+
+- `pivot_longer()` and `pivot_wider()` --- switching between long and wide formats
+- Joining datasets: linking facility data with country indicators
+- String manipulation basics with `stringr`
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[R for Management Consultants | Chapter 4: Data Transformation with dplyr]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

@@ -1,0 +1,247 @@
+---
+title: "Chapter 8: Descriptive Statistics for Consultants"
+subtitle: "Central tendency, proportions, confidence intervals, correlation, and regression"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Compute and interpret **mean, median, and standard deviation** for MNH indicators across countries and facility types
+- Build **proportion tables** and interpret them in consulting context
+- Construct and interpret **confidence intervals** using `t.test()` — understanding what the interval does and does not tell you
+- Compute **correlation** with `cor.test()` and explain why correlation does not imply causation
+- Fit a **linear regression** with `lm()`, interpret coefficients with `summary()`, and visualize the fitted line
+- Distinguish between **statistical significance** (p-value) and **practical significance** (effect size)
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### Central Tendency: Mean vs Median
+The **mean** is the arithmetic average — sensitive to outliers. The **median** is the middle value — robust to outliers. For skewed distributions (common in health data: a few facilities with very high NMR), the median better represents the "typical" facility. Always report both, and explain which one you are using and why.
+:::
+
+::: {.key-concept .green}
+#### Confidence Intervals
+A 95% confidence interval means: if you repeated the study many times, 95% of the intervals you compute would contain the true population parameter. It quantifies *uncertainty* around your estimate. A narrow interval means you have a precise estimate; a wide interval means you need more data. Consultants should report CIs alongside point estimates, especially when sample sizes are small.
+:::
+
+::: {.key-concept .teal}
+#### Correlation vs Causation
+`cor.test()` measures the strength and direction of a linear relationship between two variables. A correlation of -0.7 between CPAP availability and NMR means they tend to move in opposite directions. But this alone does **not** prove that adding CPAP machines causes NMR to decline — confounders (hospital capacity, staffing) could explain the pattern. This connects directly to the causal reasoning framework from the Causal Arguments course.
+:::
+
+::: {.key-concept .orange}
+#### Linear Regression
+`lm(nmr ~ deliveries + facility_type, data = df)` fits a line predicting NMR from delivery volume and facility type. The coefficients tell you: "For each additional delivery, NMR changes by X, holding facility type constant." Regression is the quantitative foundation for the causal models you will build in the Inference and Intervention course.
+:::
+
+::: {.key-concept .red}
+#### Statistical vs Practical Significance
+A p-value < 0.05 means the result is unlikely due to chance alone. But a statistically significant effect can be practically meaningless: a program that reduces NMR by 0.1 per 1,000 may be statistically significant with a large sample but irrelevant for policy. Always ask: "Is the effect *big enough* to matter for the decision at hand?"
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch08-descriptive-stats/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch08-descriptive-stats/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This workshop walks through the statistical tools a consultant needs to summarize data, quantify uncertainty, and test relationships — all with MNH examples.
+
+### Summary Statistics by Country
+
+```{r}
+#| label: summary-stats
+#| echo: true
+
+library(tidyverse)
+
+# Simulated facility-level data
+set.seed(42)
+facility_data <- tibble(
+  facility_id   = paste0("F", 1:60),
+  country       = rep(c("Ethiopia", "Tanzania", "Malawi"), each = 20),
+  facility_type = sample(c("hospital", "health_center", "health_post"),
+                          60, replace = TRUE,
+                          prob = c(0.2, 0.4, 0.4)),
+  live_births   = round(runif(60, 50, 500)),
+  neonatal_deaths = round(runif(60, 0, 20)),
+  has_cpap      = sample(c(TRUE, FALSE), 60, replace = TRUE, prob = c(0.3, 0.7))
+) |>
+  mutate(nmr = neonatal_deaths / live_births * 1000)
+
+# Summary statistics by country
+facility_data |>
+  group_by(country) |>
+  summarise(
+    n = n(),
+    mean_nmr   = round(mean(nmr, na.rm = TRUE), 1),
+    median_nmr = round(median(nmr, na.rm = TRUE), 1),
+    sd_nmr     = round(sd(nmr, na.rm = TRUE), 1),
+    min_nmr    = round(min(nmr, na.rm = TRUE), 1),
+    max_nmr    = round(max(nmr, na.rm = TRUE), 1)
+  )
+```
+
+Notice how the mean and median can differ substantially. When they diverge, it usually means the distribution is skewed — a few facilities with very high (or very low) NMR are pulling the mean away from the center. In your client deliverables, report the median for skewed distributions and explain why.
+
+### Proportion Tables
+
+```{r}
+#| label: proportion-tables
+#| echo: true
+
+# What proportion of facilities have CPAP equipment?
+facility_data |>
+  group_by(country) |>
+  summarise(
+    n_facilities = n(),
+    n_with_cpap  = sum(has_cpap),
+    pct_cpap     = round(mean(has_cpap) * 100, 1)
+  )
+
+# Cross-tabulation: facility type by CPAP availability
+facility_data |>
+  count(facility_type, has_cpap) |>
+  pivot_wider(names_from = has_cpap, values_from = n,
+              names_prefix = "cpap_") |>
+  mutate(pct_with_cpap = round(cpap_TRUE / (cpap_TRUE + cpap_FALSE) * 100, 1))
+```
+
+Proportion tables are the building blocks of consulting deliverables. "Only 30% of health posts have CPAP equipment, compared to 80% of hospitals" is a finding that drives resource allocation decisions. Always pair proportions with absolute counts so your client understands both the rate and the scale.
+
+### Confidence Intervals with t.test
+
+```{r}
+#| label: confidence-intervals
+#| echo: true
+
+# 95% confidence interval for mean NMR in Ethiopia
+ethiopia_nmr <- facility_data |>
+  filter(country == "Ethiopia") |>
+  pull(nmr)
+
+t_result <- t.test(ethiopia_nmr)
+t_result
+
+# Extract the key numbers
+t_result$estimate     # point estimate (mean)
+t_result$conf.int     # 95% CI bounds
+
+# CI by country
+facility_data |>
+  group_by(country) |>
+  summarise(
+    mean_nmr = mean(nmr),
+    ci_lower = t.test(nmr)$conf.int[1],
+    ci_upper = t.test(nmr)$conf.int[2],
+    .groups = "drop"
+  ) |>
+  mutate(across(where(is.numeric), ~ round(.x, 1)))
+```
+
+A confidence interval tells you the range of plausible values for the true mean. If the CI for Ethiopia is [18.2, 32.4], you can say: "We estimate the mean NMR across Ethiopian facilities in our sample is between 18.2 and 32.4 per 1,000 live births." Wider intervals mean more uncertainty — usually because the sample size is small or the variation is large.
+
+### Correlation Analysis
+
+```{r}
+#| label: correlation
+#| echo: true
+#| fig-width: 8
+#| fig-height: 5
+
+# Is delivery volume correlated with NMR?
+cor.test(facility_data$live_births, facility_data$nmr)
+
+# Visualize the relationship
+ggplot(facility_data, aes(x = live_births, y = nmr)) +
+  geom_point(aes(color = country), size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = TRUE, color = "#005CB9", linewidth = 1) +
+  labs(
+    title = "Delivery Volume vs Neonatal Mortality",
+    subtitle = "Correlation does not imply causation",
+    x = "Live Births (annual)",
+    y = "NMR (per 1,000 live births)",
+    color = "Country"
+  ) +
+  theme_minimal()
+```
+
+The `cor.test()` output gives you three things: the correlation coefficient (r), the p-value, and a confidence interval. But even a strong correlation does not prove causation. Higher-volume facilities may have lower NMR because they are better-resourced hospitals — not because volume itself reduces mortality. This is exactly the kind of reasoning you practiced in the Causal Arguments course.
+
+### Linear Regression
+
+```{r}
+#| label: linear-regression
+#| echo: true
+
+# Fit a linear model: NMR as a function of delivery volume and CPAP
+model <- lm(nmr ~ live_births + has_cpap + facility_type,
+            data = facility_data)
+
+# Interpret the results
+summary(model)
+
+# Key coefficients to report:
+# - Intercept: estimated NMR when all predictors are at reference level
+# - live_births: change in NMR for each additional birth
+# - has_cpapTRUE: difference in NMR between facilities with/without CPAP
+# - facility_type: difference relative to reference category
+```
+
+The `summary(model)` output shows estimated coefficients, standard errors, t-values, and p-values. Focus on the **Estimate** column (effect size) and the **Pr(>|t|)** column (significance). But always ask: is the effect practically meaningful? A coefficient of -0.002 on `live_births` means NMR decreases by 0.002 per additional birth — statistically significant perhaps, but negligible for policy.
+
+### Visualizing Regression Results
+
+```{r}
+#| label: regression-viz
+#| echo: true
+#| fig-width: 8
+#| fig-height: 5
+
+# Visualize the regression with confidence band
+ggplot(facility_data, aes(x = live_births, y = nmr, color = has_cpap)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = TRUE) +
+  scale_color_manual(
+    values = c("TRUE" = "#83BD00", "FALSE" = "#E24A3F"),
+    labels = c("TRUE" = "Has CPAP", "FALSE" = "No CPAP")
+  ) +
+  labs(
+    title = "NMR by Delivery Volume and CPAP Availability",
+    subtitle = "Linear regression with 95% confidence bands",
+    x = "Live Births (annual)",
+    y = "NMR (per 1,000 live births)",
+    color = "CPAP Status"
+  ) +
+  theme_minimal()
+```
+
+This chart shows two regression lines: one for facilities with CPAP and one without. If the lines have different intercepts, CPAP availability is associated with different NMR levels even after accounting for delivery volume. The shaded bands show uncertainty — wider bands mean fewer data points in that range.
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Report mean, median, and confidence intervals together.** The mean summarizes, the median resists outliers, and the CI quantifies uncertainty. Your client needs all three to make informed decisions.
+
+**Correlation measures association, not causation.** Use `cor.test()` to quantify relationships, but remember that confounders can create misleading correlations — refer back to the causal reasoning framework.
+
+**Regression is a tool, not an answer.** `lm()` tells you which variables are associated with NMR and by how much, but the coefficients are only as good as the model specification. Always consider what you might be missing.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 9 — Reproducible Reports with Quarto**, you will learn to combine your analyses, charts, and narrative into polished, automated documents:
+
+- Quarto document structure (YAML + markdown + code chunks)
+- Inline R for dynamic narrative (e.g. mean NMR computed live in the document text)
+- Rendering to HTML, PDF, and Word
+- Parameterized reports that auto-generate a country brief for every country in your dataset

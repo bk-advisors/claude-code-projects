@@ -1,0 +1,554 @@
+---
+title: "Chapter 7: Publication-Quality Charts"
+subtitle: "R for Management Consultants | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Apply **professional themes** for clean, branded charts
+- Customize **labels, colors, and scales** for stakeholder presentations
+- Use **facet_wrap()** and **facet_grid()** for small multiples
+- Combine charts into **multi-panel layouts** with `patchwork`
+- Export charts at **publication resolution** with `ggsave()`
+- Define a **BK Advisors color palette** for consistent branding
+:::
+
+
+## Chapter Overview
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #005CB9;">Themes</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #00A1DF;">Labels &<br>Scales</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">Colors</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">Faceting</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">Patchwork</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #E24A3F;">Exporting</div>
+</div>
+
+
+# Themes --- Professional Look {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">From default gray to presentation-ready</span>
+
+
+## Built-in Themes
+
+```{r}
+#| label: themes
+#| echo: true
+
+library(ggplot2)
+
+p <- ggplot(country_summary, aes(x = reorder(country, avg_nmr), y = avg_nmr)) +
+  geom_col(fill = "#005CB9") +
+  labs(title = "NMR by Country", x = NULL, y = "NMR")
+
+# Default theme (gray background, grid lines)
+p + theme_gray()
+
+# Clean white theme (recommended for presentations)
+p + theme_minimal(base_size = 14)
+
+# Classic theme (axes only, no grid)
+p + theme_classic(base_size = 14)
+```
+
+. . .
+
+::: {.callout-box}
+`theme_minimal(base_size = 14)` is the recommended starting point. The `base_size` argument scales all text proportionally --- no more adjusting each element one at a time.
+:::
+
+
+## Customizing Theme Elements
+
+```{r}
+#| label: custom-theme
+#| echo: true
+
+p + theme_minimal(base_size = 14) +
+  theme(
+    # Title styling
+    plot.title = element_text(face = "bold", color = "#005CB9"),
+    plot.subtitle = element_text(color = "#666666"),
+
+    # Axis styling
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 0),
+
+    # Grid: keep horizontal, remove vertical
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+
+    # Legend
+    legend.position = "bottom"
+  )
+```
+
+. . .
+
+::: {.callout-box .orange}
+Every element on a ggplot can be customized with `theme()`. Use `element_text()` for text, `element_line()` for lines, `element_rect()` for backgrounds, and `element_blank()` to remove an element entirely.
+:::
+
+
+## A Reusable BKA Theme
+
+```{r}
+#| label: bka-theme
+#| echo: true
+
+# Define once, use everywhere
+theme_bka <- function(base_size = 14) {
+  theme_minimal(base_size = base_size) +
+    theme(
+      plot.title = element_text(face = "bold", color = "#005CB9", size = rel(1.2)),
+      plot.subtitle = element_text(color = "#666666", size = rel(0.9)),
+      plot.caption = element_text(color = "#999999", size = rel(0.7)),
+      axis.title = element_text(face = "bold"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      legend.position = "bottom",
+      strip.text = element_text(face = "bold", color = "#005CB9")
+    )
+}
+
+# Use it
+ggplot(country_summary, aes(x = reorder(country, avg_nmr), y = avg_nmr)) +
+  geom_col(fill = "#005CB9") +
+  labs(title = "Neonatal Mortality Rate by Country",
+       subtitle = "Average across all reporting facilities",
+       caption = "Source: Facility-level data, 2024") +
+  theme_bka()
+```
+
+. . .
+
+::: {.callout-box .green}
+Wrapping your theme in a function means every chart in your project starts from the same baseline. When stakeholders request a style change, you update one function --- not dozens of charts.
+:::
+
+
+# Labels & Scales {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Making charts self-explanatory</span>
+
+
+## labs() --- Titles, Subtitles, and Captions
+
+```{r}
+#| label: labs
+#| echo: true
+
+ggplot(facility_data, aes(x = delivery_volume, y = nmr, color = country)) +
+  geom_point(size = 2, alpha = 0.7) +
+  labs(
+    title = "Facility Delivery Volume vs. Neonatal Mortality",
+    subtitle = "Each point is one health facility (n = 200)",
+    x = "Monthly Delivery Volume",
+    y = "Neonatal Mortality Rate (per 1,000 live births)",
+    color = "Country",
+    caption = "Source: MNH Program Data, 2024 | BK Advisors"
+  )
+```
+
+. . .
+
+::: {.callout-box}
+Every chart for a stakeholder presentation should have a **title** (what the chart shows), a **subtitle** (context or sample size), and a **caption** (data source). The `labs()` function handles all three in one call.
+:::
+
+
+## scale_* Functions --- Controlling Axes
+
+```{r}
+#| label: scales
+#| echo: true
+
+library(scales)
+
+# Format y-axis as percentage
+ggplot(facility_data, aes(x = country, y = anc_coverage)) +
+  geom_boxplot(fill = "#00A1DF", alpha = 0.5) +
+  scale_y_continuous(labels = percent, limits = c(0, 1)) +
+  labs(title = "ANC Coverage Distribution by Country",
+       y = "ANC Coverage (%)")
+
+# Format y-axis with commas for large numbers
+ggplot(country_summary, aes(x = country, y = total_deliveries)) +
+  geom_col(fill = "#83BD00") +
+  scale_y_continuous(labels = comma) +
+  labs(title = "Total Deliveries by Country", y = "Deliveries")
+```
+
+. . .
+
+::: {.callout-box .green}
+The `scales` package provides `percent`, `comma`, `dollar`, and `date_format()` --- ready-made formatters that turn raw numbers into labels your stakeholders expect. No manual string manipulation needed.
+:::
+
+
+# Color Palettes {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Consistent branding with BK Advisors colors</span>
+
+
+## BK Advisors Color Palette
+
+```{r}
+#| label: bka-colors
+#| echo: true
+
+# BKA brand colors
+bka_blue       <- "#005CB9"
+bka_light_blue <- "#00A1DF"
+bka_green      <- "#83BD00"
+bka_teal       <- "#3E9B6E"
+bka_red        <- "#E24A3F"
+bka_orange     <- "#FA7650"
+bka_amber      <- "#F8A623"
+bka_yellow     <- "#FED141"
+
+# Named palette for countries
+bka_country_colors <- c(
+  "Ethiopia"   = bka_blue,
+  "Tanzania"   = bka_teal,
+  "Malawi"     = bka_green,
+  "Mozambique" = bka_orange,
+  "Kenya"      = bka_light_blue
+)
+```
+
+. . .
+
+::: {.callout-box}
+Defining your palette as a named vector means you can reuse it across every chart in a project. Each country always gets the same color --- no more remembering which hex code goes where.
+:::
+
+
+## Applying the Palette
+
+```{r}
+#| label: apply-palette
+#| echo: true
+
+# Manual color scale for specific categories
+ggplot(country_trends, aes(x = month, y = nmr, color = country)) +
+  geom_line(linewidth = 1.2) +
+  scale_color_manual(values = bka_country_colors) +
+  labs(title = "NMR Trends by Country",
+       x = "Month", y = "NMR", color = NULL) +
+  theme_bka()
+
+# Manual fill scale for bar charts
+ggplot(facility_data, aes(x = facility_type, fill = facility_type)) +
+  geom_bar() +
+  scale_fill_manual(values = c("Hospital" = bka_blue,
+                                "Health Center" = bka_teal,
+                                "Health Post" = bka_green)) +
+  labs(title = "Facilities by Type") +
+  theme_bka() +
+  theme(legend.position = "none")
+```
+
+. . .
+
+::: {.callout-box .orange}
+Use `scale_color_manual()` for points and lines. Use `scale_fill_manual()` for bars, histograms, and areas. They work the same way --- the only difference is which aesthetic they target.
+:::
+
+
+# Faceting --- Small Multiples {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">One chart per group</span>
+
+
+## facet_wrap() --- One Variable
+
+```{r}
+#| label: facet-wrap
+#| echo: true
+
+# NMR histogram, one panel per country
+ggplot(facility_data, aes(x = nmr)) +
+  geom_histogram(binwidth = 5, fill = "#005CB9", color = "white") +
+  facet_wrap(~ country, ncol = 3) +
+  labs(title = "NMR Distribution by Country",
+       x = "NMR (per 1,000 live births)",
+       y = "Facilities") +
+  theme_bka()
+```
+
+. . .
+
+::: {.example-block}
+<div class="example-label">When to use facet_wrap()</div>
+
+Split by **one categorical variable** --- country, facility type, year, or region. Use `ncol` or `nrow` to control the layout. Each panel shares the same axes, making comparison straightforward.
+:::
+
+
+## facet_grid() --- Two Variables
+
+```{r}
+#| label: facet-grid
+#| echo: true
+
+# NMR by delivery volume, split by country (rows) and facility type (columns)
+ggplot(facility_data, aes(x = delivery_volume, y = nmr)) +
+  geom_point(color = "#005CB9", alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE, color = "#E24A3F") +
+  facet_grid(country ~ facility_type) +
+  labs(title = "Delivery Volume vs. NMR",
+       subtitle = "By country and facility type") +
+  theme_bka()
+```
+
+. . .
+
+::: {.callout-box .green}
+Faceting is one of the most powerful visualization techniques. Instead of cramming everything into one chart, show the same chart for each group. The pattern (or lack thereof) becomes obvious.
+:::
+
+
+## Free vs. Fixed Scales
+
+```{r}
+#| label: facet-scales
+#| echo: true
+
+# Fixed scales (default) — same axis range for all panels
+ggplot(facility_data, aes(x = nmr)) +
+  geom_histogram(binwidth = 5, fill = "#005CB9", color = "white") +
+  facet_wrap(~ country, ncol = 3) +
+  labs(title = "Fixed Scales: Easy to Compare Magnitudes") +
+  theme_bka()
+
+# Free scales — each panel gets its own axis range
+ggplot(facility_data, aes(x = nmr)) +
+  geom_histogram(binwidth = 5, fill = "#005CB9", color = "white") +
+  facet_wrap(~ country, ncol = 3, scales = "free_y") +
+  labs(title = "Free Y-Axis: Better for Seeing Each Distribution") +
+  theme_bka()
+```
+
+. . .
+
+::: {.callout-box .orange}
+Use `scales = "free_y"` when group sizes differ dramatically. Use the default (fixed) when you want stakeholders to compare absolute magnitudes across groups.
+:::
+
+
+# Multi-Panel Layouts with patchwork {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Combining charts into dashboard-style layouts</span>
+
+
+## patchwork Basics
+
+```{r}
+#| label: patchwork
+#| echo: true
+
+library(patchwork)
+
+# Create individual charts
+p1 <- ggplot(country_summary, aes(x = reorder(country, avg_nmr), y = avg_nmr)) +
+  geom_col(fill = "#005CB9") +
+  labs(title = "NMR by Country", x = NULL, y = "NMR") +
+  theme_bka()
+
+p2 <- ggplot(facility_data, aes(x = nmr)) +
+  geom_histogram(binwidth = 5, fill = "#3E9B6E", color = "white") +
+  labs(title = "NMR Distribution", x = "NMR", y = "Count") +
+  theme_bka()
+
+p3 <- ggplot(facility_data, aes(x = delivery_volume, y = nmr)) +
+  geom_point(color = "#00A1DF", alpha = 0.5) +
+  labs(title = "Volume vs. NMR", x = "Deliveries", y = "NMR") +
+  theme_bka()
+
+# Combine: side by side
+p1 + p2
+
+# Stack vertically
+p1 / p2
+
+# Complex layout
+(p1 + p2) / p3 +
+  plot_annotation(title = "MNH Program Dashboard",
+                  subtitle = "Facility-Level Analysis")
+```
+
+
+## patchwork Layout Operators
+
+::: {.columns-equal}
+::: {.col}
+
+| Operator | Layout |
+|----------|--------|
+| `p1 + p2` | Side by side |
+| `p1 / p2` | Stacked vertically |
+| `(p1 + p2) / p3` | Two on top, one below |
+| `p1 + p2 + p3 + plot_layout(ncol = 1)` | All stacked |
+
+:::
+
+::: {.col}
+
+```{r}
+#| label: patchwork-annotate
+#| echo: true
+
+# Add shared title and tag each panel
+(p1 + p2) / p3 +
+  plot_annotation(
+    title = "MNH Program Dashboard",
+    subtitle = "Facility-Level Analysis",
+    caption = "Source: MNH Data, 2024",
+    tag_levels = "A"   # Labels: A, B, C
+  )
+```
+
+:::
+:::
+
+. . .
+
+::: {.callout-box .green}
+`patchwork` replaces the manual labor of arranging charts in PowerPoint. Each panel is a reproducible ggplot object --- update the data and the entire dashboard rebuilds automatically.
+:::
+
+
+# Exporting Charts {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">From R to PowerPoint and reports</span>
+
+
+## ggsave() --- Save to File
+
+```{r}
+#| label: ggsave
+#| echo: true
+
+# Save the last plot
+ggsave("nmr_by_country.png",
+       width = 10, height = 6, dpi = 300)
+
+# Save a specific plot object
+ggsave("dashboard.png", plot = (p1 + p2) / p3,
+       width = 14, height = 10, dpi = 300)
+
+# PDF for print
+ggsave("nmr_trend.pdf", width = 10, height = 6)
+
+# SVG for web
+ggsave("nmr_trend.svg", width = 10, height = 6)
+```
+
+
+## Output Format Guide
+
+| Format | Use Case | Argument |
+|--------|----------|----------|
+| PNG | Presentations, email, web | `"chart.png"` |
+| PDF | Print reports, papers | `"chart.pdf"` |
+| SVG | Web, scalable graphics | `"chart.svg"` |
+
+. . .
+
+::: {.callout-box}
+Always use `dpi = 300` for presentation and print. The default (72 dpi) looks pixelated on slides. For PowerPoint, save as PNG at 300 dpi and insert the image --- it will look crisp on any projector.
+:::
+
+
+## Sizing Charts for Different Outputs
+
+```{r}
+#| label: ggsave-sizes
+#| echo: true
+
+# Full-width slide (16:9 aspect ratio)
+ggsave("slide_chart.png", width = 12, height = 6.75, dpi = 300)
+
+# Half-width (for side-by-side in a report)
+ggsave("half_chart.png", width = 6, height = 5, dpi = 300)
+
+# A4 page (portrait, with margins)
+ggsave("report_chart.pdf", width = 7, height = 9)
+
+# Square (for social media or dashboards)
+ggsave("square_chart.png", width = 8, height = 8, dpi = 300)
+```
+
+. . .
+
+::: {.callout-box .orange}
+The `width` and `height` arguments are in **inches** by default. Set them to match your final output --- a 16:9 slide is roughly 12 x 6.75 inches. Getting this right avoids stretched or squished text.
+:::
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**A reusable theme function (`theme_bka()`) and a named color palette ensure every chart is on-brand.**
+
+**Faceting with `facet_wrap()` is the fastest way to compare the same pattern across countries or facility types.**
+
+**`patchwork` combines individual charts into dashboard layouts --- replace your PowerPoint chart grids with reproducible code.**
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 8 --- Descriptive Statistics for Consultants**
+
+- Means, medians, and proportions
+- Confidence intervals
+- Correlation and simple regression
+- Interpreting regression output
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[R for Management Consultants | Chapter 7: Publication-Quality Charts]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

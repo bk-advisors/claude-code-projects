@@ -1,0 +1,636 @@
+---
+title: "Chapter 3: Importing & Exploring Data"
+subtitle: "R for Management Consultants | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- **Import CSV files** into R with `read_csv()` and specify column types
+- **Import Excel files** with `read_excel()`, selecting sheets, ranges, and skip rows
+- Explain the difference between **data frames and tibbles**
+- **Explore datasets** using `head()`, `glimpse()`, `summary()`, and other tools
+- **Detect and handle missing values** (`NA`) in facility-level data
+:::
+
+
+## Chapter Overview
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #E24A3F;">Reading<br>CSV</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #005CB9;">Reading<br>Excel</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">Data Frames<br>& Tibbles</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">Exploring<br>Data</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">Handling<br>NAs</div>
+</div>
+
+
+# Reading CSV Files {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Getting data from flat files into R</span>
+
+
+## read_csv() Basics
+
+::: {.definition-box}
+**`read_csv()`** from the `readr` package reads comma-separated files into R as a tibble. It's faster and smarter than base R's `read.csv()` --- it guesses column types, handles dates, and never converts strings to factors.
+:::
+
+. . .
+
+```{r}
+#| label: read-csv-basic
+#| echo: true
+
+library(readr)
+
+# Read a CSV file of facility-level MNH data
+facility_data <- read_csv("facility_data.csv")
+
+# View the result
+facility_data
+```
+
+. . .
+
+::: {.callout-box .green}
+**Always use `read_csv()` (with underscore) from readr, not `read.csv()` (with dot) from base R.** It's faster, produces tibbles, and gives you a helpful column specification message.
+:::
+
+
+## Specifying Column Types
+
+Sometimes `read_csv()` guesses wrong --- a facility ID like `001` becomes the number `1`, or a yes/no column becomes text instead of logical.
+
+. . .
+
+```{r}
+#| label: read-csv-coltypes
+#| echo: true
+
+facility_data <- read_csv(
+  "facility_data.csv",
+  col_types = cols(
+    facility_id  = col_character(),   # Keep leading zeros
+    country      = col_character(),
+    facility_type = col_character(),
+    delivery_volume = col_integer(),
+    nmr          = col_double(),       # Neonatal mortality rate
+    has_cpap     = col_logical()       # TRUE/FALSE
+  )
+)
+```
+
+. . .
+
+::: {.callout-box .orange}
+**DHIS2 exports often have facility codes with leading zeros.** If you don't specify `col_character()`, R will silently drop them --- and your join keys won't match later.
+:::
+
+
+## Common Import Problems
+
+| Problem | Symptom | Fix |
+|---------|---------|-----|
+| Wrong delimiter | All data in one column | Use `read_csv2()` (semicolon) or `read_delim()` |
+| Encoding issues | Garbled characters (accents, special chars) | Add `locale = locale(encoding = "UTF-8")` |
+| No header row | First data row used as column names | Add `col_names = FALSE` or supply names |
+| Metadata rows at top | Junk rows before the real data | Add `skip = 3` (or however many rows) |
+| Inconsistent NAs | Missing values coded as ".", "--", "N/A" | Add `na = c("", "NA", ".", "--", "N/A")` |
+
+. . .
+
+```{r}
+#| label: read-csv-problems
+#| echo: true
+
+# A typical messy DHIS2 export
+facility_data <- read_csv(
+  "dhis2_export_2024.csv",
+  skip = 2,                              # Skip metadata rows
+  na = c("", "NA", ".", "--", "N/A"),    # Recognize all NA patterns
+  locale = locale(encoding = "UTF-8")    # Handle accented names
+)
+```
+
+
+# Reading Excel Files {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Because most health data still arrives in .xlsx</span>
+
+
+## read_excel() Basics
+
+::: {.definition-box}
+**`read_excel()`** from the `readxl` package reads `.xls` and `.xlsx` files into R. It handles multiple sheets, can skip rows, and reads specific cell ranges --- everything you need for messy ministry spreadsheets.
+:::
+
+. . .
+
+```{r}
+#| label: read-excel-basic
+#| echo: true
+
+library(readxl)
+
+# Read the first sheet
+facility_data <- read_excel("mnh_indicators.xlsx")
+
+# Read a specific sheet by name
+delivery_data <- read_excel("mnh_indicators.xlsx", sheet = "Deliveries")
+
+# Read a specific sheet by number
+staffing_data <- read_excel("mnh_indicators.xlsx", sheet = 3)
+```
+
+
+## read_excel() --- Advanced Options
+
+```{r}
+#| label: read-excel-advanced
+#| echo: true
+
+# Skip header rows (common in government reports)
+facility_data <- read_excel(
+  "ministry_report.xlsx",
+  sheet = "FacilityData",
+  skip = 4                    # Skip 4 rows of logos and titles
+)
+
+# Read a specific cell range
+summary_table <- read_excel(
+  "ministry_report.xlsx",
+  sheet = "Summary",
+  range = "B5:G25"            # Only read the data table
+)
+
+# List all sheet names (useful for unfamiliar files)
+excel_sheets("ministry_report.xlsx")
+```
+
+. . .
+
+::: {.callout-box}
+**Ministry of Health Excel files often have logos, merged cells, and title rows above the data.** Use `skip` or `range` to jump past the decoration and land on the actual data.
+:::
+
+
+## CSV vs. Excel: When to Use Which
+
+::: {.columns-equal}
+::: {.col}
+::: {.example-block}
+[Use read_csv() when]{.example-label}
+
+- Data is already in `.csv` format
+- DHIS2 or database exports
+- Large files (CSV is faster)
+- Sharing data between tools
+:::
+:::
+
+::: {.col}
+::: {.example-block}
+[Use read_excel() when]{.example-label}
+
+- Data arrives as `.xlsx` from partners
+- Multiple sheets in one workbook
+- Government reports with formatting
+- You need a specific cell range
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box .green}
+**In consulting, you rarely choose the format.** You get what the client sends. The skill is knowing which function to reach for and which arguments to set.
+:::
+
+
+# Data Frames & Tibbles {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">How R stores tabular data</span>
+
+
+## What Is a Data Frame?
+
+::: {.definition-box}
+A **data frame** is R's way of storing tabular data --- rows and columns, like a spreadsheet. Every column is a vector, and all columns must have the same number of rows. A **tibble** is a modern, improved data frame from the tidyverse.
+:::
+
+. . .
+
+```{r}
+#| label: create-tibble
+#| echo: true
+
+library(tibble)
+
+# Create a tibble with MNH facility data
+facility_data <- tibble(
+  facility_id     = c("ETH-001", "ETH-002", "KEN-001", "MWI-001", "TZA-001"),
+  country         = c("Ethiopia", "Ethiopia", "Kenya", "Malawi", "Tanzania"),
+  facility_type   = c("Hospital", "Health Center", "Hospital", "Hospital", "Health Center"),
+  delivery_volume = c(245, 58, 312, 189, 73),
+  nmr             = c(28.5, NA, 19.2, 35.1, 22.8),
+  has_cpap        = c(TRUE, FALSE, TRUE, FALSE, FALSE)
+)
+
+facility_data
+```
+
+
+## Tibble vs. Data Frame
+
+::: {.columns-equal}
+::: {.col}
+::: {.bad-example}
+[Base data frame]{.example-label}
+
+```{r}
+#| label: df-base
+#| echo: true
+
+# Prints ALL rows (overwhelming)
+# Partial matching (dangerous)
+df$coun  # returns "country"!
+# Converts strings to factors
+```
+:::
+:::
+
+::: {.col}
+::: {.good-example}
+[Tibble]{.example-label}
+
+```{r}
+#| label: df-tibble
+#| echo: true
+
+# Prints only first 10 rows
+# No partial matching (safer)
+tbl$coun  # returns NULL + warning
+# Keeps strings as strings
+```
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box}
+**Tibbles are stricter --- and that's a feature, not a bug.** They catch mistakes that base data frames silently ignore.
+:::
+
+
+## Accessing Columns
+
+```{r}
+#| label: access-columns
+#| echo: true
+
+# Dollar sign notation — most common
+facility_data$nmr
+
+# Double bracket notation — useful in functions
+facility_data[["nmr"]]
+
+# Both return the same vector of NMR values
+```
+
+. . .
+
+```{r}
+#| label: access-rows-cols
+#| echo: true
+
+# Row 1, all columns
+facility_data[1, ]
+
+# All rows, columns 2 and 3
+facility_data[, c(2, 3)]
+
+# Rows 1-3, columns "country" and "nmr"
+facility_data[1:3, c("country", "nmr")]
+```
+
+. . .
+
+::: {.callout-box .green}
+**Use `$` for interactive exploration and `[[ ]]` when writing functions.** You'll see both in MNH analysis scripts.
+:::
+
+
+# Exploring Your Data {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">The first thing you do after importing</span>
+
+
+## The First Five Minutes with Any Dataset
+
+Every time you import data, run these commands before doing anything else:
+
+```{r}
+#| label: explore-dimensions
+#| echo: true
+
+# How big is the data?
+nrow(facility_data)   # Number of rows (facilities)
+ncol(facility_data)   # Number of columns (variables)
+dim(facility_data)    # Both at once: rows x columns
+```
+
+. . .
+
+```{r}
+#| label: explore-head
+#| echo: true
+
+# Look at the first few rows
+head(facility_data)         # First 6 rows (default)
+head(facility_data, 10)     # First 10 rows
+```
+
+. . .
+
+::: {.callout-box}
+**Always check the dimensions first.** If you expected 500 facilities and got 12, something went wrong in the import --- catch it now, not after an hour of analysis.
+:::
+
+
+## glimpse() --- The Best First Look
+
+```{r}
+#| label: explore-glimpse
+#| echo: true
+
+library(dplyr)
+
+# glimpse() shows every column, its type, and first values
+glimpse(facility_data)
+
+# Output looks like:
+# Rows: 5
+# Columns: 6
+# $ facility_id     <chr> "ETH-001", "ETH-002", "KEN-001", "MWI-001", "TZA-001"
+# $ country         <chr> "Ethiopia", "Ethiopia", "Kenya", "Malawi", "Tanzania"
+# $ facility_type   <chr> "Hospital", "Health Center", "Hospital", "Hospital", ...
+# $ delivery_volume <dbl> 245, 58, 312, 189, 73
+# $ nmr             <dbl> 28.5, NA, 19.2, 35.1, 22.8
+# $ has_cpap        <lgl> TRUE, FALSE, TRUE, FALSE, FALSE
+```
+
+. . .
+
+::: {.callout-box .green}
+**`glimpse()` is the single most useful exploration function.** It shows you every column's name, type, and sample values in one compact view. Make it your first instinct after every import.
+:::
+
+
+## summary() --- Statistical Overview
+
+```{r}
+#| label: explore-summary
+#| echo: true
+
+summary(facility_data)
+
+# For numeric columns, you get:
+#   Min, 1st Quartile, Median, Mean, 3rd Quartile, Max, NA count
+# For character columns:
+#   Length, Class, Mode
+# For logical columns:
+#   Counts of TRUE/FALSE/NA
+```
+
+. . .
+
+::: {.callout-box}
+**`summary()` reveals problems `head()` can't.** A max delivery volume of 999,999 is a data entry error. A median NMR of 0 means most facilities aren't reporting. These red flags appear in `summary()`, not in the first six rows.
+:::
+
+
+## Exploration Cheat Sheet
+
+| Function | What it tells you | When to use it |
+|----------|-------------------|----------------|
+| `nrow()`, `ncol()` | Dataset dimensions | Always first |
+| `head()` | First few rows | Quick sanity check |
+| `glimpse()` | Column names, types, samples | After every import |
+| `summary()` | Min, max, median, NA counts | Before analysis |
+| `names()` | Column names only | When you need exact names |
+| `str()` | Structure (types + preview) | Debugging type issues |
+
+. . .
+
+::: {.callout-box .orange}
+**In consulting, surprises in data are expensive.** Spending five minutes exploring saves hours of debugging downstream. Make these commands a habit, not an afterthought.
+:::
+
+
+# Handling Missing Values {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">NA is not zero --- and ignoring it is not a strategy</span>
+
+
+## What Is NA?
+
+::: {.definition-box}
+**`NA`** stands for "Not Available." It represents a missing or unknown value in R. It's not zero, not blank, not an error --- it's R's way of saying "we don't know this value."
+:::
+
+. . .
+
+```{r}
+#| label: na-basics
+#| echo: true
+
+# NA is contagious — any operation with NA returns NA
+5 + NA            # NA
+mean(c(10, 20, NA))  # NA (not 15!)
+
+# You must explicitly tell R to ignore NAs
+mean(c(10, 20, NA), na.rm = TRUE)  # 15
+```
+
+. . .
+
+::: {.callout-box .red}
+**The most dangerous NAs are the ones you don't notice.** If `mean(nmr)` returns `NA`, your entire summary table is blank --- and you won't know why unless you check for missing values first.
+:::
+
+
+## Detecting Missing Values
+
+```{r}
+#| label: na-detect
+#| echo: true
+
+# Count NAs per column
+colSums(is.na(facility_data))
+
+# Output:
+# facility_id       0
+# country           0
+# facility_type     0
+# delivery_volume   0
+# nmr               1
+# has_cpap          0
+
+# Percentage missing per column
+colMeans(is.na(facility_data)) * 100
+
+# Output:
+# facility_id       0
+# country           0
+# facility_type     0
+# delivery_volume   0
+# nmr              20
+# has_cpap          0
+```
+
+
+## What Missing Values Mean
+
+Not all NAs are the same. Understanding *why* data is missing changes how you handle it:
+
+| Pattern | Likely Meaning | Example | Action |
+|---------|---------------|---------|--------|
+| NMR is NA | Facility didn't report | Rural health post with no data clerk | Investigate or exclude |
+| delivery_volume is 0 | Facility exists but had no deliveries | Health post that refers all deliveries | Keep --- it's real data |
+| has_cpap is NA | Equipment status unknown | Survey question skipped | Code as "Unknown" |
+| Entire row is NA | Empty row in source file | Excel formatting artifact | Remove the row |
+| NMR is 0 | Zero neonatal deaths reported | Could be real or underreporting | Verify with context |
+
+. . .
+
+::: {.callout-box .orange}
+**Zero and NA are different stories.** A facility with 0 neonatal deaths had deliveries and reported no deaths. A facility with NA for NMR didn't report at all. Treating NA as 0 inflates your denominator and biases your results downward.
+:::
+
+
+## Removing Missing Values
+
+```{r}
+#| label: na-remove
+#| echo: true
+
+# Remove ALL rows with any NA (aggressive — use with caution)
+clean_data <- na.omit(facility_data)
+
+# Remove rows where a specific column is NA (targeted — preferred)
+clean_data <- facility_data[!is.na(facility_data$nmr), ]
+```
+
+. . .
+
+```{r}
+#| label: na-remove-dplyr
+#| echo: true
+
+library(dplyr)
+
+# Using dplyr filter (most readable)
+clean_data <- facility_data |>
+  filter(!is.na(nmr))
+
+# Remove rows missing ANY of several key columns
+clean_data <- facility_data |>
+  filter(!is.na(nmr), !is.na(delivery_volume))
+```
+
+. . .
+
+::: {.callout-box}
+**Prefer targeted removal over `na.omit()`.** If one column has 40% missing values, `na.omit()` throws away 40% of your entire dataset --- including rows that are perfectly fine for other analyses.
+:::
+
+
+## Working with NAs in Calculations
+
+```{r}
+#| label: na-calculations
+#| echo: true
+
+# Without na.rm, you get NA
+mean(facility_data$nmr)                    # NA
+
+# With na.rm = TRUE, NAs are excluded
+mean(facility_data$nmr, na.rm = TRUE)      # 26.4
+
+# Common summary functions that need na.rm
+sum(facility_data$delivery_volume, na.rm = TRUE)
+median(facility_data$nmr, na.rm = TRUE)
+sd(facility_data$nmr, na.rm = TRUE)
+min(facility_data$nmr, na.rm = TRUE)
+max(facility_data$nmr, na.rm = TRUE)
+```
+
+. . .
+
+::: {.callout-box .green}
+**Make `na.rm = TRUE` a habit.** In MNH data, missing values are the norm, not the exception. Every `mean()`, `sum()`, and `median()` call should include it until you've explicitly confirmed there are no NAs.
+:::
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Use `read_csv()` for CSV files and `read_excel()` for Excel files** --- specify column types and handle messy headers with `skip`, `na`, and `col_types`.
+
+**Always explore data immediately after import** with `glimpse()`, `summary()`, and `colSums(is.na())` --- catch problems in the first five minutes, not after an hour of analysis.
+
+**NA is not zero.** Handle missing values deliberately with `na.rm = TRUE` in calculations and targeted filtering with `filter(!is.na())` rather than blanket `na.omit()`.
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 4 --- Data Transformation with dplyr**
+
+- The pipe operator (`|>`) for readable workflows
+- `filter()`, `select()`, `mutate()` --- the core data verbs
+- `group_by()` + `summarise()` --- R's answer to pivot tables
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[R for Management Consultants | Chapter 3: Importing & Exploring Data]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

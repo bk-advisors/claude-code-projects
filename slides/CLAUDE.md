@@ -20,6 +20,8 @@ quarto preview <deck-folder>/index.qmd
 # Generate lecture materials (per deck)
 python <deck-folder>/generate_essay.py
 python <deck-folder>/generate_whiteboard_diagram.py
+python <deck-folder>/generate_youtube_metadata.py
+python <deck-folder>/generate_youtube_thumbnails.py
 ```
 
 Quarto 1.8+ is required. No package.json or npm dependencies exist — Quarto handles everything. Python scripts require `python-docx` and `matplotlib`.
@@ -43,6 +45,10 @@ Each standalone deck also includes supplementary lecture materials:
 - `generate_whiteboard_diagram.py` — Python script that generates `whiteboard-diagram.png` using matplotlib with `plt.xkcd()` for hand-drawn style
 - `pre-class-essay.docx` — Generated output (regenerate with `python generate_essay.py`)
 - `whiteboard-diagram.png` — Generated output (regenerate with `python generate_whiteboard_diagram.py`)
+- `generate_youtube_metadata.py` — Python script that generates per-video YouTube upload metadata `.docx` files (title, description, tags, category, chapters, thumbnail suggestions)
+- `youtube-metadata-*.docx` — Generated output (regenerate with `python generate_youtube_metadata.py`)
+- `generate_youtube_thumbnails.py` — Python script that generates `youtube-thumb-*.png` YouTube thumbnail images using matplotlib (polished style, 1280x720, BKA branded)
+- `youtube-thumb-*.png` — Generated output (regenerate with `python generate_youtube_thumbnails.py`)
 
 ## Completed Decks
 
@@ -51,6 +57,7 @@ Each standalone deck also includes supplementary lecture materials:
 | `anatomy-of-a-good-point/` | 4-part argumentation framework (Point, Reasoning, Evidence, Impact) | Malawi MNH | — |
 | `causal-arguments/` | Causal reasoning: correlation vs. causation, three alternatives to rule out, causal stories, removal test | Ethiopia MNH (CHEWs, woredas, HSTP) | Sequel to anatomy-of-a-good-point; signposts to inference-and-intervention |
 | `inference-and-intervention/` | 10-chapter course on causal models for business analysis, applied to MNH | Ethiopia MNH | Sequel to causal-arguments |
+| `r-for-management-consultants/` | 9-chapter R programming course (tidyverse, ggplot2, Quarto reports) for consultants with no prior coding experience | MNH facility datasets (5 countries, 200 facilities) | Prerequisite for inference-and-intervention |
 
 ## Shared Assets (`slide-master/`)
 
@@ -85,6 +92,38 @@ These are defined as SCSS variables (`$bka-blue`, `$bka-light-blue`, etc.) in ea
 - Reusable CSS component classes are defined in `custom.scss`: `.callout-box`, `.example-block`, `.step-number`, `.key-takeaway`, `.columns-equal`, `.good-example`, `.bad-example`
 - **Overflow fix:** All `custom.scss` files include `overflow-y: auto` on `.reveal .slides section` to prevent callout boxes and key-takeaway boxes from being clipped at the bottom of content-heavy slides. Component sizing (padding, margins, font-size) was tightened to minimize the need for scrolling.
 
+## Multi-Chapter Website Courses
+
+`inference-and-intervention/` and `r-for-management-consultants/` are Quarto **website** projects (not standalone decks). Each has:
+
+- `_quarto.yml` — website project config with sidebar navigation
+- `chapters/ch01.qmd` … `chapters/ch0N.qmd` — companion pages with learning objectives, key concepts, slide embed (iframe), R code workshop, and takeaways
+- `ch01-xxx/index.qmd` … `ch0N-xxx/index.qmd` — reveal.js slide decks, one per chapter
+- `styles.scss` — website SCSS (component classes: `.learning-objectives`, `.key-concept`, `.slide-embed`, `.key-takeaway`)
+- Python generators in the project root: `generate_essays.py`, `generate_whiteboard_diagrams.py`, `generate_youtube_metadata.py`, `generate_youtube_thumbnails.py`
+
+**Build commands for multi-chapter websites:**
+
+```bash
+# Render the full website (companion pages + all slide decks)
+quarto render r-for-management-consultants/
+
+# Live preview
+quarto preview r-for-management-consultants/
+
+# Generate supplementary materials
+python r-for-management-consultants/generate_essays.py
+python r-for-management-consultants/generate_whiteboard_diagrams.py
+python r-for-management-consultants/generate_youtube_metadata.py
+python r-for-management-consultants/generate_youtube_thumbnails.py
+```
+
+**Live demo scripts:** `r-for-management-consultants/demo-scripts/` contains one self-contained `.R` file per chapter (`ch01-why-r.R` through `ch09-quarto-reports.R`). Each script mirrors the slide section order and is designed for RStudio line-by-line execution during class delivery (Ctrl+Enter). Scripts build datasets inline — no external data files required. When adding new chapters or revising slide code examples, update the corresponding demo script to keep them in sync.
+
+**Critical `_quarto.yml` render list rule:** Slide deck files (`ch*/index.qmd`) MUST be included in the `render:` list in `_quarto.yml`. Without this, Quarto copies the slide deck folders to `_site/` but omits `index_files/` (revealjs CSS and JS assets), causing slides to appear as plain HTML. When slide decks are in the render list, Quarto renders them as revealjs and consolidates assets into `_site/site_libs/revealjs/`.
+
+**Inline R in companion pages:** Companion pages use `eval: false` (set at project level). Do NOT use backtick-r inline expressions (e.g., `` `r mean(x)` ``) in companion page narrative — they always evaluate regardless of `eval: false`. Show them as plain code spans or describe them in prose instead.
+
 ## Creating a New Deck
 
 1. Create a new folder at the repo root (e.g., `new-framework/`)
@@ -94,4 +133,4 @@ These are defined as SCSS variables (`$bka-blue`, `$bka-light-blue`, etc.) in ea
 5. Create `index.qmd` using the same YAML front matter pattern as existing decks
 6. Create lecture materials: `speaker-notes.md`, `intro-video-speaker-notes.md`, `generate_essay.py`, `generate_whiteboard_diagram.py`
 7. Render with `quarto render new-framework/index.qmd`
-8. Generate materials with `python generate_essay.py` and `python generate_whiteboard_diagram.py`
+8. Generate materials with `python generate_essay.py`, `python generate_whiteboard_diagram.py`, `python generate_youtube_metadata.py`, and `python generate_youtube_thumbnails.py`

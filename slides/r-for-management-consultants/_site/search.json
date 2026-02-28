@@ -1,0 +1,793 @@
+[
+  {
+    "objectID": "chapters/ch08.html",
+    "href": "chapters/ch08.html",
+    "title": "Chapter 8: Descriptive Statistics for Consultants",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nCompute and interpret mean, median, and standard deviation for MNH indicators across countries and facility types\nBuild proportion tables and interpret them in consulting context\nConstruct and interpret confidence intervals using t.test() — understanding what the interval does and does not tell you\nCompute correlation with cor.test() and explain why correlation does not imply causation\nFit a linear regression with lm(), interpret coefficients with summary(), and visualize the fitted line\nDistinguish between statistical significance (p-value) and practical significance (effect size)",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 8: Descriptive Statistics for Consultants"
+    ]
+  },
+  {
+    "objectID": "chapters/ch08.html#learning-objectives",
+    "href": "chapters/ch08.html#learning-objectives",
+    "title": "Chapter 8: Descriptive Statistics for Consultants",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nCompute and interpret mean, median, and standard deviation for MNH indicators across countries and facility types\nBuild proportion tables and interpret them in consulting context\nConstruct and interpret confidence intervals using t.test() — understanding what the interval does and does not tell you\nCompute correlation with cor.test() and explain why correlation does not imply causation\nFit a linear regression with lm(), interpret coefficients with summary(), and visualize the fitted line\nDistinguish between statistical significance (p-value) and practical significance (effect size)",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 8: Descriptive Statistics for Consultants"
+    ]
+  },
+  {
+    "objectID": "chapters/ch08.html#key-concepts",
+    "href": "chapters/ch08.html#key-concepts",
+    "title": "Chapter 8: Descriptive Statistics for Consultants",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nCentral Tendency: Mean vs Median\nThe mean is the arithmetic average — sensitive to outliers. The median is the middle value — robust to outliers. For skewed distributions (common in health data: a few facilities with very high NMR), the median better represents the “typical” facility. Always report both, and explain which one you are using and why.\n\n\nConfidence Intervals\nA 95% confidence interval means: if you repeated the study many times, 95% of the intervals you compute would contain the true population parameter. It quantifies uncertainty around your estimate. A narrow interval means you have a precise estimate; a wide interval means you need more data. Consultants should report CIs alongside point estimates, especially when sample sizes are small.\n\n\nCorrelation vs Causation\ncor.test() measures the strength and direction of a linear relationship between two variables. A correlation of -0.7 between CPAP availability and NMR means they tend to move in opposite directions. But this alone does not prove that adding CPAP machines causes NMR to decline — confounders (hospital capacity, staffing) could explain the pattern. This connects directly to the causal reasoning framework from the Causal Arguments course.\n\n\nLinear Regression\nlm(nmr ~ deliveries + facility_type, data = df) fits a line predicting NMR from delivery volume and facility type. The coefficients tell you: “For each additional delivery, NMR changes by X, holding facility type constant.” Regression is the quantitative foundation for the causal models you will build in the Inference and Intervention course.\n\n\nStatistical vs Practical Significance\nA p-value &lt; 0.05 means the result is unlikely due to chance alone. But a statistically significant effect can be practically meaningless: a program that reduces NMR by 0.1 per 1,000 may be statistically significant with a large sample but irrelevant for policy. Always ask: “Is the effect big enough to matter for the decision at hand?”",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 8: Descriptive Statistics for Consultants"
+    ]
+  },
+  {
+    "objectID": "chapters/ch08.html#lecture-slides",
+    "href": "chapters/ch08.html#lecture-slides",
+    "title": "Chapter 8: Descriptive Statistics for Consultants",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 8: Descriptive Statistics for Consultants"
+    ]
+  },
+  {
+    "objectID": "chapters/ch08.html#r-code-workshop",
+    "href": "chapters/ch08.html#r-code-workshop",
+    "title": "Chapter 8: Descriptive Statistics for Consultants",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis workshop walks through the statistical tools a consultant needs to summarize data, quantify uncertainty, and test relationships — all with MNH examples.\n\nSummary Statistics by Country\n\nlibrary(tidyverse)\n\n# Simulated facility-level data\nset.seed(42)\nfacility_data &lt;- tibble(\n  facility_id   = paste0(\"F\", 1:60),\n  country       = rep(c(\"Ethiopia\", \"Tanzania\", \"Malawi\"), each = 20),\n  facility_type = sample(c(\"hospital\", \"health_center\", \"health_post\"),\n                          60, replace = TRUE,\n                          prob = c(0.2, 0.4, 0.4)),\n  live_births   = round(runif(60, 50, 500)),\n  neonatal_deaths = round(runif(60, 0, 20)),\n  has_cpap      = sample(c(TRUE, FALSE), 60, replace = TRUE, prob = c(0.3, 0.7))\n) |&gt;\n  mutate(nmr = neonatal_deaths / live_births * 1000)\n\n# Summary statistics by country\nfacility_data |&gt;\n  group_by(country) |&gt;\n  summarise(\n    n = n(),\n    mean_nmr   = round(mean(nmr, na.rm = TRUE), 1),\n    median_nmr = round(median(nmr, na.rm = TRUE), 1),\n    sd_nmr     = round(sd(nmr, na.rm = TRUE), 1),\n    min_nmr    = round(min(nmr, na.rm = TRUE), 1),\n    max_nmr    = round(max(nmr, na.rm = TRUE), 1)\n  )\n\nNotice how the mean and median can differ substantially. When they diverge, it usually means the distribution is skewed — a few facilities with very high (or very low) NMR are pulling the mean away from the center. In your client deliverables, report the median for skewed distributions and explain why.\n\n\nProportion Tables\n\n# What proportion of facilities have CPAP equipment?\nfacility_data |&gt;\n  group_by(country) |&gt;\n  summarise(\n    n_facilities = n(),\n    n_with_cpap  = sum(has_cpap),\n    pct_cpap     = round(mean(has_cpap) * 100, 1)\n  )\n\n# Cross-tabulation: facility type by CPAP availability\nfacility_data |&gt;\n  count(facility_type, has_cpap) |&gt;\n  pivot_wider(names_from = has_cpap, values_from = n,\n              names_prefix = \"cpap_\") |&gt;\n  mutate(pct_with_cpap = round(cpap_TRUE / (cpap_TRUE + cpap_FALSE) * 100, 1))\n\nProportion tables are the building blocks of consulting deliverables. “Only 30% of health posts have CPAP equipment, compared to 80% of hospitals” is a finding that drives resource allocation decisions. Always pair proportions with absolute counts so your client understands both the rate and the scale.\n\n\nConfidence Intervals with t.test\n\n# 95% confidence interval for mean NMR in Ethiopia\nethiopia_nmr &lt;- facility_data |&gt;\n  filter(country == \"Ethiopia\") |&gt;\n  pull(nmr)\n\nt_result &lt;- t.test(ethiopia_nmr)\nt_result\n\n# Extract the key numbers\nt_result$estimate     # point estimate (mean)\nt_result$conf.int     # 95% CI bounds\n\n# CI by country\nfacility_data |&gt;\n  group_by(country) |&gt;\n  summarise(\n    mean_nmr = mean(nmr),\n    ci_lower = t.test(nmr)$conf.int[1],\n    ci_upper = t.test(nmr)$conf.int[2],\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(across(where(is.numeric), ~ round(.x, 1)))\n\nA confidence interval tells you the range of plausible values for the true mean. If the CI for Ethiopia is [18.2, 32.4], you can say: “We estimate the mean NMR across Ethiopian facilities in our sample is between 18.2 and 32.4 per 1,000 live births.” Wider intervals mean more uncertainty — usually because the sample size is small or the variation is large.\n\n\nCorrelation Analysis\n\n# Is delivery volume correlated with NMR?\ncor.test(facility_data$live_births, facility_data$nmr)\n\n# Visualize the relationship\nggplot(facility_data, aes(x = live_births, y = nmr)) +\n  geom_point(aes(color = country), size = 3, alpha = 0.7) +\n  geom_smooth(method = \"lm\", se = TRUE, color = \"#005CB9\", linewidth = 1) +\n  labs(\n    title = \"Delivery Volume vs Neonatal Mortality\",\n    subtitle = \"Correlation does not imply causation\",\n    x = \"Live Births (annual)\",\n    y = \"NMR (per 1,000 live births)\",\n    color = \"Country\"\n  ) +\n  theme_minimal()\n\nThe cor.test() output gives you three things: the correlation coefficient (r), the p-value, and a confidence interval. But even a strong correlation does not prove causation. Higher-volume facilities may have lower NMR because they are better-resourced hospitals — not because volume itself reduces mortality. This is exactly the kind of reasoning you practiced in the Causal Arguments course.\n\n\nLinear Regression\n\n# Fit a linear model: NMR as a function of delivery volume and CPAP\nmodel &lt;- lm(nmr ~ live_births + has_cpap + facility_type,\n            data = facility_data)\n\n# Interpret the results\nsummary(model)\n\n# Key coefficients to report:\n# - Intercept: estimated NMR when all predictors are at reference level\n# - live_births: change in NMR for each additional birth\n# - has_cpapTRUE: difference in NMR between facilities with/without CPAP\n# - facility_type: difference relative to reference category\n\nThe summary(model) output shows estimated coefficients, standard errors, t-values, and p-values. Focus on the Estimate column (effect size) and the Pr(&gt;|t|) column (significance). But always ask: is the effect practically meaningful? A coefficient of -0.002 on live_births means NMR decreases by 0.002 per additional birth — statistically significant perhaps, but negligible for policy.\n\n\nVisualizing Regression Results\n\n# Visualize the regression with confidence band\nggplot(facility_data, aes(x = live_births, y = nmr, color = has_cpap)) +\n  geom_point(size = 3, alpha = 0.7) +\n  geom_smooth(method = \"lm\", se = TRUE) +\n  scale_color_manual(\n    values = c(\"TRUE\" = \"#83BD00\", \"FALSE\" = \"#E24A3F\"),\n    labels = c(\"TRUE\" = \"Has CPAP\", \"FALSE\" = \"No CPAP\")\n  ) +\n  labs(\n    title = \"NMR by Delivery Volume and CPAP Availability\",\n    subtitle = \"Linear regression with 95% confidence bands\",\n    x = \"Live Births (annual)\",\n    y = \"NMR (per 1,000 live births)\",\n    color = \"CPAP Status\"\n  ) +\n  theme_minimal()\n\nThis chart shows two regression lines: one for facilities with CPAP and one without. If the lines have different intercepts, CPAP availability is associated with different NMR levels even after accounting for delivery volume. The shaded bands show uncertainty — wider bands mean fewer data points in that range.",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 8: Descriptive Statistics for Consultants"
+    ]
+  },
+  {
+    "objectID": "chapters/ch08.html#key-takeaways",
+    "href": "chapters/ch08.html#key-takeaways",
+    "title": "Chapter 8: Descriptive Statistics for Consultants",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nReport mean, median, and confidence intervals together. The mean summarizes, the median resists outliers, and the CI quantifies uncertainty. Your client needs all three to make informed decisions.\nCorrelation measures association, not causation. Use cor.test() to quantify relationships, but remember that confounders can create misleading correlations — refer back to the causal reasoning framework.\nRegression is a tool, not an answer. lm() tells you which variables are associated with NMR and by how much, but the coefficients are only as good as the model specification. Always consider what you might be missing.",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 8: Descriptive Statistics for Consultants"
+    ]
+  },
+  {
+    "objectID": "chapters/ch08.html#looking-ahead",
+    "href": "chapters/ch08.html#looking-ahead",
+    "title": "Chapter 8: Descriptive Statistics for Consultants",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 9 — Reproducible Reports with Quarto, you will learn to combine your analyses, charts, and narrative into polished, automated documents:\n\nQuarto document structure (YAML + markdown + code chunks)\nInline R for dynamic narrative (e.g. mean NMR computed live in the document text)\nRendering to HTML, PDF, and Word\nParameterized reports that auto-generate a country brief for every country in your dataset",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 8: Descriptive Statistics for Consultants"
+    ]
+  },
+  {
+    "objectID": "chapters/ch06.html",
+    "href": "chapters/ch06.html",
+    "title": "Chapter 6: Data Visualization with ggplot2",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nExplain the grammar of graphics framework: data, aesthetic mappings, and geometric objects\nCreate five core chart types: bar charts, scatter plots, line charts, histograms, and boxplots\nMap data variables to visual properties (color, size, shape, fill) using aes()\nAdd labels, titles, and basic formatting with labs() and theme()\nChoose the right chart type for different analytical questions in MNH consulting",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 6: Data Visualization with ggplot2"
+    ]
+  },
+  {
+    "objectID": "chapters/ch06.html#learning-objectives",
+    "href": "chapters/ch06.html#learning-objectives",
+    "title": "Chapter 6: Data Visualization with ggplot2",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nExplain the grammar of graphics framework: data, aesthetic mappings, and geometric objects\nCreate five core chart types: bar charts, scatter plots, line charts, histograms, and boxplots\nMap data variables to visual properties (color, size, shape, fill) using aes()\nAdd labels, titles, and basic formatting with labs() and theme()\nChoose the right chart type for different analytical questions in MNH consulting",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 6: Data Visualization with ggplot2"
+    ]
+  },
+  {
+    "objectID": "chapters/ch06.html#key-concepts",
+    "href": "chapters/ch06.html#key-concepts",
+    "title": "Chapter 6: Data Visualization with ggplot2",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nGrammar of Graphics\nEvery ggplot2 chart is built from three components: data (the tibble), aesthetics (which variables map to which visual properties — x-axis, y-axis, color, size), and geoms (the geometric shapes that represent the data — bars, points, lines). You layer these components with + to build up a visualization step by step.\n\n\nGeom Types\n\n\n\n\n\n\n\n\nGeom\nUse Case\nMNH Example\n\n\n\n\ngeom_col()\nCompare categories\nNMR by country\n\n\ngeom_point()\nShow relationships\nDeliveries vs. NMR\n\n\ngeom_line()\nShow trends over time\nQuarterly NMR trends\n\n\ngeom_histogram()\nShow distributions\nDistribution of facility NMRs\n\n\ngeom_boxplot()\nCompare distributions\nNMR by facility type\n\n\n\n\n\nAesthetic Mappings\nAesthetics connect data to visual properties. aes(x = country, y = nmr) puts countries on the x-axis and NMR on the y-axis. aes(color = region) colors points by region. Aesthetics inside aes() are data-driven (they vary with the data); aesthetics outside aes() are fixed (e.g., color = \"blue\" makes everything blue).\n\n\nChart Selection\nThe right chart depends on your question: Comparing categories? Bar chart. Showing a relationship between two numbers? Scatter plot. Tracking change over time? Line chart. Understanding a distribution? Histogram or boxplot. Choosing the wrong chart type obscures your message; choosing the right one makes the insight immediately visible.",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 6: Data Visualization with ggplot2"
+    ]
+  },
+  {
+    "objectID": "chapters/ch06.html#lecture-slides",
+    "href": "chapters/ch06.html#lecture-slides",
+    "title": "Chapter 6: Data Visualization with ggplot2",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 6: Data Visualization with ggplot2"
+    ]
+  },
+  {
+    "objectID": "chapters/ch06.html#r-code-workshop",
+    "href": "chapters/ch06.html#r-code-workshop",
+    "title": "Chapter 6: Data Visualization with ggplot2",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis workshop builds five core chart types using MNH data. Each chart answers a different analytical question a consultant might face.\n\nBar Chart: NMR by Country\n\nlibrary(tidyverse)\n\n# Country-level NMR data\ncountry_nmr &lt;- tibble(\n  country = c(\"Ethiopia\", \"Tanzania\", \"Malawi\", \"Kenya\", \"Rwanda\"),\n  nmr = c(28.1, 20.3, 22.4, 18.6, 16.2)\n)\n\n# Bar chart — compare a numeric value across categories\nggplot(country_nmr, aes(x = reorder(country, nmr), y = nmr)) +\n  geom_col(fill = \"#005CB9\") +\n  coord_flip() +\n  labs(\n    title = \"Neonatal Mortality Rate by Country\",\n    subtitle = \"Deaths per 1,000 live births\",\n    x = NULL,\n    y = \"NMR\"\n  ) +\n  theme_minimal()\n\nreorder(country, nmr) sorts the bars by NMR value rather than alphabetically — this makes the comparison immediate. coord_flip() makes horizontal bars, which are easier to read when category labels are long (country or facility names).\n\n\nScatter Plot: Delivery Volume vs NMR\n\n# Facility-level data\nfacility_scatter &lt;- tibble(\n  facility = paste0(\"F\", 1:20),\n  country = sample(c(\"Ethiopia\", \"Tanzania\", \"Malawi\"), 20, replace = TRUE),\n  total_deliveries = c(320, 85, 410, 120, 250, 190, 380, 95, 150, 440,\n                       60, 210, 330, 175, 290, 105, 360, 225, 145, 400),\n  nmr = c(12.5, 28.3, 15.1, 22.7, 18.4, 25.6, 14.2, 31.0, 20.1, 11.8,\n          35.2, 19.5, 16.8, 24.1, 17.3, 29.4, 13.5, 21.2, 26.8, 10.9)\n)\n\n# Scatter plot — show relationship between two numeric variables\nggplot(facility_scatter, aes(x = total_deliveries, y = nmr, color = country)) +\n  geom_point(size = 3, alpha = 0.8) +\n  labs(\n    title = \"Facility Delivery Volume vs Neonatal Mortality\",\n    x = \"Total Deliveries (annual)\",\n    y = \"NMR (per 1,000 live births)\",\n    color = \"Country\"\n  ) +\n  theme_minimal()\n\nThis chart lets you see whether higher-volume facilities tend to have lower NMR — a pattern you might expect if volume is a proxy for capacity. The color = country aesthetic lets you see whether the pattern holds across countries or varies by context.\n\n\nLine Chart: NMR Trends Over Time\n\n# Quarterly NMR trends\nquarterly_trends &lt;- tibble(\n  quarter = rep(c(\"2023-Q1\", \"2023-Q2\", \"2023-Q3\", \"2023-Q4\",\n                  \"2024-Q1\", \"2024-Q2\"), 3),\n  country = rep(c(\"Ethiopia\", \"Tanzania\", \"Malawi\"), each = 6),\n  nmr = c(28.1, 27.3, 26.5, 25.8, 25.1, 24.4,    # Ethiopia: declining\n          20.3, 20.1, 19.8, 19.5, 19.2, 18.9,      # Tanzania: declining\n          22.4, 23.1, 22.8, 21.9, 22.5, 21.2)       # Malawi: uneven\n)\n\n# Line chart — track change over time\nggplot(quarterly_trends, aes(x = quarter, y = nmr,\n                              color = country, group = country)) +\n  geom_line(linewidth = 1) +\n  geom_point(size = 2) +\n  labs(\n    title = \"Quarterly NMR Trends by Country\",\n    x = \"Quarter\",\n    y = \"NMR (per 1,000 live births)\",\n    color = \"Country\"\n  ) +\n  theme_minimal() +\n  theme(axis.text.x = element_text(angle = 45, hjust = 1))\n\nLine charts require a group aesthetic when you have multiple lines. Without group = country, ggplot2 would try to connect all points in sequence. Adding geom_point() on top of geom_line() makes individual data points visible, which helps when trends are uneven (like the Malawi line).\n\n\nHistogram: Distribution of Facility NMRs\n\n# Distribution of NMR across many facilities\nset.seed(42)\nfacility_nmrs &lt;- tibble(\n  nmr = c(rnorm(50, mean = 22, sd = 6),   # general distribution\n          rnorm(10, mean = 35, sd = 4))     # outlier cluster\n)\n\n# Histogram — understand the shape of a distribution\nggplot(facility_nmrs, aes(x = nmr)) +\n  geom_histogram(binwidth = 3, fill = \"#005CB9\", color = \"white\") +\n  geom_vline(xintercept = 25, color = \"#E24A3F\", linetype = \"dashed\",\n             linewidth = 1) +\n  annotate(\"text\", x = 26, y = 12, label = \"Target: 25\",\n           color = \"#E24A3F\", hjust = 0) +\n  labs(\n    title = \"Distribution of Neonatal Mortality Rates Across Facilities\",\n    x = \"NMR (per 1,000 live births)\",\n    y = \"Number of Facilities\"\n  ) +\n  theme_minimal()\n\nThe dashed red line marks a target threshold. This kind of chart answers the question: “How many of our facilities are above or below the target?” The right tail of the distribution shows outlier facilities with very high NMR — these are the ones to investigate first.\n\n\nBoxplot: NMR by Facility Type\n\n# NMR by facility type\nfacility_types &lt;- tibble(\n  facility_type = factor(\n    rep(c(\"Health Post\", \"Health Center\", \"Hospital\"), each = 15),\n    levels = c(\"Health Post\", \"Health Center\", \"Hospital\")\n  ),\n  nmr = c(rnorm(15, 30, 5),   # health posts: higher NMR\n          rnorm(15, 22, 4),    # health centers: medium\n          rnorm(15, 15, 3))    # hospitals: lower NMR\n)\n\n# Boxplot — compare distributions across categories\nggplot(facility_types, aes(x = facility_type, y = nmr, fill = facility_type)) +\n  geom_boxplot(alpha = 0.7) +\n  scale_fill_manual(values = c(\"#FA7650\", \"#F8A623\", \"#005CB9\")) +\n  labs(\n    title = \"Neonatal Mortality by Facility Type\",\n    x = NULL,\n    y = \"NMR (per 1,000 live births)\"\n  ) +\n  theme_minimal() +\n  theme(legend.position = \"none\")\n\nBoxplots show the median (center line), interquartile range (box), and outliers (individual points). They are the best chart for comparing distributions across categories. Here you can see whether hospitals systematically outperform health posts on NMR — and how much variation exists within each type.",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 6: Data Visualization with ggplot2"
+    ]
+  },
+  {
+    "objectID": "chapters/ch06.html#key-takeaways",
+    "href": "chapters/ch06.html#key-takeaways",
+    "title": "Chapter 6: Data Visualization with ggplot2",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nEvery chart is data + aesthetics + geom. Once you internalize this grammar, you can build any visualization by combining the right components.\nChoose chart type by question. Comparing categories = bar chart. Relationships = scatter plot. Trends = line chart. Distributions = histogram or boxplot.\nAesthetics make data visible. Mapping variables to color, size, and shape lets you encode multiple dimensions of information in a single chart — country, facility type, and NMR all in one view.",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 6: Data Visualization with ggplot2"
+    ]
+  },
+  {
+    "objectID": "chapters/ch06.html#looking-ahead",
+    "href": "chapters/ch06.html#looking-ahead",
+    "title": "Chapter 6: Data Visualization with ggplot2",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 7 — Publication-Quality Charts, you will learn to polish your charts for client deliverables:\n\nBuilding a reusable theme_bka() function with BK Advisors brand colors\nFaceting (small multiples) to show patterns across countries simultaneously\nCombining multiple charts into a single figure with patchwork\nExporting at 300 DPI for print-quality slide decks",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 6: Data Visualization with ggplot2"
+    ]
+  },
+  {
+    "objectID": "chapters/ch04.html",
+    "href": "chapters/ch04.html",
+    "title": "Chapter 4: Data Transformation with dplyr",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nUse the pipe operator (|&gt;) to chain data transformation steps into readable pipelines\nApply the five core dplyr verbs: filter(), select(), mutate(), summarise(), and arrange()\nCombine group_by() with summarise() to compute grouped statistics (e.g., NMR by country, deliveries by facility type)\nUse case_when() to create categorical variables from numeric thresholds\nBuild a complete analytical pipeline from raw facility data to a summary dashboard table",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 4: Data Transformation with dplyr"
+    ]
+  },
+  {
+    "objectID": "chapters/ch04.html#learning-objectives",
+    "href": "chapters/ch04.html#learning-objectives",
+    "title": "Chapter 4: Data Transformation with dplyr",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nUse the pipe operator (|&gt;) to chain data transformation steps into readable pipelines\nApply the five core dplyr verbs: filter(), select(), mutate(), summarise(), and arrange()\nCombine group_by() with summarise() to compute grouped statistics (e.g., NMR by country, deliveries by facility type)\nUse case_when() to create categorical variables from numeric thresholds\nBuild a complete analytical pipeline from raw facility data to a summary dashboard table",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 4: Data Transformation with dplyr"
+    ]
+  },
+  {
+    "objectID": "chapters/ch04.html#key-concepts",
+    "href": "chapters/ch04.html#key-concepts",
+    "title": "Chapter 4: Data Transformation with dplyr",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nThe Pipe Operator\nThe pipe (|&gt; in base R, or %&gt;% from magrittr) takes the result of one function and feeds it as the first argument to the next function. It lets you read code left-to-right, top-to-bottom — like reading a recipe: “Take the data, then filter, then mutate, then summarise.” Without pipes, you either nest functions inside each other (unreadable) or create intermediate variables (cluttered).\n\n\nThe Five dplyr Verbs\n\n\n\n\n\n\n\n\nVerb\nPurpose\nExample\n\n\n\n\nfilter()\nKeep rows that match a condition\nFacilities with NMR &gt; 25\n\n\nselect()\nKeep or drop specific columns\nOnly name, country, NMR\n\n\nmutate()\nCreate or modify columns\nAdd a column for NMR category\n\n\nsummarise()\nCollapse rows into a summary\nMean NMR across all facilities\n\n\narrange()\nSort rows\nSort by NMR, worst first\n\n\n\n\n\ngroup_by + summarise\nThe most powerful pattern in dplyr. group_by(country) splits your data into invisible groups, and summarise() then computes one row per group. This is how you go from facility-level records to a country-level summary table — the foundation of most consulting dashboards.\n\n\ncase_when\nA vectorized if-else that maps conditions to values. Use it inside mutate() to create categorical columns from numeric data — for example, classifying facilities into “Low NMR”, “Medium NMR”, and “High NMR” based on threshold values. It evaluates conditions in order and assigns the first match.\n\n\nMethod Chaining as Analytical Thinking\nEach step in a dplyr pipeline corresponds to an analytical decision: Which records are relevant? Which variables matter? What new measures do I need? What level of aggregation answers my question? Learning dplyr is not just learning syntax — it is learning to decompose analytical questions into discrete, verifiable steps.",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 4: Data Transformation with dplyr"
+    ]
+  },
+  {
+    "objectID": "chapters/ch04.html#lecture-slides",
+    "href": "chapters/ch04.html#lecture-slides",
+    "title": "Chapter 4: Data Transformation with dplyr",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 4: Data Transformation with dplyr"
+    ]
+  },
+  {
+    "objectID": "chapters/ch04.html#r-code-workshop",
+    "href": "chapters/ch04.html#r-code-workshop",
+    "title": "Chapter 4: Data Transformation with dplyr",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis workshop builds a complete analytical pipeline — the kind of summary table you might present in a consulting slide deck — using the five dplyr verbs.\n\nThe Pipe in Action\n\nlibrary(tidyverse)\n\n# Without the pipe — nested and hard to read\n# arrange(summarise(group_by(filter(facility_data, active == TRUE), country), mean_nmr = mean(nmr, na.rm = TRUE)), desc(mean_nmr))\n\n# With the pipe — each step on its own line\nfacility_data |&gt;\n  filter(active == TRUE) |&gt;\n  group_by(country) |&gt;\n  summarise(mean_nmr = mean(nmr, na.rm = TRUE)) |&gt;\n  arrange(desc(mean_nmr))\n\nRead the pipe as “and then.” Take facility_data, and then keep only active facilities, and then group by country, and then compute mean NMR, and then sort from worst to best. Each line is a single, verifiable step.\n\n\nFiltering and Selecting\n\n# Filter: keep only hospitals with more than 100 deliveries\nhigh_volume &lt;- facility_data |&gt;\n  filter(facility_type == \"hospital\",\n         total_deliveries &gt; 100)\n\n# Select: keep only the columns we need\nhigh_volume |&gt;\n  select(facility_name, country, total_deliveries, nmr)\n\n# Combine filter + select in one pipeline\nfacility_data |&gt;\n  filter(nmr &gt; 25) |&gt;\n  select(facility_name, country, nmr, total_deliveries) |&gt;\n  arrange(desc(nmr))\n\n# Use ! to negate: drop facilities with missing NMR\nfacility_data |&gt;\n  filter(!is.na(nmr))\n\nFiltering is your first analytical decision: “Which observations are relevant to my question?” Be explicit about your inclusion criteria. In MNH work, you often need to filter to a specific reporting period, facility type, or country before summarizing.\n\n\nCreating New Variables with mutate\n\n# Add computed columns\nfacility_data |&gt;\n  mutate(\n    # Calculate NMR from raw counts\n    nmr_calculated = neonatal_deaths / live_births * 1000,\n\n    # Classify NMR into categories\n    nmr_category = case_when(\n      nmr &lt; 15  ~ \"Low (&lt; 15)\",\n      nmr &lt; 25  ~ \"Medium (15-25)\",\n      nmr &gt;= 25 ~ \"High (25+)\",\n      TRUE      ~ \"Unknown\"\n    ),\n\n    # Flag facilities above the national target\n    above_target = nmr &gt; 20,\n\n    # Calculate percentage of deliveries that are cesarean\n    cs_rate = cesarean_deliveries / total_deliveries * 100\n  ) |&gt;\n  select(facility_name, country, nmr, nmr_category, above_target, cs_rate)\n\ncase_when() is especially useful for creating the kind of traffic-light categories that appear in consulting dashboards — green/yellow/red, on-track/at-risk/off-track. The TRUE ~ \"Unknown\" at the end is the catch-all for any values that do not match the earlier conditions (including NA).\n\n\nGrouped Summaries: The Country Dashboard\n\n# Build a country-level MNH dashboard\ncountry_dashboard &lt;- facility_data |&gt;\n  filter(!is.na(nmr), active == TRUE) |&gt;\n  group_by(country) |&gt;\n  summarise(\n    n_facilities    = n(),\n    total_births    = sum(live_births, na.rm = TRUE),\n    total_neo_death = sum(neonatal_deaths, na.rm = TRUE),\n    mean_nmr        = mean(nmr, na.rm = TRUE),\n    median_nmr      = median(nmr, na.rm = TRUE),\n    worst_nmr       = max(nmr, na.rm = TRUE),\n    pct_high_nmr    = mean(nmr &gt; 25, na.rm = TRUE) * 100\n  ) |&gt;\n  arrange(desc(mean_nmr))\n\ncountry_dashboard\n\nThis is the pipeline pattern you will use most often in consulting work: filter to relevant records, group by the dimension your client cares about (country, region, facility type, quarter), summarise the indicators, and sort to highlight the worst performers. The result is a single table that could go directly into a slide.\n\n\nPutting It All Together\n\n# Complete pipeline: from raw data to a presentation-ready summary\nfacility_data |&gt;\n  # Step 1: Keep only active facilities with valid data\n  filter(active == TRUE, !is.na(nmr), !is.na(total_deliveries)) |&gt;\n\n  # Step 2: Add derived columns\n  mutate(\n    nmr_category = case_when(\n      nmr &lt; 15  ~ \"Low\",\n      nmr &lt; 25  ~ \"Medium\",\n      nmr &gt;= 25 ~ \"High\"\n    ),\n    volume_category = case_when(\n      total_deliveries &lt; 50  ~ \"Low volume\",\n      total_deliveries &lt; 200 ~ \"Medium volume\",\n      TRUE                   ~ \"High volume\"\n    )\n  ) |&gt;\n\n  # Step 3: Summarise by country and NMR category\n  group_by(country, nmr_category) |&gt;\n  summarise(\n    n_facilities = n(),\n    avg_deliveries = mean(total_deliveries, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n\n  # Step 4: Sort for presentation\n  arrange(country, factor(nmr_category, levels = c(\"High\", \"Medium\", \"Low\")))\n\nNotice the .groups = \"drop\" argument in summarise(). After summarizing grouped data, this removes the grouping so subsequent operations apply to the entire result. Forgetting this is a common source of unexpected behavior.",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 4: Data Transformation with dplyr"
+    ]
+  },
+  {
+    "objectID": "chapters/ch04.html#key-takeaways",
+    "href": "chapters/ch04.html#key-takeaways",
+    "title": "Chapter 4: Data Transformation with dplyr",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nThe pipe makes your thinking visible. Each line in a dplyr pipeline is one analytical decision. Write your pipelines so a colleague can read them top-to-bottom and understand your logic.\ngroup_by + summarise is your most powerful tool. It transforms facility-level data into the country-level, region-level, or quarter-level summaries that drive consulting recommendations.\ncase_when creates dashboard categories. Map numeric indicators to human-readable labels — these are the traffic-light classifications your clients expect.",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 4: Data Transformation with dplyr"
+    ]
+  },
+  {
+    "objectID": "chapters/ch04.html#looking-ahead",
+    "href": "chapters/ch04.html#looking-ahead",
+    "title": "Chapter 4: Data Transformation with dplyr",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 5 — Reshaping & Joining Datasets, you will learn to combine multiple data sources and restructure data layouts:\n\npivot_longer() and pivot_wider() — converting between wide and long formats (essential for time-series data from DHIS2)\nleft_join(), inner_join(), anti_join() — merging facility data with country indicators, training records, and equipment inventories\nString cleaning with stringr — standardizing messy facility names",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 4: Data Transformation with dplyr"
+    ]
+  },
+  {
+    "objectID": "chapters/ch02.html",
+    "href": "chapters/ch02.html",
+    "title": "Chapter 2: R Building Blocks",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nCreate and manipulate vectors of numeric, character, logical, and factor data\nCheck and convert between data types using is.*() and as.*() functions\nExplain how R handles missing values (NA) and why this matters for health data\nWrite custom functions to encapsulate repeated calculations\nUse R’s built-in help system (?, help(), args()) to learn about any function",
+    "crumbs": [
+      "Part I: Getting Started",
+      "Chapter 2: R Building Blocks"
+    ]
+  },
+  {
+    "objectID": "chapters/ch02.html#learning-objectives",
+    "href": "chapters/ch02.html#learning-objectives",
+    "title": "Chapter 2: R Building Blocks",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nCreate and manipulate vectors of numeric, character, logical, and factor data\nCheck and convert between data types using is.*() and as.*() functions\nExplain how R handles missing values (NA) and why this matters for health data\nWrite custom functions to encapsulate repeated calculations\nUse R’s built-in help system (?, help(), args()) to learn about any function",
+    "crumbs": [
+      "Part I: Getting Started",
+      "Chapter 2: R Building Blocks"
+    ]
+  },
+  {
+    "objectID": "chapters/ch02.html#key-concepts",
+    "href": "chapters/ch02.html#key-concepts",
+    "title": "Chapter 2: R Building Blocks",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nVectors\nThe most fundamental data structure in R. A vector is an ordered collection of values — all of the same type. When you store NMR values for five countries, that is a numeric vector. When you store country names, that is a character vector. Even a single number in R is technically a vector of length 1.\n\n\nData Types\nEvery value in R belongs to one of several types. The four you will use most: numeric (numbers like 28.1), character (text like \"Ethiopia\"), logical (TRUE or FALSE), and factor (categorical variables with a fixed set of levels, like facility type). Mixing types in a vector triggers automatic coercion — R silently converts everything to the most general type.\n\n\nMissing Values (NA)\nR uses NA to represent missing data — a facility that did not report, a country with no survey that year, a patient record with an unknown outcome. Most R functions will return NA if any input is NA unless you explicitly tell them to ignore missing values (e.g., mean(x, na.rm = TRUE)). Learning to handle NA properly is essential for working with real-world MNH datasets.\n\n\nFunctions\nA named block of code that takes inputs (arguments), performs a calculation, and returns a result. R comes with thousands of built-in functions (mean(), sum(), paste()), and packages add thousands more. You can also write your own functions to encapsulate repeated calculations — like computing NMR or MMR from raw counts.\n\n\nGetting Help\nEvery R function has a help page accessed with ?function_name or help(function_name). The help page shows the function’s arguments, what it returns, and usage examples. When you are stuck, ? is your first stop.",
+    "crumbs": [
+      "Part I: Getting Started",
+      "Chapter 2: R Building Blocks"
+    ]
+  },
+  {
+    "objectID": "chapters/ch02.html#lecture-slides",
+    "href": "chapters/ch02.html#lecture-slides",
+    "title": "Chapter 2: R Building Blocks",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part I: Getting Started",
+      "Chapter 2: R Building Blocks"
+    ]
+  },
+  {
+    "objectID": "chapters/ch02.html#r-code-workshop",
+    "href": "chapters/ch02.html#r-code-workshop",
+    "title": "Chapter 2: R Building Blocks",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis workshop builds your fluency with R’s core data types and shows you how to write functions that automate MNH indicator calculations.\n\nCreating and Inspecting Vectors\n\n# Numeric vector: NMR by country (per 1,000 live births)\nnmr &lt;- c(28.1, 20.3, 22.4, 18.6, 16.2)\n\n# Character vector: country names\ncountries &lt;- c(\"Ethiopia\", \"Tanzania\", \"Malawi\", \"Kenya\", \"Rwanda\")\n\n# Logical vector: does the country have NMR above 20?\nhigh_nmr &lt;- nmr &gt; 20\nhigh_nmr  # TRUE TRUE TRUE FALSE FALSE\n\n# Factor vector: facility type (categorical)\nfacility_type &lt;- factor(c(\"hospital\", \"health_center\", \"hospital\",\n                           \"health_post\", \"health_center\"),\n                        levels = c(\"health_post\", \"health_center\", \"hospital\"))\nfacility_type\n\nNotice the logical vector: nmr &gt; 20 tests each element and returns TRUE or FALSE. This is how you will filter data later — by creating logical conditions that select rows.\n\n\nType Checking and Conversion\n\n# Check types\nis.numeric(nmr)       # TRUE\nis.character(countries)  # TRUE\nis.logical(high_nmr)  # TRUE\n\n# What happens when types mix?\nmixed &lt;- c(1, 2, \"three\")\nmixed  # \"1\" \"2\" \"three\" — everything becomes character\n\n# Convert character to numeric (common with imported data)\nreported_values &lt;- c(\"120\", \"85\", \"NA\", \"200\", \"150\")\nas.numeric(reported_values)  # 120 85 NA 200 150\n\n# Convert numeric to factor for categorical analysis\nnmr_category &lt;- cut(nmr, breaks = c(0, 15, 25, Inf),\n                    labels = c(\"Low\", \"Medium\", \"High\"))\nnmr_category\n\nType coercion is one of the most common sources of bugs when importing data. A column that looks numeric in your CSV may be read as character if it contains a single non-numeric entry (like “N/A” or a footnote symbol). Always check your types after import.\n\n\nHandling Missing Values\n\n# Real-world data has gaps — some facilities did not report\ndeliveries &lt;- c(340, 215, NA, 180, NA, 420, 310)\n\n# Most functions propagate NA by default\nmean(deliveries)      # NA — because R cannot know the true mean\nsum(deliveries)       # NA\n\n# Tell R to remove NAs before computing\nmean(deliveries, na.rm = TRUE)   # 293\nsum(deliveries, na.rm = TRUE)    # 1465\n\n# Count and locate missing values\nsum(is.na(deliveries))         # 2 missing values\nwhich(is.na(deliveries))       # positions 3 and 5\n\n# Percentage of data that is missing\nmean(is.na(deliveries)) * 100  # 28.6% missing\n\nIn MNH data, missing values are not random — facilities that do not report often have the weakest infrastructure. Ignoring NA may bias your results. Always report how much data is missing and consider why it is missing before dropping it.\n\n\nWriting Custom Functions\n\n# Function to calculate Neonatal Mortality Rate\ncalc_nmr &lt;- function(neonatal_deaths, live_births) {\n  nmr &lt;- neonatal_deaths / live_births * 1000\n  return(round(nmr, 1))\n}\n\n# Function to calculate Maternal Mortality Ratio\ncalc_mmr &lt;- function(maternal_deaths, live_births) {\n  mmr &lt;- maternal_deaths / live_births * 100000\n  return(round(mmr, 0))\n}\n\n# Use them\ncalc_nmr(45, 3200)     # 14.1 per 1,000 live births\ncalc_mmr(12, 3200)     # 375 per 100,000 live births\n\n# Functions work on vectors too\ndistrict_neo_deaths &lt;- c(45, 30, 62, 28, 51)\ndistrict_births &lt;- c(3200, 2100, 4500, 1800, 3700)\ncalc_nmr(district_neo_deaths, district_births)\n\nWriting functions eliminates copy-paste errors. Instead of re-typing the NMR formula in ten different places (and risking a typo in one), you define it once and call it everywhere. If the formula changes, you update one function.\n\n\nUsing the Help System\n\n# Get help on any function\n?mean\n?round\n?cut\n\n# See a function's arguments\nargs(round)\n\n# Search for functions by keyword\nhelp.search(\"correlation\")\n\n# Example: discovering that mean() has an na.rm argument\n?mean\n# Usage: mean(x, trim = 0, na.rm = FALSE, ...)\n# Setting na.rm = TRUE ignores missing values\n\nThe help system is your most reliable reference. Package vignettes (vignette(\"dplyr\")) provide longer tutorials. For complex questions, searching “R [your question]” online will usually lead to a Stack Overflow answer.",
+    "crumbs": [
+      "Part I: Getting Started",
+      "Chapter 2: R Building Blocks"
+    ]
+  },
+  {
+    "objectID": "chapters/ch02.html#key-takeaways",
+    "href": "chapters/ch02.html#key-takeaways",
+    "title": "Chapter 2: R Building Blocks",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nVectors are the foundation. Every column of data you work with is a vector. Understanding their types (numeric, character, logical, factor) prevents subtle bugs.\nNA is not zero. Missing data must be handled explicitly. Always check for NA values and decide whether to remove, impute, or flag them.\nWrite functions for repeated calculations. If you compute the same indicator more than once, wrap it in a function. This makes your code shorter, more readable, and less error-prone.",
+    "crumbs": [
+      "Part I: Getting Started",
+      "Chapter 2: R Building Blocks"
+    ]
+  },
+  {
+    "objectID": "chapters/ch02.html#looking-ahead",
+    "href": "chapters/ch02.html#looking-ahead",
+    "title": "Chapter 2: R Building Blocks",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 3 — Importing & Exploring Data, we move from hand-typed vectors to real datasets:\n\nReading CSV and Excel files into R with read_csv() and read_excel()\nThe tibble — a modern, friendlier version of the data frame\nExploring data structure with glimpse(), summary(), and str()\nSystematic approaches to diagnosing missing values in imported data",
+    "crumbs": [
+      "Part I: Getting Started",
+      "Chapter 2: R Building Blocks"
+    ]
+  },
+  {
+    "objectID": "r-setup.html",
+    "href": "r-setup.html",
+    "title": "R Environment Setup",
+    "section": "",
+    "text": "Software\nVersion\nDownload\n\n\n\n\nR\n4.3 or later\nr-project.org\n\n\nRStudio (recommended IDE)\nLatest\nposit.co/downloads\n\n\nQuarto (for Chapter 9)\n1.8 or later\nquarto.org\n\n\n\n\nNote: The slide decks and this website use eval: false for all R code blocks, meaning R code is displayed but not executed during rendering. You do not need R installed to view the slides or website. However, to follow along with the exercises, you will need R and the packages below."
+  },
+  {
+    "objectID": "r-setup.html#required-software",
+    "href": "r-setup.html#required-software",
+    "title": "R Environment Setup",
+    "section": "",
+    "text": "Software\nVersion\nDownload\n\n\n\n\nR\n4.3 or later\nr-project.org\n\n\nRStudio (recommended IDE)\nLatest\nposit.co/downloads\n\n\nQuarto (for Chapter 9)\n1.8 or later\nquarto.org\n\n\n\n\nNote: The slide decks and this website use eval: false for all R code blocks, meaning R code is displayed but not executed during rendering. You do not need R installed to view the slides or website. However, to follow along with the exercises, you will need R and the packages below."
+  },
+  {
+    "objectID": "r-setup.html#package-installation",
+    "href": "r-setup.html#package-installation",
+    "title": "R Environment Setup",
+    "section": "Package Installation",
+    "text": "Package Installation\nRun this once in your R console to install all packages used across the 9 chapters:\n\ninstall.packages(c(\n  \"tidyverse\",  # Includes dplyr, ggplot2, tidyr, readr, stringr, and more\n  \"readxl\",     # Reading Excel files\n  \"scales\",     # Axis formatting (percent, comma, dollar)\n  \"patchwork\",  # Multi-panel chart composition\n  \"knitr\"       # Tables in Quarto documents (kable)\n))"
+  },
+  {
+    "objectID": "r-setup.html#packages-by-chapter",
+    "href": "r-setup.html#packages-by-chapter",
+    "title": "R Environment Setup",
+    "section": "Packages by Chapter",
+    "text": "Packages by Chapter\n\n\n\n\n\n\n\n\nPackage\nPurpose\nChapters Used\n\n\n\n\n(base R)\nVectors, data types, functions, basic stats\n1, 2, 8\n\n\nreadr\nread_csv for data import\n3, 4, 5, 6, 7, 8, 9\n\n\nreadxl\nread_excel for Excel files\n3\n\n\ndplyr\nData transformation (filter, mutate, summarise)\n4, 5, 6, 7, 8, 9\n\n\ntidyr\nReshaping data (pivot_longer, pivot_wider)\n5, 7\n\n\nstringr\nString manipulation basics\n5\n\n\nggplot2\nData visualization\n6, 7, 8, 9\n\n\nscales\nAxis formatting (percent, comma)\n7, 8\n\n\npatchwork\nMulti-panel chart layouts\n7\n\n\nknitr\nkable for tables in Quarto\n9"
+  },
+  {
+    "objectID": "r-setup.html#verification-script",
+    "href": "r-setup.html#verification-script",
+    "title": "R Environment Setup",
+    "section": "Verification Script",
+    "text": "Verification Script\nAfter installing, run this script to verify all packages load correctly:\n\n# Verification: load each package and print version\npackages &lt;- c(\"readr\", \"readxl\", \"dplyr\", \"tidyr\", \"stringr\",\n              \"ggplot2\", \"scales\", \"patchwork\", \"knitr\")\n\nfor (pkg in packages) {\n  if (requireNamespace(pkg, quietly = TRUE)) {\n    cat(sprintf(\"✓ %s %s\\n\", pkg, packageVersion(pkg)))\n  } else {\n    cat(sprintf(\"✗ %s — NOT INSTALLED\\n\", pkg))\n  }\n}\n\nExpected output (version numbers may vary):\n✓ readr 2.1.5\n✓ readxl 1.4.3\n✓ dplyr 1.1.4\n✓ tidyr 1.3.1\n✓ stringr 1.5.1\n✓ ggplot2 3.5.1\n✓ scales 1.3.0\n✓ patchwork 1.2.0\n✓ knitr 1.45"
+  },
+  {
+    "objectID": "r-setup.html#troubleshooting",
+    "href": "r-setup.html#troubleshooting",
+    "title": "R Environment Setup",
+    "section": "Troubleshooting",
+    "text": "Troubleshooting\n\ntidyverse installation issues on Windows\nIf install.packages(\"tidyverse\") fails:\n\nInstall Rtools (match the version to your R version)\nRestart R and try install.packages(\"tidyverse\") again\n\n\n\nPackage installation behind a proxy\nIf you are on a corporate network with a proxy, set it before installing:\n\nSys.setenv(http_proxy = \"http://your-proxy:port\")\nSys.setenv(https_proxy = \"http://your-proxy:port\")\ninstall.packages(\"tidyverse\")\n\n\n\nreadxl on older R versions\nIf readxl installation fails, ensure your R version is 4.3 or later. Update R from r-project.org."
+  },
+  {
+    "objectID": "r-setup.html#consistent-mnh-variables",
+    "href": "r-setup.html#consistent-mnh-variables",
+    "title": "R Environment Setup",
+    "section": "Consistent MNH Variables",
+    "text": "Consistent MNH Variables\nThese variable names are used consistently across chapters in the R code examples:\n\n\n\n\n\n\n\n\n\nVariable\nDescription\nExample Values\nR Name\n\n\n\n\nFacility ID\nUnique identifier\nF001, F002, …\nfacility_id\n\n\nCountry\nCountry name\nEthiopia, Tanzania, Malawi, Mozambique, Kenya\ncountry\n\n\nFacility Type\nLevel of care\nHospital, Health Center, Health Post\nfacility_type\n\n\nStaffing Level\nStaff adequacy\nAdequate, Low\nstaffing_level\n\n\nCPAP Available\nEquipment status\nTRUE / FALSE\nhas_cpap\n\n\nDelivery Volume\nMonthly deliveries\n15–200\ndelivery_volume\n\n\nNMR\nNeonatal mortality rate\nPer 1,000 live births\nnmr\n\n\nMMR\nMaternal mortality ratio\nPer 100,000 live births\nmmr\n\n\nANC Coverage\nAntenatal care coverage\n0–100%\nanc_coverage\n\n\nTraining\nTraining completion\nTRUE / FALSE\ntraining_completed"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "R for Management Consultants",
+    "section": "",
+    "text": "This course teaches R programming from scratch, tailored for management consultants working in global health. Across 9 chapters, you will build a complete data analysis toolkit — from writing your first line of R code to producing publication-quality charts and reproducible reports for stakeholders.\n\nThe central message: R is not just for statisticians. It is a practical tool that helps consultants answer the questions that matter most: What does the data say? How confident are we? Can we reproduce this analysis next quarter?"
+  },
+  {
+    "objectID": "index.html#course-overview",
+    "href": "index.html#course-overview",
+    "title": "R for Management Consultants",
+    "section": "",
+    "text": "This course teaches R programming from scratch, tailored for management consultants working in global health. Across 9 chapters, you will build a complete data analysis toolkit — from writing your first line of R code to producing publication-quality charts and reproducible reports for stakeholders.\n\nThe central message: R is not just for statisticians. It is a practical tool that helps consultants answer the questions that matter most: What does the data say? How confident are we? Can we reproduce this analysis next quarter?"
+  },
+  {
+    "objectID": "index.html#the-consultants-r-workflow",
+    "href": "index.html#the-consultants-r-workflow",
+    "title": "R for Management Consultants",
+    "section": "The Consultant’s R Workflow",
+    "text": "The Consultant’s R Workflow\nBy the end of this course, you will be able to follow this data-driven workflow:\n\nImport facility-level and program data from CSV and Excel files (Chapter 3)\nTransform raw data into analysis-ready tables with filtering, grouping, and summaries (Chapters 4–5)\nVisualize patterns, trends, and comparisons with publication-quality charts (Chapters 6–7)\nAnalyze key indicators with descriptive statistics and simple regression (Chapter 8)\nCommunicate findings in reproducible Quarto reports for donors and program managers (Chapter 9)"
+  },
+  {
+    "objectID": "index.html#chapters",
+    "href": "index.html#chapters",
+    "title": "R for Management Consultants",
+    "section": "Chapters",
+    "text": "Chapters\n\nPart I: Getting Started\n\n\n\nChapter\nTitle\nFocus\n\n\n\n\n1\nWhy R for Management Consultants\nMotivation, installing R + RStudio, first commands\n\n\n2\nR Building Blocks\nVectors, data types, functions, packages\n\n\n\n\n\nPart II: Working with Data\n\n\n\nChapter\nTitle\nFocus\n\n\n\n\n3\nImporting & Exploring Data\nread_csv, tibbles, summary, handling missing values\n\n\n4\nData Transformation with dplyr\nPipes, filter, select, mutate, summarise, group_by\n\n\n5\nReshaping & Joining Datasets\npivot_longer/wider, joins, string basics\n\n\n\n\n\nPart III: Visualization & Analysis\n\n\n\nChapter\nTitle\nFocus\n\n\n\n\n6\nData Visualization with ggplot2\nGrammar of graphics, geoms, aesthetics, basic plots\n\n\n7\nPublication-Quality Charts\nThemes, faceting, multi-panel layouts, exporting\n\n\n8\nDescriptive Statistics for Consultants\nMeans, proportions, confidence intervals, regression basics\n\n\n\n\n\nPart IV: Communication\n\n\n\nChapter\nTitle\nFocus\n\n\n\n\n9\nReproducible Reports with Quarto\nCode chunks, inline R, rendering to HTML/PDF/DOCX"
+  },
+  {
+    "objectID": "index.html#the-complete-toolkit",
+    "href": "index.html#the-complete-toolkit",
+    "title": "R for Management Consultants",
+    "section": "The Complete Toolkit",
+    "text": "The Complete Toolkit\n\n\n\nChapters\nSkill\n\n\n\n\n1–2\nR fundamentals & environment\n\n\n3–5\nData import, transformation & reshaping\n\n\n6–7\nData visualization\n\n\n8\nDescriptive statistics & regression\n\n\n9\nReproducible reporting"
+  },
+  {
+    "objectID": "index.html#prerequisites",
+    "href": "index.html#prerequisites",
+    "title": "R for Management Consultants",
+    "section": "Prerequisites",
+    "text": "Prerequisites\n\nNo prior programming experience required\nBasic familiarity with spreadsheets (Excel or Google Sheets)\nSee the R Setup page for installation instructions"
+  },
+  {
+    "objectID": "index.html#connection-to-inference-and-intervention",
+    "href": "index.html#connection-to-inference-and-intervention",
+    "title": "R for Management Consultants",
+    "section": "Connection to Inference and Intervention",
+    "text": "Connection to Inference and Intervention\nThis course is designed as a companion to the Inference and Intervention course on causal models for MNH program analysis. The R skills taught here provide the foundation for the R code workshops in that course, including data visualization with ggplot2, data manipulation with dplyr, and statistical analysis.\n\nFor MNH program analysts: This toolkit enables you to move beyond Excel-based reporting toward reproducible, transparent analyses that stakeholders and donors can trust — and that you can update in minutes, not days."
+  },
+  {
+    "objectID": "chapters/ch01.html",
+    "href": "chapters/ch01.html",
+    "title": "Chapter 1: Why R for Management Consultants",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nExplain why reproducibility matters for consulting deliverables in maternal and newborn health (MNH)\nNavigate the four panes of the RStudio IDE (Source, Console, Environment, Files/Plots)\nWrite and run your first R commands in the console and in an R script\nInstall and load packages from CRAN\nPerform basic arithmetic with real-world MNH indicators (neonatal mortality rate, maternal mortality ratio)",
+    "crumbs": [
+      "Part I: Getting Started",
+      "Chapter 1: Why R for Management Consultants"
+    ]
+  },
+  {
+    "objectID": "chapters/ch01.html#learning-objectives",
+    "href": "chapters/ch01.html#learning-objectives",
+    "title": "Chapter 1: Why R for Management Consultants",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nExplain why reproducibility matters for consulting deliverables in maternal and newborn health (MNH)\nNavigate the four panes of the RStudio IDE (Source, Console, Environment, Files/Plots)\nWrite and run your first R commands in the console and in an R script\nInstall and load packages from CRAN\nPerform basic arithmetic with real-world MNH indicators (neonatal mortality rate, maternal mortality ratio)",
+    "crumbs": [
+      "Part I: Getting Started",
+      "Chapter 1: Why R for Management Consultants"
+    ]
+  },
+  {
+    "objectID": "chapters/ch01.html#key-concepts",
+    "href": "chapters/ch01.html#key-concepts",
+    "title": "Chapter 1: Why R for Management Consultants",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nReproducibility\nThe ability to re-run an analysis and get the same result. In consulting, this means your client can verify your numbers, your team can update a report when new data arrives, and you can trace every figure in a deliverable back to a specific line of code. Spreadsheet-based workflows (copy-paste, manual formatting) break reproducibility.\n\n\nRStudio IDE\nAn integrated development environment that wraps around R, providing a code editor with syntax highlighting, a console for interactive commands, an environment pane showing your data objects, and a files/plots/help pane. Think of R as the engine and RStudio as the dashboard.\n\n\nR Scripts\nPlain-text files (.R extension) that contain a sequence of R commands. Scripts are the basic unit of reproducible work — you write your analysis once, save it, and anyone can re-run it. Every consulting analysis should live in a script, not typed directly into the console.\n\n\nPackages\nExtensions that add new functions to R. The base installation handles arithmetic and basic statistics, but packages like tidyverse, readxl, and ggplot2 provide the tools consultants actually need. You install a package once with install.packages() and load it each session with library().",
+    "crumbs": [
+      "Part I: Getting Started",
+      "Chapter 1: Why R for Management Consultants"
+    ]
+  },
+  {
+    "objectID": "chapters/ch01.html#lecture-slides",
+    "href": "chapters/ch01.html#lecture-slides",
+    "title": "Chapter 1: Why R for Management Consultants",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part I: Getting Started",
+      "Chapter 1: Why R for Management Consultants"
+    ]
+  },
+  {
+    "objectID": "chapters/ch01.html#r-code-workshop",
+    "href": "chapters/ch01.html#r-code-workshop",
+    "title": "Chapter 1: Why R for Management Consultants",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis workshop walks you through your very first R session — from basic arithmetic to creating variables that hold real MNH indicator data.\n\nYour First Calculations\n\n# R works as a calculator\n2 + 2\n100 / 4\nsqrt(144)\n\n# Neonatal deaths per 1,000 live births (NMR formula)\n# If a district had 45 neonatal deaths out of 3,200 live births:\n45 / 3200 * 1000\n\nThe last line computes a neonatal mortality rate (NMR) of about 14.1 per 1,000 live births. In a spreadsheet you might type this into a cell — in R, you write it as a formula that anyone can read, verify, and re-run.\n\n\nCreating Variables\n\n# Store values in named variables using the assignment operator &lt;-\nneonatal_deaths &lt;- 45\nlive_births &lt;- 3200\n\n# Now compute NMR from the stored values\nnmr &lt;- neonatal_deaths / live_births * 1000\nnmr\n\n# Maternal mortality ratio (MMR): maternal deaths per 100,000 live births\nmaternal_deaths &lt;- 12\nmmr &lt;- maternal_deaths / live_births * 100000\nmmr\n\nVariable names should be descriptive and use snake_case (lowercase with underscores). This makes your code self-documenting — a colleague reading neonatal_deaths / live_births * 1000 immediately understands the calculation without needing a comment.\n\n\nWorking with Multiple Values\n\n# NMR for five countries (per 1,000 live births)\ncountry_names &lt;- c(\"Ethiopia\", \"Tanzania\", \"Malawi\", \"Kenya\", \"Rwanda\")\nnmr_values &lt;- c(28.1, 20.3, 22.4, 18.6, 16.2)\n\n# R operates element-wise — no loops needed\n# Convert NMR to deaths per 10,000 births\nnmr_per_10k &lt;- nmr_values * 10\nnmr_per_10k\n\n# Which country has the highest NMR?\nmax(nmr_values)\ncountry_names[which.max(nmr_values)]\n\nThe c() function combines values into a vector — R’s fundamental data structure. You will work with vectors constantly. Notice how nmr_values * 10 multiplied every element at once; this vectorized behavior is what makes R powerful for data analysis.\n\n\nInstalling and Loading Packages\n\n# Install the tidyverse (run this ONCE — it downloads from the internet)\n# install.packages(\"tidyverse\")\n\n# Load it at the start of every script\nlibrary(tidyverse)\n\n# Now you have access to dplyr, ggplot2, readr, and more\n# Quick example: create a tibble (modern data frame)\nmnh_data &lt;- tibble(\n  country = country_names,\n  nmr = nmr_values\n)\nmnh_data\n\nYou only need to install a package once (like installing an app), but you must load it with library() every time you start a new R session (like opening the app).",
+    "crumbs": [
+      "Part I: Getting Started",
+      "Chapter 1: Why R for Management Consultants"
+    ]
+  },
+  {
+    "objectID": "chapters/ch01.html#key-takeaways",
+    "href": "chapters/ch01.html#key-takeaways",
+    "title": "Chapter 1: Why R for Management Consultants",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nR replaces spreadsheets with a reproducible, scriptable workflow — essential for consulting teams that need to update analyses when new data arrives.\nRStudio is your workspace. Learn the four panes: Source (write code), Console (run code), Environment (see your data), Files/Plots/Help (everything else).\nVariables store values, vectors store collections. These are the building blocks for every analysis you will do in this course.",
+    "crumbs": [
+      "Part I: Getting Started",
+      "Chapter 1: Why R for Management Consultants"
+    ]
+  },
+  {
+    "objectID": "chapters/ch01.html#looking-ahead",
+    "href": "chapters/ch01.html#looking-ahead",
+    "title": "Chapter 1: Why R for Management Consultants",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 2 — R Building Blocks, we dive deeper into the data structures that power R:\n\nVectors and their four main types (numeric, character, logical, factor)\nHow R handles missing values (NA) — critical for real-world health data\nWriting your own custom functions for MNH indicator calculations\nGetting help with ?, help(), and online resources",
+    "crumbs": [
+      "Part I: Getting Started",
+      "Chapter 1: Why R for Management Consultants"
+    ]
+  },
+  {
+    "objectID": "chapters/ch03.html",
+    "href": "chapters/ch03.html",
+    "title": "Chapter 3: Importing & Exploring Data",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nImport CSV files with readr::read_csv() and Excel files with readxl::read_excel()\nExplain the difference between a tibble and a base R data frame\nUse glimpse(), summary(), and str() to explore data structure before analysis\nSystematically diagnose missing values — how many, which columns, what patterns\nAccess individual columns with $ and create new tibbles from scratch",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 3: Importing & Exploring Data"
+    ]
+  },
+  {
+    "objectID": "chapters/ch03.html#learning-objectives",
+    "href": "chapters/ch03.html#learning-objectives",
+    "title": "Chapter 3: Importing & Exploring Data",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nImport CSV files with readr::read_csv() and Excel files with readxl::read_excel()\nExplain the difference between a tibble and a base R data frame\nUse glimpse(), summary(), and str() to explore data structure before analysis\nSystematically diagnose missing values — how many, which columns, what patterns\nAccess individual columns with $ and create new tibbles from scratch",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 3: Importing & Exploring Data"
+    ]
+  },
+  {
+    "objectID": "chapters/ch03.html#key-concepts",
+    "href": "chapters/ch03.html#key-concepts",
+    "title": "Chapter 3: Importing & Exploring Data",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nCSV and Excel Import\nread_csv() from the readr package (part of tidyverse) reads comma-separated files and automatically guesses column types. read_excel() from the readxl package handles .xlsx and .xls files. Both return tibbles. Always inspect the result immediately after import — column types may not be what you expect.\n\n\nTibbles\nA tibble is the tidyverse version of a data frame — a rectangular table where each column is a vector and columns can have different types. Tibbles print more neatly (showing only the first 10 rows and as many columns as fit on screen), never convert strings to factors automatically, and warn you when you access a column that does not exist.\n\n\nData Exploration\nBefore any analysis, you must understand your data’s shape and content. glimpse() shows every column’s name, type, and first few values. summary() gives five-number summaries for numeric columns and frequency counts for factors. nrow() and ncol() tell you the dimensions. This exploration step catches data quality issues early.\n\n\nMissing Values in Imported Data\nReal-world health datasets — DHIS2 extracts, facility registers, survey exports — always have missing values. They may appear as blank cells, “NA”, “N/A”, “.”, “-”, or “99”. The read_csv() function recognizes NA and blank cells by default, but you may need to specify additional codes with na = c(\"\", \"NA\", \"N/A\", \".\", \"-\"). Always quantify missingness before proceeding.",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 3: Importing & Exploring Data"
+    ]
+  },
+  {
+    "objectID": "chapters/ch03.html#lecture-slides",
+    "href": "chapters/ch03.html#lecture-slides",
+    "title": "Chapter 3: Importing & Exploring Data",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 3: Importing & Exploring Data"
+    ]
+  },
+  {
+    "objectID": "chapters/ch03.html#r-code-workshop",
+    "href": "chapters/ch03.html#r-code-workshop",
+    "title": "Chapter 3: Importing & Exploring Data",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis workshop simulates importing and exploring a facility-level MNH dataset — the kind of data you might receive from a Ministry of Health or extract from DHIS2.\n\nImporting a CSV File\n\nlibrary(tidyverse)\n\n# Import facility-level MNH data\n# In practice, replace the path with your actual file location\nfacility_data &lt;- read_csv(\"data/facility_data.csv\")\n\n# read_csv prints a column specification showing what types it guessed\n# Always check this output for unexpected types\n\n# For Excel files, use readxl\n# library(readxl)\n# facility_data &lt;- read_excel(\"data/facility_data.xlsx\", sheet = \"Sheet1\")\n\n# Specify custom NA codes if your data uses them\n# facility_data &lt;- read_csv(\"data/facility_data.csv\",\n#                           na = c(\"\", \"NA\", \"N/A\", \".\", \"-\", \"99\"))\n\nWhen you run read_csv(), it prints a message showing which column types it guessed. If a column you expected to be numeric shows as character, that usually means there is a non-numeric value hiding somewhere in that column. Investigate before proceeding.\n\n\nExploring Data Structure\n\n# Dimensions: how many rows (facilities) and columns (variables)?\nnrow(facility_data)\nncol(facility_data)\ndim(facility_data)\n\n# glimpse() — best quick overview (shows every column)\nglimpse(facility_data)\n\n# summary() — numeric summaries + NA counts\nsummary(facility_data)\n\n# First and last few rows\nhead(facility_data)\ntail(facility_data)\n\n# Column names\nnames(facility_data)\n\nMake glimpse() your first command after every import. It tells you at a glance whether columns have the right types, whether character columns have unexpected values, and how many observations you are working with. In MNH work, always verify that the number of rows matches the expected number of facilities or reporting periods.\n\n\nDiagnosing Missing Values\n\n# Count NAs in every column\ncolSums(is.na(facility_data))\n\n# Percentage missing per column\nround(colMeans(is.na(facility_data)) * 100, 1)\n\n# Total missing cells in the entire dataset\nsum(is.na(facility_data))\n\n# Which rows have any missing data?\nfacility_data[!complete.cases(facility_data), ]\n\n# How many complete rows (no NAs at all)?\nsum(complete.cases(facility_data))\n\nIn MNH datasets, missingness is rarely random. Facilities that fail to report are often the ones with the fewest staff, the weakest infrastructure, and potentially the worst outcomes. Before you drop missing rows, ask yourself: “Would removing these facilities bias my results toward healthier-looking facilities?”\n\n\nAccessing Columns and Creating Tibbles\n\n# Access a single column with $\nfacility_data$facility_name\nfacility_data$total_deliveries\n\n# Quick column-level checks\nunique(facility_data$country)\ntable(facility_data$facility_type)\nrange(facility_data$nmr, na.rm = TRUE)\n\n# Create a tibble from scratch (useful for reference tables)\ncountry_targets &lt;- tibble(\n  country = c(\"Ethiopia\", \"Tanzania\", \"Malawi\", \"Kenya\", \"Rwanda\"),\n  nmr_target = c(15, 15, 15, 12, 12),\n  mmr_target = c(200, 200, 200, 150, 150),\n  target_year = rep(2030, 5)\n)\ncountry_targets\n\nThe $ operator extracts a single column as a vector. The table() function gives you a quick frequency count — useful for checking how many facilities of each type exist, or how many observations come from each country.\n\n\nSaving Clean Data\n\n# After initial inspection and cleaning, save a clean version\n# write_csv(facility_data, \"data/facility_data_clean.csv\")\n\n# For R-specific format (preserves factor levels, date types, etc.)\n# saveRDS(facility_data, \"data/facility_data_clean.rds\")\n# facility_data &lt;- readRDS(\"data/facility_data_clean.rds\")\n\nSave your cleaned data separately from the raw import. This way you always have the original file as a reference, and your cleaning steps are documented in the script that produced the clean version.",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 3: Importing & Exploring Data"
+    ]
+  },
+  {
+    "objectID": "chapters/ch03.html#key-takeaways",
+    "href": "chapters/ch03.html#key-takeaways",
+    "title": "Chapter 3: Importing & Exploring Data",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nImport with read_csv(), explore with glimpse(). These two functions bookend your data loading workflow. Always inspect column types and dimensions immediately after import.\nQuantify missingness before analysis. Count NAs per column, calculate the percentage missing, and ask whether the missingness pattern could bias your results.\nTibbles are your default data container. They print cleanly, warn about mistakes, and integrate seamlessly with the tidyverse tools you will learn next.",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 3: Importing & Exploring Data"
+    ]
+  },
+  {
+    "objectID": "chapters/ch03.html#looking-ahead",
+    "href": "chapters/ch03.html#looking-ahead",
+    "title": "Chapter 3: Importing & Exploring Data",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 4 — Data Transformation with dplyr, you will learn to reshape and summarize your data using five core verbs:\n\nfilter() — select rows based on conditions\nselect() — choose specific columns\nmutate() — create or modify columns\nsummarise() — compute summary statistics\ngroup_by() — apply operations within groups (by country, by facility type, by quarter)",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 3: Importing & Exploring Data"
+    ]
+  },
+  {
+    "objectID": "chapters/ch05.html",
+    "href": "chapters/ch05.html",
+    "title": "Chapter 5: Reshaping & Joining Datasets",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nDistinguish between wide and long data formats and explain when each is appropriate\nUse pivot_longer() to convert wide DHIS2 exports into analysis-ready long format\nUse pivot_wider() to create summary tables for reports and slide decks\nApply joins (left_join, inner_join, anti_join) to merge datasets from different sources\nUse stringr functions to clean and standardize messy text data (facility names, region labels)",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 5: Reshaping & Joining Datasets"
+    ]
+  },
+  {
+    "objectID": "chapters/ch05.html#learning-objectives",
+    "href": "chapters/ch05.html#learning-objectives",
+    "title": "Chapter 5: Reshaping & Joining Datasets",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nDistinguish between wide and long data formats and explain when each is appropriate\nUse pivot_longer() to convert wide DHIS2 exports into analysis-ready long format\nUse pivot_wider() to create summary tables for reports and slide decks\nApply joins (left_join, inner_join, anti_join) to merge datasets from different sources\nUse stringr functions to clean and standardize messy text data (facility names, region labels)",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 5: Reshaping & Joining Datasets"
+    ]
+  },
+  {
+    "objectID": "chapters/ch05.html#key-concepts",
+    "href": "chapters/ch05.html#key-concepts",
+    "title": "Chapter 5: Reshaping & Joining Datasets",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nWide vs Long Format\nWide format has one row per unit (e.g., one row per facility) with separate columns for each time period (Q1, Q2, Q3, Q4). Long format has one row per observation (e.g., one row per facility-quarter combination) with a single column for the value. Most R analysis and plotting functions expect long format; most reports and spreadsheets use wide format.\n\n\nPivot Operations\npivot_longer() converts wide to long — it gathers multiple columns into key-value pairs. pivot_wider() does the reverse — it spreads key-value pairs into separate columns. These are the two most important data reshaping operations in the tidyverse, and you will use them constantly when working with quarterly DHIS2 data.\n\n\nJoins\nJoins combine two tables based on a shared key column (like facility_id or country_code). left_join() keeps all rows from the left table and adds matching data from the right. inner_join() keeps only rows that match in both tables. anti_join() returns rows from the left table that have no match in the right — invaluable for finding non-reporting facilities.\n\n\nString Cleaning with stringr\nReal-world data has inconsistent text: “Addis Ababa” vs “addis ababa” vs “ADDIS ABABA”, trailing spaces, special characters. The stringr package provides str_to_lower(), str_trim(), str_replace(), and str_detect() to standardize text before joining or grouping. Dirty strings cause silent join failures — rows that should match but do not.\n\n\nanti_join for Data Quality\nanti_join(facilities, reports, by = \"facility_id\") returns all facilities that did not appear in the reports table. This is the fastest way to find non-reporting facilities, unmatched records, or data gaps. In MNH work, the facilities that fail to report are often the ones most in need of support.",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 5: Reshaping & Joining Datasets"
+    ]
+  },
+  {
+    "objectID": "chapters/ch05.html#lecture-slides",
+    "href": "chapters/ch05.html#lecture-slides",
+    "title": "Chapter 5: Reshaping & Joining Datasets",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 5: Reshaping & Joining Datasets"
+    ]
+  },
+  {
+    "objectID": "chapters/ch05.html#r-code-workshop",
+    "href": "chapters/ch05.html#r-code-workshop",
+    "title": "Chapter 5: Reshaping & Joining Datasets",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis workshop covers the two core data wrangling skills that distinguish intermediate R users from beginners: reshaping data between wide and long formats, and joining multiple datasets together.\n\nPivoting Quarterly Data from Wide to Long\n\nlibrary(tidyverse)\n\n# Simulate quarterly DHIS2 data in wide format\n# (This is how data often arrives from health information systems)\ndhis2_wide &lt;- tibble(\n  facility_id   = c(\"F001\", \"F002\", \"F003\", \"F004\"),\n  facility_name = c(\"Jimma Hospital\", \"Hawassa HC\", \"Bahir Dar Hospital\", \"Mekelle HC\"),\n  deliveries_q1 = c(320, 85, 410, 120),\n  deliveries_q2 = c(345, 90, 395, NA),\n  deliveries_q3 = c(310, NA, 420, 115),\n  deliveries_q4 = c(330, 88, 435, 125)\n)\n\n# Pivot to long format for analysis\ndhis2_long &lt;- dhis2_wide |&gt;\n  pivot_longer(\n    cols = starts_with(\"deliveries_\"),\n    names_to = \"quarter\",\n    names_prefix = \"deliveries_\",\n    values_to = \"deliveries\"\n  )\n\ndhis2_long\n\nAfter pivoting, each facility-quarter combination is its own row. This format is what ggplot2 needs for plotting trends over time, and what group_by(quarter) needs for quarterly summaries. The names_prefix argument strips the “deliveries_” prefix so the quarter column contains just “q1”, “q2”, etc.\n\n\nPivoting from Long to Wide for Reports\n\n# Suppose you have a country-level summary in long format\ncountry_summary &lt;- tibble(\n  country   = rep(c(\"Ethiopia\", \"Tanzania\", \"Malawi\"), each = 2),\n  indicator = rep(c(\"NMR\", \"MMR\"), 3),\n  value     = c(28.1, 412, 20.3, 321, 22.4, 349)\n)\n\n# Pivot to wide format for a report table\ncountry_summary |&gt;\n  pivot_wider(\n    names_from = indicator,\n    values_from = value\n  )\n\n# Pivot quarterly long data back to wide for a spreadsheet export\ndhis2_long |&gt;\n  pivot_wider(\n    names_from = quarter,\n    values_from = deliveries,\n    names_prefix = \"deliveries_\"\n  )\n\nUse pivot_wider() when you need to create a table for a report or export to Excel. In consulting, your analysis happens in long format (one observation per row), but your deliverables are often in wide format (one country per row with indicators across columns).\n\n\nJoining Datasets\n\n# Facility master list\nfacilities &lt;- tibble(\n  facility_id   = c(\"F001\", \"F002\", \"F003\", \"F004\", \"F005\"),\n  facility_name = c(\"Jimma Hospital\", \"Hawassa HC\", \"Bahir Dar Hospital\",\n                     \"Mekelle HC\", \"Adama Hospital\"),\n  facility_type = c(\"hospital\", \"health_center\", \"hospital\",\n                     \"health_center\", \"hospital\"),\n  country       = c(\"Ethiopia\", \"Ethiopia\", \"Ethiopia\",\n                     \"Ethiopia\", \"Ethiopia\")\n)\n\n# Monthly reporting data (F005 did not report)\nmonthly_reports &lt;- tibble(\n  facility_id = c(\"F001\", \"F002\", \"F003\", \"F004\"),\n  month       = rep(\"2024-06\", 4),\n  deliveries  = c(110, 28, 140, 42),\n  neo_deaths  = c(3, 1, 4, 2)\n)\n\n# left_join: keep ALL facilities, add report data where available\nfacilities |&gt;\n  left_join(monthly_reports, by = \"facility_id\")\n\n# inner_join: keep only facilities that reported\nfacilities |&gt;\n  inner_join(monthly_reports, by = \"facility_id\")\n\n# anti_join: find facilities that did NOT report\nfacilities |&gt;\n  anti_join(monthly_reports, by = \"facility_id\")\n\nThe anti_join at the end is the most important for data quality work. It reveals that Adama Hospital (F005) did not submit a report. In a real engagement, this list of non-reporters is what you would flag to the Ministry of Health or the regional health bureau.\n\n\nCleaning Strings Before Joining\n\n# Messy facility names from two different data sources\nsource_a &lt;- tibble(\n  name = c(\"Jimma University Hospital\", \"hawassa Health Center\",\n           \" Bahir Dar Hospital\", \"MEKELLE HC\"),\n  beds = c(450, 30, 380, 25)\n)\n\nsource_b &lt;- tibble(\n  name = c(\"jimma university hospital\", \"Hawassa Health Center\",\n           \"Bahir Dar Hospital\", \"Mekelle HC\"),\n  nmr = c(12.5, 18.3, 15.1, 22.7)\n)\n\n# Standardize names before joining\nclean_name &lt;- function(x) {\n  x |&gt;\n    str_to_lower() |&gt;       # lowercase everything\n    str_trim() |&gt;            # remove leading/trailing spaces\n    str_squish() |&gt;          # collapse multiple spaces to one\n    str_replace_all(\"[^a-z0-9 ]\", \"\")  # remove special characters\n}\n\nsource_a_clean &lt;- source_a |&gt; mutate(name_clean = clean_name(name))\nsource_b_clean &lt;- source_b |&gt; mutate(name_clean = clean_name(name))\n\n# Now the join works\nsource_a_clean |&gt;\n  left_join(source_b_clean, by = \"name_clean\") |&gt;\n  select(name_clean, beds, nmr)\n\nString cleaning is unglamorous but essential. Without the clean_name() function above, “Jimma University Hospital” and “jimma university hospital” would not match, and you would lose data. Build a cleaning function once and reuse it across all your join operations.\n\n\nCombining Multiple Operations\n\n# Country-level targets\ntargets &lt;- tibble(\n  country = c(\"Ethiopia\", \"Tanzania\", \"Malawi\"),\n  nmr_target = c(15, 15, 15)\n)\n\n# Full pipeline: reshape, join, compute, summarise\ndhis2_long |&gt;\n  # Join with facility master data\n  left_join(facilities |&gt; select(facility_id, facility_type, country),\n            by = \"facility_id\") |&gt;\n  # Remove missing quarters\n  filter(!is.na(deliveries)) |&gt;\n  # Summarise by country\n  group_by(country) |&gt;\n  summarise(\n    total_deliveries = sum(deliveries),\n    reporting_quarters = n(),\n    .groups = \"drop\"\n  ) |&gt;\n  # Join with targets\n  left_join(targets, by = \"country\")\n\nThis pipeline demonstrates the typical consulting workflow: import from multiple sources, reshape to a common format, join on shared keys, and summarise to the level your analysis requires. Each step is readable and verifiable.",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 5: Reshaping & Joining Datasets"
+    ]
+  },
+  {
+    "objectID": "chapters/ch05.html#key-takeaways",
+    "href": "chapters/ch05.html#key-takeaways",
+    "title": "Chapter 5: Reshaping & Joining Datasets",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nPivot long for analysis, pivot wide for reports. Most R functions expect long format. Most clients expect wide format. Master both directions.\nJoins combine data sources; anti_join finds gaps. In MNH work, the facilities missing from your reports are often the ones that need the most attention.\nClean your strings before joining. Inconsistent capitalization, trailing spaces, and special characters cause silent data loss in joins. Build a reusable cleaning function.",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 5: Reshaping & Joining Datasets"
+    ]
+  },
+  {
+    "objectID": "chapters/ch05.html#looking-ahead",
+    "href": "chapters/ch05.html#looking-ahead",
+    "title": "Chapter 5: Reshaping & Joining Datasets",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 6 — Data Visualization with ggplot2, you will learn to create charts from your transformed data:\n\nThe grammar of graphics: data + aesthetics + geoms\nBar charts, scatter plots, line charts, histograms, and boxplots\nMapping variables to color, size, and shape\nChoosing the right chart type for your data and your audience",
+    "crumbs": [
+      "Part II: Working with Data",
+      "Chapter 5: Reshaping & Joining Datasets"
+    ]
+  },
+  {
+    "objectID": "chapters/ch07.html",
+    "href": "chapters/ch07.html",
+    "title": "Chapter 7: Publication-Quality Charts",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nBuild a reusable custom theme (theme_bka()) that applies BK Advisors brand standards to every chart\nApply a custom color palette using scale_color_manual() and scale_fill_manual()\nUse facet_wrap() to create small multiples — the same chart repeated for each country or category\nCombine multiple charts into a multi-panel figure with the patchwork package\nExport charts at publication quality (300 DPI, correct dimensions) with ggsave()",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 7: Publication-Quality Charts"
+    ]
+  },
+  {
+    "objectID": "chapters/ch07.html#learning-objectives",
+    "href": "chapters/ch07.html#learning-objectives",
+    "title": "Chapter 7: Publication-Quality Charts",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nBuild a reusable custom theme (theme_bka()) that applies BK Advisors brand standards to every chart\nApply a custom color palette using scale_color_manual() and scale_fill_manual()\nUse facet_wrap() to create small multiples — the same chart repeated for each country or category\nCombine multiple charts into a multi-panel figure with the patchwork package\nExport charts at publication quality (300 DPI, correct dimensions) with ggsave()",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 7: Publication-Quality Charts"
+    ]
+  },
+  {
+    "objectID": "chapters/ch07.html#key-concepts",
+    "href": "chapters/ch07.html#key-concepts",
+    "title": "Chapter 7: Publication-Quality Charts",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nCustom Themes\nA ggplot2 theme controls every non-data element of a chart: fonts, grid lines, axis labels, legend position, background color. theme_bka() is a custom function that wraps these settings so you apply them once and every chart in your deliverable looks consistent. Inconsistent formatting across charts signals to clients that the analysis was rushed.\n\n\nBKA Color Palette\nBrand colors are defined once as a named vector and reused everywhere. Using scale_color_manual(values = bka_colors) ensures that “Ethiopia” is always the same shade of blue, “Tanzania” is always teal, and so on. Consistent color mapping across charts helps your audience track countries or categories without re-reading the legend.\n\n\nFaceting (Small Multiples)\nfacet_wrap(~ country) creates one panel per country, each with the same axes. Small multiples are the best way to compare patterns across groups — they avoid the visual clutter of overlapping lines and let you see each country’s trajectory clearly. Edward Tufte called them “the best design solution for a wide range of problems in data presentation.”\n\n\nPatchwork Layouts\nThe patchwork package lets you combine separate ggplot objects into a single figure using + (side by side) and / (stacked). This is how you create the multi-panel dashboard figures that appear in consulting slide decks — a bar chart on the left, a trend line on the right, with a shared title.\n\n\nggsave\nggsave() exports charts as PNG, PDF, or SVG files with explicit control over dimensions and resolution. For slide decks, use width = 10, height = 6, dpi = 300. For print reports, use dpi = 300 minimum. Never screenshot a chart from RStudio — it will be low resolution and inconsistently sized.",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 7: Publication-Quality Charts"
+    ]
+  },
+  {
+    "objectID": "chapters/ch07.html#lecture-slides",
+    "href": "chapters/ch07.html#lecture-slides",
+    "title": "Chapter 7: Publication-Quality Charts",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 7: Publication-Quality Charts"
+    ]
+  },
+  {
+    "objectID": "chapters/ch07.html#r-code-workshop",
+    "href": "chapters/ch07.html#r-code-workshop",
+    "title": "Chapter 7: Publication-Quality Charts",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis workshop transforms basic ggplot2 charts into polished, brand-consistent visualizations ready for client deliverables.\n\nBuilding a Reusable Theme\n\nlibrary(tidyverse)\n\n# BK Advisors brand colors\nbka_colors &lt;- c(\n  \"primary\"    = \"#005CB9\",\n  \"light_blue\" = \"#00A1DF\",\n  \"green\"      = \"#83BD00\",\n  \"teal\"       = \"#3E9B6E\",\n  \"red\"        = \"#E24A3F\",\n  \"orange\"     = \"#FA7650\",\n  \"amber\"      = \"#F8A623\",\n  \"yellow\"     = \"#FED141\"\n)\n\n# Named palette for countries (consistent across all charts)\ncountry_colors &lt;- c(\n  \"Ethiopia\" = \"#005CB9\",\n  \"Tanzania\" = \"#3E9B6E\",\n  \"Malawi\"   = \"#FA7650\",\n  \"Kenya\"    = \"#83BD00\",\n  \"Rwanda\"   = \"#00A1DF\"\n)\n\n# Custom theme function\ntheme_bka &lt;- function(base_size = 12) {\n  theme_minimal(base_size = base_size) +\n    theme(\n      # Title and subtitle\n      plot.title = element_text(face = \"bold\", color = \"#005CB9\",\n                                margin = margin(b = 8)),\n      plot.subtitle = element_text(color = \"#666666\",\n                                    margin = margin(b = 12)),\n      # Axes\n      axis.title = element_text(color = \"#333333\"),\n      axis.text = element_text(color = \"#666666\"),\n      # Grid\n      panel.grid.minor = element_blank(),\n      panel.grid.major.x = element_blank(),\n      # Legend\n      legend.position = \"bottom\",\n      legend.title = element_text(face = \"bold\", size = 10),\n      # Plot margin\n      plot.margin = margin(15, 15, 15, 15)\n    )\n}\n\nDefine your theme and color palette at the top of every script. This way, every chart you create inherits brand-consistent styling with a single + theme_bka() call. If the brand guidelines change, you update one function.\n\n\nApplying Brand Colors\n\n# Country-level NMR data\ncountry_nmr &lt;- tibble(\n  country = c(\"Ethiopia\", \"Tanzania\", \"Malawi\", \"Kenya\", \"Rwanda\"),\n  nmr = c(28.1, 20.3, 22.4, 18.6, 16.2)\n)\n\n# Bar chart with BKA brand styling\nggplot(country_nmr, aes(x = reorder(country, nmr), y = nmr,\n                         fill = country)) +\n  geom_col(width = 0.7) +\n  scale_fill_manual(values = country_colors) +\n  coord_flip() +\n  labs(\n    title = \"Neonatal Mortality Rate by Country\",\n    subtitle = \"Deaths per 1,000 live births | Most recent available year\",\n    x = NULL,\n    y = \"NMR\"\n  ) +\n  theme_bka() +\n  theme(legend.position = \"none\")  # Legend redundant with axis labels\n\nNotice how scale_fill_manual(values = country_colors) maps each country to its designated brand color. If you add a new country to the data, add it to the country_colors vector. Keeping color assignments explicit prevents ggplot2 from auto-assigning colors that clash with your brand.\n\n\nFaceting: Small Multiples\n\n# Quarterly trends by country\nquarterly_data &lt;- tibble(\n  quarter = rep(paste0(\"Q\", 1:8), 3),\n  country = rep(c(\"Ethiopia\", \"Tanzania\", \"Malawi\"), each = 8),\n  nmr = c(28.1, 27.3, 26.5, 25.8, 25.1, 24.4, 23.8, 23.2,  # Ethiopia\n          20.3, 20.1, 19.8, 19.5, 19.2, 18.9, 18.5, 18.1,    # Tanzania\n          22.4, 23.1, 22.8, 21.9, 22.5, 21.2, 20.8, 21.5),    # Malawi\n  target = rep(c(20, 15, 18), each = 8)\n)\n\n# Faceted line chart — one panel per country\nggplot(quarterly_data, aes(x = quarter, y = nmr, group = 1)) +\n  geom_line(color = \"#005CB9\", linewidth = 1) +\n  geom_point(color = \"#005CB9\", size = 2) +\n  geom_hline(aes(yintercept = target), linetype = \"dashed\",\n             color = \"#E24A3F\", linewidth = 0.8) +\n  facet_wrap(~ country, scales = \"free_y\", ncol = 3) +\n  labs(\n    title = \"NMR Quarterly Trends by Country\",\n    subtitle = \"Dashed line = national target\",\n    x = \"Quarter\",\n    y = \"NMR (per 1,000 live births)\"\n  ) +\n  theme_bka() +\n  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))\n\nfacet_wrap(~ country, scales = \"free_y\") lets each panel have its own y-axis range, which is appropriate when countries have very different NMR levels. Use scales = \"fixed\" when you want to emphasize cross-country comparison on the same scale. The choice depends on whether your message is about each country’s trajectory or about the gap between them.\n\n\nMulti-Panel Layouts with patchwork\n\nlibrary(patchwork)\n\n# Chart 1: Bar chart of current NMR\np1 &lt;- ggplot(country_nmr, aes(x = reorder(country, nmr), y = nmr,\n                                fill = country)) +\n  geom_col(width = 0.7) +\n  scale_fill_manual(values = country_colors) +\n  coord_flip() +\n  labs(title = \"Current NMR\", x = NULL, y = \"NMR\") +\n  theme_bka() +\n  theme(legend.position = \"none\")\n\n# Chart 2: Line chart of trends (Ethiopia only, for focus)\np2 &lt;- quarterly_data |&gt;\n  filter(country == \"Ethiopia\") |&gt;\n  ggplot(aes(x = quarter, y = nmr, group = 1)) +\n  geom_line(color = \"#005CB9\", linewidth = 1.2) +\n  geom_point(color = \"#005CB9\", size = 2.5) +\n  geom_hline(yintercept = 20, linetype = \"dashed\", color = \"#E24A3F\") +\n  labs(title = \"Ethiopia NMR Trend\", x = \"Quarter\", y = \"NMR\") +\n  theme_bka() +\n  theme(axis.text.x = element_text(angle = 45, hjust = 1))\n\n# Combine with patchwork\np1 + p2 +\n  plot_annotation(\n    title = \"MNH Dashboard: Neonatal Mortality Overview\",\n    subtitle = \"Cross-country comparison and Ethiopia trend detail\",\n    theme = theme(\n      plot.title = element_text(face = \"bold\", size = 16, color = \"#005CB9\"),\n      plot.subtitle = element_text(color = \"#666666\", size = 12)\n    )\n  )\n\nThe + operator places charts side by side; / stacks them vertically. plot_annotation() adds an overall title. You can also use plot_layout(widths = c(1, 2)) to give more space to the trend chart. This is how you build the multi-panel figures that appear on the “dashboard” slides in consulting decks.\n\n\nExporting at Publication Quality\n\n# Save the last plot at high resolution\n# ggsave(\"output/nmr_dashboard.png\",\n#        width = 14, height = 7, dpi = 300, bg = \"white\")\n\n# Save as PDF (vector format — scales perfectly at any size)\n# ggsave(\"output/nmr_dashboard.pdf\",\n#        width = 14, height = 7)\n\n# Save individual charts for different slide layouts\n# ggsave(\"output/nmr_bar_chart.png\",\n#        plot = p1,\n#        width = 8, height = 5, dpi = 300, bg = \"white\")\n\n# Tip: Set bg = \"white\" to avoid transparent backgrounds\n# that look wrong when pasted into PowerPoint\n\nAlways specify width, height, and dpi explicitly. The default ggsave() dimensions rarely match your slide layout. For a standard 16:9 slide, width = 10, height = 5.6 is a good starting point. Always use bg = \"white\" for PNG exports destined for PowerPoint.",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 7: Publication-Quality Charts"
+    ]
+  },
+  {
+    "objectID": "chapters/ch07.html#key-takeaways",
+    "href": "chapters/ch07.html#key-takeaways",
+    "title": "Chapter 7: Publication-Quality Charts",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nDefine your theme once, apply it everywhere. A theme_bka() function ensures every chart in your deliverable looks consistent and professional.\nFaceting reveals patterns that overlapping lines hide. Small multiples are especially effective for comparing country-level trends when lines would otherwise cross and tangle.\nExport intentionally. Use ggsave() with explicit dimensions and 300 DPI. Never screenshot a chart from RStudio.",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 7: Publication-Quality Charts"
+    ]
+  },
+  {
+    "objectID": "chapters/ch07.html#looking-ahead",
+    "href": "chapters/ch07.html#looking-ahead",
+    "title": "Chapter 7: Publication-Quality Charts",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nNext in Chapter 8 — Descriptive Statistics for Consultants, you will learn to pair your visualizations with rigorous quantitative summaries:\n\nCentral tendency (mean vs. median) and when each is appropriate\nConfidence intervals with t.test() — what you can and cannot claim\nCorrelation (cor.test()) and the connection to the causal arguments course\nLinear regression with lm() — fitting a line and interpreting coefficients\nThe crucial distinction between statistical and practical significance",
+    "crumbs": [
+      "Part III: Visualization & Analysis",
+      "Chapter 7: Publication-Quality Charts"
+    ]
+  },
+  {
+    "objectID": "chapters/ch09.html",
+    "href": "chapters/ch09.html",
+    "title": "Chapter 9: Reproducible Reports with Quarto",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nExplain the structure of a Quarto document: YAML header, markdown text, and code chunks\nUse code chunk options (echo, eval, warning, fig-width) to control what appears in the rendered output\nInsert inline R code to make narrative text update automatically when data changes\nRender documents to multiple output formats (HTML, PDF, Word) from a single source file\nBuild a parameterized report that generates a separate country brief for every country in your dataset",
+    "crumbs": [
+      "Part IV: Communication",
+      "Chapter 9: Reproducible Reports with Quarto"
+    ]
+  },
+  {
+    "objectID": "chapters/ch09.html#learning-objectives",
+    "href": "chapters/ch09.html#learning-objectives",
+    "title": "Chapter 9: Reproducible Reports with Quarto",
+    "section": "",
+    "text": "After this chapter, you will be able to:\n\nExplain the structure of a Quarto document: YAML header, markdown text, and code chunks\nUse code chunk options (echo, eval, warning, fig-width) to control what appears in the rendered output\nInsert inline R code to make narrative text update automatically when data changes\nRender documents to multiple output formats (HTML, PDF, Word) from a single source file\nBuild a parameterized report that generates a separate country brief for every country in your dataset",
+    "crumbs": [
+      "Part IV: Communication",
+      "Chapter 9: Reproducible Reports with Quarto"
+    ]
+  },
+  {
+    "objectID": "chapters/ch09.html#key-concepts",
+    "href": "chapters/ch09.html#key-concepts",
+    "title": "Chapter 9: Reproducible Reports with Quarto",
+    "section": "Key Concepts",
+    "text": "Key Concepts\n\nQuarto Documents\nA .qmd file combines three elements: a YAML header (metadata like title, author, format), markdown text (narrative with headings, bold, lists), and code chunks (R code that runs and produces output). When you render the document, Quarto executes the code, captures the results, and weaves them into a polished document. The source file is plain text — version-controllable, reviewable, and reproducible.\n\n\nCode Chunks\nCode chunks are fenced with ```{r} and ```. Chunk options (prefixed with #|) control behavior: echo: true shows the code, eval: true runs it, warning: false hides warnings, fig-width: 8 sets the figure width. You decide what the reader sees: code + output, output only, or code only.\n\n\nInline R Code\nInline code uses backtick-r-expression syntax inside markdown text. For example, writing the expression round(mean(nmr), 1) as inline R produces a live number: “The mean NMR was 28.4 per 1,000 live births.” When the data updates, the number in the sentence updates automatically. No more manually updating figures in your narrative — a major source of errors in traditional reporting.\n\n\nOutput Formats\nA single .qmd file can render to HTML (for web sharing), PDF (for formal reports), and Word (for client editing). Change the format in the YAML header or render to all three at once. HTML is best for interactive documents; PDF for archival; Word for documents your client will edit.\n\n\nParameterized Reports\nQuarto documents can accept parameters — variables set in the YAML header that change the document’s behavior. A country brief parameterized with params: {country: \"Ethiopia\"} filters all data, charts, and narrative to Ethiopia. You can then loop through all countries and render a separate brief for each — producing 10 country reports from a single template.",
+    "crumbs": [
+      "Part IV: Communication",
+      "Chapter 9: Reproducible Reports with Quarto"
+    ]
+  },
+  {
+    "objectID": "chapters/ch09.html#lecture-slides",
+    "href": "chapters/ch09.html#lecture-slides",
+    "title": "Chapter 9: Reproducible Reports with Quarto",
+    "section": "Lecture Slides",
+    "text": "Lecture Slides\n\n\n\n\nOpen slides full-screen →",
+    "crumbs": [
+      "Part IV: Communication",
+      "Chapter 9: Reproducible Reports with Quarto"
+    ]
+  },
+  {
+    "objectID": "chapters/ch09.html#r-code-workshop",
+    "href": "chapters/ch09.html#r-code-workshop",
+    "title": "Chapter 9: Reproducible Reports with Quarto",
+    "section": "R Code Workshop",
+    "text": "R Code Workshop\nThis workshop walks through building an MNH country brief — from document structure to parameterized rendering across all countries.\n\nDocument Structure\n\n# A Quarto document (.qmd) looks like this:\n#\n# ---\n# title: \"MNH Country Brief\"\n# author: \"BK Advisors\"\n# date: today\n# format: html\n# ---\n#\n# ## Background\n#\n# This report summarizes neonatal mortality indicators...\n#\n# ```{r}\n# library(tidyverse)\n# facility_data &lt;- read_csv(\"data/facility_data.csv\")\n# ```\n#\n# ## Key Findings\n#\n# The mean NMR was `r round(mean(facility_data$nmr, na.rm = TRUE), 1)`\n# per 1,000 live births.\n\n# The YAML header (between ---) sets metadata.\n# Markdown text provides narrative.\n# Code chunks produce analysis and charts.\n# Inline R dynamically inserts computed values.\n\nThink of a Quarto document as a script that tells a story. The code produces the evidence (tables, charts, statistics), and the markdown wraps it in narrative context that explains what the numbers mean for your client. When the data updates, you re-render and the entire document updates — narrative included.\n\n\nBuilding Summary Tables with kable\n\nlibrary(tidyverse)\nlibrary(knitr)\n\n# Simulated facility data\nset.seed(42)\nfacility_data &lt;- tibble(\n  facility_id   = paste0(\"F\", 1:60),\n  country       = rep(c(\"Ethiopia\", \"Tanzania\", \"Malawi\"), each = 20),\n  facility_type = sample(c(\"hospital\", \"health_center\", \"health_post\"),\n                          60, replace = TRUE),\n  live_births   = round(runif(60, 50, 500)),\n  neonatal_deaths = round(runif(60, 0, 20))\n) |&gt;\n  mutate(nmr = round(neonatal_deaths / live_births * 1000, 1))\n\n# Create a summary table\ncountry_summary &lt;- facility_data |&gt;\n  group_by(country) |&gt;\n  summarise(\n    Facilities     = n(),\n    `Total Births` = sum(live_births),\n    `Mean NMR`     = round(mean(nmr, na.rm = TRUE), 1),\n    `Median NMR`   = round(median(nmr, na.rm = TRUE), 1),\n    .groups = \"drop\"\n  )\n\n# Render as a formatted table\nkable(country_summary,\n      caption = \"Table 1: MNH Indicators by Country\",\n      align = c(\"l\", \"r\", \"r\", \"r\", \"r\"))\n\nkable() from the knitr package produces clean tables in HTML, PDF, and Word. For more advanced formatting (colors, conditional highlighting, footnotes), use kableExtra. In consulting reports, every table should have a caption (Table 1, Table 2…) and clear column headers.\n\n\nInline R for Dynamic Narrative\n\n# Store key numbers for use in inline code\ntotal_facilities &lt;- nrow(facility_data)\ntotal_births     &lt;- sum(facility_data$live_births)\noverall_nmr      &lt;- round(\n  sum(facility_data$neonatal_deaths) / sum(facility_data$live_births) * 1000,\n  1\n)\nworst_country    &lt;- facility_data |&gt;\n  group_by(country) |&gt;\n  summarise(nmr = mean(nmr)) |&gt;\n  slice_max(nmr, n = 1) |&gt;\n  pull(country)\n\n# In your Quarto document, you would write:\n#\n# Our analysis covers `r total_facilities` facilities across three\n# countries, representing `r format(total_births, big.mark = \",\")` live\n# births. The overall neonatal mortality rate is `r overall_nmr` per\n# 1,000 live births. `r worst_country` has the highest average NMR\n# and should be prioritized for intervention.\n\nInline R is the feature that makes Quarto reports truly reproducible. When new quarterly data arrives, you replace the CSV file, re-render the document, and every number in every sentence updates automatically. No manual find-and-replace, no risk of updating a table but forgetting to update the narrative.\n\n\nRendering to Multiple Formats\n\n# YAML header for multi-format output:\n#\n# ---\n# title: \"MNH Country Brief\"\n# author: \"BK Advisors\"\n# date: today\n# format:\n#   html:\n#     toc: true\n#     code-fold: true\n#   pdf:\n#     toc: true\n#     number-sections: true\n#   docx:\n#     toc: true\n#     reference-doc: bka-template.docx\n# ---\n#\n# Render from the terminal:\n# quarto render country-brief.qmd                  # renders all formats\n# quarto render country-brief.qmd --to html        # HTML only\n# quarto render country-brief.qmd --to pdf         # PDF only\n# quarto render country-brief.qmd --to docx        # Word only\n\nThe reference-doc option in the Word format lets you apply a branded Word template. Create a bka-template.docx with BK Advisors fonts, colors, and headers, and Quarto will apply that styling to every rendered document. This is how you produce client-ready Word documents directly from code.\n\n\nParameterized Reports\n\n# YAML header with parameters:\n#\n# ---\n# title: \"MNH Country Brief\"\n# params:\n#   country: \"Ethiopia\"\n# ---\n\n# In the document body, filter everything by the parameter:\n#\n# ```{r}\n# country_data &lt;- facility_data |&gt;\n#   filter(country == params$country)\n# ```\n#\n# All subsequent analysis, charts, and inline R use `country_data`\n# instead of `facility_data`.\n\n# Render for a specific country from the terminal:\n# quarto render country-brief.qmd -P country:\"Tanzania\"\n\n# Loop to render for ALL countries (run in R):\ncountries &lt;- c(\"Ethiopia\", \"Tanzania\", \"Malawi\", \"Kenya\", \"Rwanda\")\n\nfor (cntry in countries) {\n  quarto::quarto_render(\n    input = \"country-brief.qmd\",\n    output_file = paste0(\"brief-\", tolower(cntry), \".html\"),\n    execute_params = list(country = cntry)\n  )\n}\n\n# This produces:\n# brief-ethiopia.html\n# brief-tanzania.html\n# brief-malawi.html\n# brief-kenya.html\n# brief-rwanda.html\n\nParameterized reports are the ultimate productivity tool for consulting. One template, five countries, five polished briefs — generated in seconds. When the next quarter’s data arrives, you re-run the loop and all five briefs update. This is the power of combining R with Quarto: your analysis, visualization, and communication are all in one reproducible pipeline.",
+    "crumbs": [
+      "Part IV: Communication",
+      "Chapter 9: Reproducible Reports with Quarto"
+    ]
+  },
+  {
+    "objectID": "chapters/ch09.html#key-takeaways",
+    "href": "chapters/ch09.html#key-takeaways",
+    "title": "Chapter 9: Reproducible Reports with Quarto",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nQuarto unifies code, narrative, and output. A single .qmd file produces a complete document — no more copying charts into Word and manually updating numbers.\nInline R eliminates manual errors. Every number in your narrative is computed from the data. When the data changes, the narrative changes with it.\nParameterized reports scale your work. Write one template, render it for every country, region, or quarter. This is how a small consulting team produces deliverables at the speed of a large one.",
+    "crumbs": [
+      "Part IV: Communication",
+      "Chapter 9: Reproducible Reports with Quarto"
+    ]
+  },
+  {
+    "objectID": "chapters/ch09.html#looking-ahead",
+    "href": "chapters/ch09.html#looking-ahead",
+    "title": "Chapter 9: Reproducible Reports with Quarto",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nThis chapter completes the R for Management Consultants course. You now have the skills to:\n\nImport, transform, and visualize MNH data in R\nBuild publication-quality charts with consistent branding\nCompute descriptive statistics and interpret regression results\nProduce automated, reproducible reports for clients\n\nThe natural next step is the Inference and Intervention course, where you will apply causal modeling to the data analysis skills you have built here. The question shifts from “What does the data show?” to “What should we do about it?” — using directed acyclic graphs, do-calculus, and intervention analysis to move from correlation to actionable causal claims.",
+    "crumbs": [
+      "Part IV: Communication",
+      "Chapter 9: Reproducible Reports with Quarto"
+    ]
+  }
+]

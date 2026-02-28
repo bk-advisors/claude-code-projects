@@ -1,0 +1,946 @@
+---
+title: "Chapter 2: R Building Blocks"
+subtitle: "R for Management Consultants | BK Advisors"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+execute:
+  echo: true
+  eval: false
+  warning: false
+---
+
+## Learning Objectives
+
+After this chapter, you will be able to:
+
+::: {.incremental}
+- Create **vectors** to store collections of related MNH data values
+- Distinguish the four core **data types** in R: numeric, character, logical, and factor
+- Use **comparison and logical operators** to test conditions on health data
+- Write **custom functions** to automate routine indicator calculations
+- Use R's **help system** and online resources to solve problems independently
+:::
+
+
+## Chapter Overview
+
+<div class="step-flow">
+<div class="step-item" style="border-left: 4px solid #E24A3F;">Vectors</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #005CB9;">Data<br>Types</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #83BD00;">Operators</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #FA7650;">Functions</div>
+<div class="step-arrow">&rarr;</div>
+<div class="step-item" style="border-left: 4px solid #3E9B6E;">Getting<br>Help</div>
+</div>
+
+
+# Vectors {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Storing collections of related values</span>
+
+
+## What Is a Vector?
+
+::: {.definition-box}
+A **vector** is R's most fundamental data structure --- an ordered collection of values of the same type. Nearly everything in R is built on vectors.
+:::
+
+. . .
+
+```{r}
+#| label: first-vector
+#| echo: true
+
+# A single value is actually a vector of length 1
+neonatal_deaths <- 23
+length(neonatal_deaths)  # 1
+```
+
+. . .
+
+```{r}
+#| label: multi-vector
+#| echo: true
+
+# A vector of neonatal mortality rates (per 1,000 live births)
+nmr <- c(25.3, 31.7, 19.8, 42.1, 27.5)
+nmr
+length(nmr)  # 5
+```
+
+. . .
+
+::: {.callout-box}
+**`c()` stands for "combine."** It's the function you'll use most often to create vectors by hand.
+:::
+
+
+## Named Vectors
+
+Names make vectors self-documenting --- you always know which value belongs to which entity.
+
+```{r}
+#| label: named-vectors
+#| echo: true
+
+# NMR by country (per 1,000 live births)
+nmr <- c(
+  Ethiopia    = 25.3,
+  Tanzania    = 31.7,
+  Malawi      = 19.8,
+  Mozambique  = 42.1,
+  Kenya       = 27.5
+)
+nmr
+```
+
+. . .
+
+```{r}
+#| label: named-vectors-2
+#| echo: true
+
+# Monthly deliveries at a facility
+deliveries <- c(
+  Jan = 112, Feb = 98,  Mar = 134,
+  Apr = 121, May = 105, Jun = 143
+)
+deliveries
+```
+
+
+## Vector Operations
+
+R operates on entire vectors at once --- no loops needed.
+
+```{r}
+#| label: vector-ops
+#| echo: true
+
+nmr <- c(Ethiopia = 25.3, Tanzania = 31.7, Malawi = 19.8,
+         Mozambique = 42.1, Kenya = 27.5)
+
+# Summary statistics
+mean(nmr)     # average NMR across countries
+sum(nmr)      # total (less meaningful here, but useful for counts)
+min(nmr)      # best performing country
+max(nmr)      # worst performing country
+range(nmr)    # both min and max
+```
+
+. . .
+
+```{r}
+#| label: vectorized-math
+#| echo: true
+
+# Vectorized math: operation applies to every element
+live_births <- c(1200, 950, 1100, 800, 1050)
+neonatal_deaths <- c(30, 30, 22, 34, 29)
+
+# Calculate NMR for each country
+nmr_calculated <- (neonatal_deaths / live_births) * 1000
+nmr_calculated
+```
+
+. . .
+
+::: {.callout-box .green}
+**Vectorized operations are R's superpower.** One line of code replaces five rows of Excel formulas --- and there's no risk of a formula not being copied down correctly.
+:::
+
+
+## Indexing by Position
+
+Use square brackets `[ ]` to extract specific elements from a vector.
+
+```{r}
+#| label: index-position
+#| echo: true
+
+nmr <- c(Ethiopia = 25.3, Tanzania = 31.7, Malawi = 19.8,
+         Mozambique = 42.1, Kenya = 27.5)
+
+# Single element (first country)
+nmr[1]
+
+# Multiple elements (first and third)
+nmr[c(1, 3)]
+
+# A range (second through fourth)
+nmr[2:4]
+
+# Exclude an element (drop Mozambique)
+nmr[-4]
+```
+
+
+## Indexing by Name
+
+Named vectors can be indexed by name --- often clearer than positions.
+
+```{r}
+#| label: index-name
+#| echo: true
+
+nmr <- c(Ethiopia = 25.3, Tanzania = 31.7, Malawi = 19.8,
+         Mozambique = 42.1, Kenya = 27.5)
+
+# Single country
+nmr["Ethiopia"]
+
+# Multiple countries
+nmr[c("Malawi", "Kenya")]
+```
+
+. . .
+
+::: {.callout-box .orange}
+**Prefer named indexing over position indexing.** `nmr["Ethiopia"]` is self-explanatory; `nmr[1]` requires you to remember that Ethiopia is the first element.
+:::
+
+
+## Indexing by Condition
+
+The most powerful form of indexing: use a logical test to select elements.
+
+```{r}
+#| label: index-condition
+#| echo: true
+
+nmr <- c(Ethiopia = 25.3, Tanzania = 31.7, Malawi = 19.8,
+         Mozambique = 42.1, Kenya = 27.5)
+
+# Countries with NMR above 30
+nmr[nmr > 30]
+
+# Countries at or below the SDG target (12 per 1,000)
+nmr[nmr <= 12]
+
+# Countries NOT meeting the target
+nmr[nmr > 12]
+```
+
+. . .
+
+```{r}
+#| label: index-condition-2
+#| echo: true
+
+# Which countries have high NMR?
+names(nmr[nmr > 30])
+
+# How many countries exceed 25?
+sum(nmr > 25)
+```
+
+
+## Modifying Vectors
+
+```{r}
+#| label: modify-vectors
+#| echo: true
+
+nmr <- c(Ethiopia = 25.3, Tanzania = 31.7, Malawi = 19.8,
+         Mozambique = 42.1, Kenya = 27.5)
+
+# Update a value (new data comes in for Tanzania)
+nmr["Tanzania"] <- 29.4
+nmr
+
+# Add a new country
+nmr["Uganda"] <- 22.1
+nmr
+
+# Sort from lowest to highest
+sort(nmr)
+
+# Sort from highest to lowest
+sort(nmr, decreasing = TRUE)
+```
+
+
+# Data Types {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Numeric, character, logical, and factor</span>
+
+
+## The Four Core Data Types
+
+Every value in R has a type. Using the right type ensures R handles your data correctly.
+
+| Type | What It Stores | MNH Example |
+|------|----------------|-------------|
+| **numeric** | Numbers (decimal or integer) | NMR = 25.3, deliveries = 1200 |
+| **character** | Text strings | "Ethiopia", "Hospital" |
+| **logical** | TRUE or FALSE | has_cpap = TRUE |
+| **factor** | Categories with a fixed set of levels | facility_type: Health Post, Health Center, Hospital |
+
+. . .
+
+```{r}
+#| label: check-types
+#| echo: true
+
+# Check the type of any value
+class(25.3)           # "numeric"
+class("Ethiopia")     # "character"
+class(TRUE)           # "logical"
+```
+
+
+## Numeric: The Workhorse
+
+Most MNH data is numeric --- rates, counts, percentages.
+
+```{r}
+#| label: numeric-type
+#| echo: true
+
+# Mortality rates (per 1,000 live births)
+nmr <- c(25.3, 31.7, 19.8, 42.1, 27.5)
+
+# Delivery counts
+deliveries <- c(1200L, 950L, 1100L, 800L, 1050L)  # L = integer
+
+# Check types
+class(nmr)          # "numeric"
+class(deliveries)   # "integer"
+is.numeric(nmr)     # TRUE
+```
+
+. . .
+
+::: {.callout-box}
+**Numeric covers both decimals and integers.** Adding `L` after a number forces it to be an integer, but in practice this distinction rarely matters for analysis.
+:::
+
+
+## Character: Text Data
+
+Character vectors store any text: country names, facility names, notes.
+
+```{r}
+#| label: character-type
+#| echo: true
+
+# Country names
+countries <- c("Ethiopia", "Tanzania", "Malawi", "Mozambique", "Kenya")
+
+# Facility identifiers
+facility_ids <- c("ETH-HC-042", "TZA-HOSP-007", "MWI-HP-118")
+
+# Common operations on character vectors
+nchar(countries)                  # number of characters in each
+toupper(countries)                # convert to uppercase
+paste(countries, "NMR:", nmr)     # combine text with numbers
+```
+
+. . .
+
+::: {.callout-box .orange}
+**Numbers stored as text cause silent errors.** If you read "25.3" from a CSV, R may treat it as character. Use `as.numeric()` to convert: `as.numeric("25.3")` gives `25.3`.
+:::
+
+
+## Logical: TRUE / FALSE
+
+Logical vectors arise from comparisons and represent yes/no conditions.
+
+```{r}
+#| label: logical-type
+#| echo: true
+
+# Equipment availability
+has_cpap <- c(TRUE, FALSE, TRUE, FALSE, TRUE)
+has_ultrasound <- c(TRUE, TRUE, FALSE, FALSE, TRUE)
+
+# Logical vectors from comparisons
+nmr <- c(Ethiopia = 25.3, Tanzania = 31.7, Malawi = 19.8,
+         Mozambique = 42.1, Kenya = 27.5)
+
+high_nmr <- nmr > 30
+high_nmr   # FALSE TRUE FALSE TRUE FALSE
+```
+
+. . .
+
+```{r}
+#| label: logical-tricks
+#| echo: true
+
+# Useful trick: TRUE = 1, FALSE = 0
+sum(has_cpap)                  # count of TRUE values: 3
+mean(has_cpap)                 # proportion with CPAP: 0.6
+mean(has_cpap) * 100           # percentage with CPAP: 60
+```
+
+. . .
+
+::: {.callout-box .green}
+**`sum(logical_vector)` counts how many are TRUE. `mean(logical_vector)` gives the proportion.** This pattern is used constantly in MNH indicator calculations.
+:::
+
+
+## Factor: Categorical Data
+
+Factors store categorical variables with a fixed set of possible values (levels).
+
+```{r}
+#| label: factor-type
+#| echo: true
+
+# Facility types as a simple character vector
+facility_type <- c("Hospital", "Health Center", "Health Post",
+                   "Health Center", "Hospital")
+
+# Convert to factor
+facility_type <- factor(facility_type)
+facility_type
+levels(facility_type)  # alphabetical by default
+```
+
+. . .
+
+```{r}
+#| label: factor-ordered
+#| echo: true
+
+# Ordered factor: levels in a meaningful sequence
+facility_type <- factor(
+  c("Hospital", "Health Center", "Health Post",
+    "Health Center", "Hospital"),
+  levels = c("Health Post", "Health Center", "Hospital"),
+  ordered = TRUE
+)
+facility_type
+# Health Post < Health Center < Hospital
+```
+
+. . .
+
+::: {.callout-box}
+**Why not just use character?** Factors control the order of categories in charts and tables. Without a factor, ggplot2 sorts alphabetically --- "Health Post" would appear before "Hospital" instead of in the logical service-level order.
+:::
+
+
+## Handling Missing Values: NA
+
+Real-world MNH data always has gaps. R uses `NA` ("Not Available") to represent missing values.
+
+```{r}
+#| label: na-handling
+#| echo: true
+
+# Some facilities didn't report deliveries this month
+deliveries <- c(112, 98, NA, 121, NA, 143)
+
+# NA is contagious — any operation involving NA returns NA
+mean(deliveries)        # NA!
+sum(deliveries)         # NA!
+```
+
+. . .
+
+```{r}
+#| label: na-handling-2
+#| echo: true
+
+# Use na.rm = TRUE to remove NAs before calculating
+mean(deliveries, na.rm = TRUE)    # 118.5
+sum(deliveries, na.rm = TRUE)     # 474
+
+# Check for missing values
+is.na(deliveries)                 # FALSE FALSE TRUE FALSE TRUE FALSE
+sum(is.na(deliveries))            # 2 missing values
+```
+
+. . .
+
+::: {.callout-box .red}
+**Never replace NA with 0 without justification.** A facility that reported zero deliveries is very different from a facility that didn't report at all. Treating missing data as zero inflates denominators and deflates rates.
+:::
+
+
+# Comparison & Logical Operators {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Testing conditions on your data</span>
+
+
+## Comparison Operators
+
+Comparison operators test a condition and return `TRUE` or `FALSE`.
+
+| Operator | Meaning | Example |
+|----------|---------|---------|
+| `==` | Equal to | `nmr == 25.3` |
+| `!=` | Not equal to | `country != "Ethiopia"` |
+| `>` | Greater than | `nmr > 30` |
+| `<` | Less than | `nmr < 12` |
+| `>=` | Greater than or equal | `deliveries >= 100` |
+| `<=` | Less than or equal | `nmr <= 25` |
+
+. . .
+
+::: {.callout-box .orange}
+**Common mistake: using `=` instead of `==`.** A single `=` is assignment (like `<-`). Double `==` is comparison. `nmr = 30` sets nmr to 30; `nmr == 30` tests whether nmr equals 30.
+:::
+
+
+## Comparison Operators in Action
+
+```{r}
+#| label: comparison-ops
+#| echo: true
+
+nmr <- c(Ethiopia = 25.3, Tanzania = 31.7, Malawi = 19.8,
+         Mozambique = 42.1, Kenya = 27.5)
+
+# Which countries have NMR above the SDG target of 12?
+nmr > 12        # all TRUE in this set
+
+# Which countries have NMR above 30?
+nmr > 30        # FALSE TRUE FALSE TRUE FALSE
+
+# Which country has the lowest NMR?
+nmr == min(nmr)  # FALSE FALSE TRUE FALSE FALSE --- Malawi
+```
+
+. . .
+
+```{r}
+#| label: comparison-ops-2
+#| echo: true
+
+# Practical: identify priority countries
+countries <- c("Ethiopia", "Tanzania", "Malawi", "Mozambique", "Kenya")
+
+# Countries where NMR exceeds 30
+countries[nmr > 30]     # "Tanzania" "Mozambique"
+
+# Countries at or below 25
+countries[nmr <= 25]    # "Malawi"
+```
+
+
+## Logical Operators
+
+Combine multiple conditions using logical operators.
+
+| Operator | Meaning | Example |
+|----------|---------|---------|
+| `&` | AND (both must be TRUE) | `nmr > 25 & deliveries > 100` |
+| `|` | OR (at least one TRUE) | `nmr > 40 | deliveries < 50` |
+| `!` | NOT (flip TRUE/FALSE) | `!has_cpap` |
+
+. . .
+
+```{r}
+#| label: logical-ops
+#| echo: true
+
+nmr <- c(Ethiopia = 25.3, Tanzania = 31.7, Malawi = 19.8,
+         Mozambique = 42.1, Kenya = 27.5)
+has_cpap <- c(TRUE, FALSE, TRUE, FALSE, TRUE)
+
+# High NMR AND no CPAP — highest priority
+high_risk <- (nmr > 30) & (!has_cpap)
+high_risk   # FALSE TRUE FALSE TRUE FALSE
+
+# Which countries?
+names(nmr)[high_risk]   # "Tanzania" "Mozambique"
+```
+
+. . .
+
+::: {.callout-box .green}
+**Combining conditions is how you identify priority facilities in practice.** High mortality, low equipment, low staffing --- the intersection of multiple risk factors drives resource allocation decisions.
+:::
+
+
+## The %in% Operator
+
+Test whether values appear in a set --- cleaner than chaining `|` conditions.
+
+```{r}
+#| label: in-operator
+#| echo: true
+
+countries <- c("Ethiopia", "Tanzania", "Malawi", "Mozambique", "Kenya")
+
+# East African countries
+east_africa <- c("Ethiopia", "Kenya", "Tanzania")
+
+# Which are in East Africa?
+countries %in% east_africa
+# TRUE TRUE FALSE FALSE TRUE
+
+# Filter to East African countries
+countries[countries %in% east_africa]
+```
+
+. . .
+
+::: {.callout-box}
+**`%in%` is essential for filtering.** Instead of writing `country == "Ethiopia" | country == "Kenya" | country == "Tanzania"`, write `country %in% c("Ethiopia", "Kenya", "Tanzania")`.
+:::
+
+
+# Functions {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Reusable calculations for routine tasks</span>
+
+
+## Using Built-in Functions
+
+You've already been using functions: `c()`, `mean()`, `sum()`, `length()`.
+
+```{r}
+#| label: builtin-functions
+#| echo: true
+
+nmr <- c(25.3, 31.7, 19.8, 42.1, 27.5)
+
+# Functions follow the pattern: function_name(arguments)
+mean(nmr)                  # one argument
+round(mean(nmr), 1)        # nested: round the mean to 1 decimal
+seq(0, 50, by = 10)        # named argument: sequence from 0 to 50
+paste("NMR:", nmr)          # combine text with values
+```
+
+. . .
+
+::: {.definition-box}
+A **function** takes inputs (arguments), does something with them, and returns an output. Think of it like a formula in Excel, but more flexible and reusable.
+:::
+
+
+## Anatomy of a Function Call
+
+```{r}
+#| label: function-anatomy
+#| echo: true
+
+# round(x, digits)
+#   |     |    |
+#   |     |    └── argument 2: how many decimals
+#   |     └─────── argument 1: the number to round
+#   └───────────── function name
+
+round(25.347, digits = 1)   # 25.3
+round(25.347, digits = 0)   # 25
+round(25.347)               # 25 (digits defaults to 0)
+```
+
+. . .
+
+::: {.callout-box}
+**Arguments can be positional or named.** `round(25.347, 1)` works because R knows the second argument is `digits`. Named arguments (`digits = 1`) are clearer, especially when a function has many arguments.
+:::
+
+
+## Writing Your Own Functions
+
+When you repeat the same calculation, wrap it in a function.
+
+```{r}
+#| label: custom-nmr
+#| echo: true
+
+# Calculate neonatal mortality rate
+calc_nmr <- function(neonatal_deaths, live_births) {
+  nmr <- (neonatal_deaths / live_births) * 1000
+  return(nmr)
+}
+
+# Use it
+calc_nmr(neonatal_deaths = 30, live_births = 1200)   # 25.0
+calc_nmr(22, 1100)                                    # 20.0
+```
+
+. . .
+
+```{r}
+#| label: custom-mmr
+#| echo: true
+
+# Calculate maternal mortality ratio
+calc_mmr <- function(maternal_deaths, live_births) {
+  mmr <- (maternal_deaths / live_births) * 100000
+  return(mmr)
+}
+
+# Use it
+calc_mmr(maternal_deaths = 3, live_births = 1200)   # 250.0
+calc_mmr(5, 950)                                     # 526.3
+```
+
+
+## Functions with Default Arguments
+
+```{r}
+#| label: function-defaults
+#| echo: true
+
+# Classify NMR with a customizable threshold
+classify_nmr <- function(nmr, target = 12) {
+  if (nmr <= target) {
+    return("On Track")
+  } else if (nmr <= target * 2) {
+    return("Needs Improvement")
+  } else {
+    return("Critical")
+  }
+}
+
+classify_nmr(10)          # "On Track" (uses default target = 12)
+classify_nmr(20)          # "Needs Improvement"
+classify_nmr(42)          # "Critical"
+classify_nmr(20, target = 15)  # "Needs Improvement" (custom target)
+```
+
+. . .
+
+::: {.callout-box .green}
+**Default arguments make functions flexible.** The SDG target for NMR is 12, so that's a sensible default --- but a user can override it for a different analysis.
+:::
+
+
+## Applying Functions to Vectors
+
+Your custom functions work on vectors just like built-in ones.
+
+```{r}
+#| label: function-vectorized
+#| echo: true
+
+# Data from five facilities
+neonatal_deaths <- c(30, 30, 22, 34, 29)
+live_births     <- c(1200, 950, 1100, 800, 1050)
+
+# Calculate NMR for all facilities at once
+facility_nmr <- calc_nmr(neonatal_deaths, live_births)
+facility_nmr
+```
+
+. . .
+
+```{r}
+#| label: function-vectorized-2
+#| echo: true
+
+# Name the results
+facility_names <- c("Facility A", "Facility B", "Facility C",
+                    "Facility D", "Facility E")
+names(facility_nmr) <- facility_names
+
+# Identify high-risk facilities
+facility_nmr[facility_nmr > 30]
+```
+
+. . .
+
+::: {.callout-box}
+**Functions you write with basic arithmetic are automatically vectorized.** Since `*`, `/`, and other operators work element-wise, `calc_nmr()` works on single values or entire vectors.
+:::
+
+
+## Why Write Functions?
+
+::: {.columns-equal}
+::: {.col}
+::: {.bad-example}
+[Without functions: repeated code]{.example-label}
+
+```{r}
+#| label: no-function
+#| echo: true
+
+# Facility A
+nmr_a <- (30 / 1200) * 1000
+
+# Facility B
+nmr_b <- (30 / 950) * 1000
+
+# Facility C
+nmr_c <- (22 / 1100) * 1000
+
+# What if the formula changes?
+# Fix it in three places!
+```
+:::
+:::
+
+::: {.col}
+::: {.good-example}
+[With functions: write once, use everywhere]{.example-label}
+
+```{r}
+#| label: with-function
+#| echo: true
+
+calc_nmr <- function(deaths, births) {
+  (deaths / births) * 1000
+}
+
+nmr_a <- calc_nmr(30, 1200)
+nmr_b <- calc_nmr(30, 950)
+nmr_c <- calc_nmr(22, 1100)
+
+# Formula changes? Fix once.
+```
+:::
+:::
+:::
+
+. . .
+
+::: {.callout-box}
+**The DRY principle: Don't Repeat Yourself.** If you copy-paste the same calculation more than twice, write a function instead.
+:::
+
+
+# Getting Help {background-color="#005CB9"}
+
+<span style="color: rgba(255,255,255,0.7); font-size: 0.7em;">Finding answers when you're stuck</span>
+
+
+## R's Built-in Help System
+
+```{r}
+#| label: help-system
+#| echo: true
+
+# Open the help page for a function
+?mean
+?round
+?factor
+
+# Search for a topic (fuzzy search)
+??neonatal          # searches all help files for "neonatal"
+help.search("standard deviation")
+
+# See examples of a function in action
+example(mean)
+
+# See a function's arguments
+args(round)
+```
+
+. . .
+
+::: {.callout-box}
+**Help pages look intimidating at first.** Focus on three sections: **Description** (what it does), **Arguments** (what inputs it takes), and **Examples** (copy-paste working code).
+:::
+
+
+## Reading a Help Page
+
+The help page for `mean()` contains:
+
+| Section | What It Tells You |
+|---------|-------------------|
+| **Description** | Computes the arithmetic mean |
+| **Usage** | `mean(x, trim = 0, na.rm = FALSE, ...)` |
+| **Arguments** | `x` = a numeric vector; `na.rm` = remove NAs? |
+| **Value** | Returns a single numeric value |
+| **Examples** | Working code you can copy and run |
+
+. . .
+
+```{r}
+#| label: help-example
+#| echo: true
+
+deliveries <- c(112, 98, NA, 121, NA, 143)
+
+# From the help page, we learn about na.rm
+mean(deliveries)                   # NA (not helpful)
+mean(deliveries, na.rm = TRUE)     # 118.5 (what we need)
+```
+
+
+## Beyond the Help Page
+
+::: {.incremental}
+- **Stack Overflow** --- search for your error message; someone has already asked about it
+- **R for Data Science** (r4ds.hadley.nz) --- the definitive free textbook for data analysis in R
+- **CRAN Task Views** --- curated lists of packages by topic (epidemiology, spatial, etc.)
+- **RStudio Cheatsheets** --- one-page visual references for key packages (File > Help > Cheat Sheets)
+- **Posit Community** (community.rstudio.com) --- friendly forum for R questions
+:::
+
+. . .
+
+::: {.callout-box .green}
+**The best R programmers are not the ones who memorize everything --- they are the ones who know how to search effectively.** When you hit an error, copy the exact error message and search it.
+:::
+
+
+## Debugging Strategies
+
+When something goes wrong --- and it will --- here is a systematic approach.
+
+::: {.incremental}
+1. **Read the error message.** R's messages are cryptic but informative. `object 'nmr' not found` means you haven't created `nmr` yet.
+2. **Check your types.** Use `class()` and `str()` to verify your data looks the way you expect.
+3. **Simplify.** Run your code line by line in the console to find exactly where it breaks.
+4. **Search the error message.** Paste the exact error into a search engine.
+5. **Ask for help.** Include a minimal reproducible example --- the smallest code that produces the error.
+:::
+
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Vectors are R's fundamental building block.** They store related values and support vectorized operations that replace manual cell-by-cell work.
+
+**Four data types** cover virtually all MNH data: numeric (rates, counts), character (names, IDs), logical (yes/no flags), and factor (ordered categories).
+
+**Custom functions eliminate copy-paste errors.** Write `calc_nmr()` once, use it everywhere, and fix it in one place.
+
+**Getting help is a skill, not a weakness.** Use `?function_name`, read error messages carefully, and search effectively.
+:::
+
+
+## Looking Ahead
+
+::: {.callout-box}
+**Next: Chapter 3 --- Importing Data**
+
+- Reading CSV files from DHIS2 exports with `readr`
+- Reading Excel files with `readxl`
+- Handling common import problems: wrong types, messy headers, encoding issues
+- Inspecting your data immediately after import
+:::
+
+
+##  {background-color="white"}
+
+<br><br><br>
+
+::: {style="text-align: center;"}
+![](bka-logo.png){width="250px"}
+
+<br>
+
+[R for Management Consultants | Chapter 2: R Building Blocks]{style="color: #005CB9; font-size: 0.6em;"}
+
+[BK Advisors]{style="color: #666; font-size: 0.5em;"}
+:::

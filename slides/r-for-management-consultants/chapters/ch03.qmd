@@ -1,0 +1,191 @@
+---
+title: "Chapter 3: Importing & Exploring Data"
+subtitle: "read_csv, tibbles, exploring data structure, and handling missing values"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Import **CSV files** with `readr::read_csv()` and **Excel files** with `readxl::read_excel()`
+- Explain the difference between a **tibble** and a base R data frame
+- Use `glimpse()`, `summary()`, and `str()` to **explore data structure** before analysis
+- Systematically **diagnose missing values** — how many, which columns, what patterns
+- Access individual columns with `$` and create new tibbles from scratch
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### CSV and Excel Import
+`read_csv()` from the `readr` package (part of tidyverse) reads comma-separated files and automatically guesses column types. `read_excel()` from the `readxl` package handles `.xlsx` and `.xls` files. Both return tibbles. Always inspect the result immediately after import — column types may not be what you expect.
+:::
+
+::: {.key-concept .green}
+#### Tibbles
+A tibble is the tidyverse version of a data frame — a rectangular table where each column is a vector and columns can have different types. Tibbles print more neatly (showing only the first 10 rows and as many columns as fit on screen), never convert strings to factors automatically, and warn you when you access a column that does not exist.
+:::
+
+::: {.key-concept .teal}
+#### Data Exploration
+Before any analysis, you must understand your data's shape and content. `glimpse()` shows every column's name, type, and first few values. `summary()` gives five-number summaries for numeric columns and frequency counts for factors. `nrow()` and `ncol()` tell you the dimensions. This exploration step catches data quality issues early.
+:::
+
+::: {.key-concept .orange}
+#### Missing Values in Imported Data
+Real-world health datasets — DHIS2 extracts, facility registers, survey exports — always have missing values. They may appear as blank cells, "NA", "N/A", ".", "-", or "99". The `read_csv()` function recognizes `NA` and blank cells by default, but you may need to specify additional codes with `na = c("", "NA", "N/A", ".", "-")`. Always quantify missingness before proceeding.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch03-importing-data/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch03-importing-data/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This workshop simulates importing and exploring a facility-level MNH dataset — the kind of data you might receive from a Ministry of Health or extract from DHIS2.
+
+### Importing a CSV File
+
+```{r}
+#| label: import-csv
+#| echo: true
+
+library(tidyverse)
+
+# Import facility-level MNH data
+# In practice, replace the path with your actual file location
+facility_data <- read_csv("data/facility_data.csv")
+
+# read_csv prints a column specification showing what types it guessed
+# Always check this output for unexpected types
+
+# For Excel files, use readxl
+# library(readxl)
+# facility_data <- read_excel("data/facility_data.xlsx", sheet = "Sheet1")
+
+# Specify custom NA codes if your data uses them
+# facility_data <- read_csv("data/facility_data.csv",
+#                           na = c("", "NA", "N/A", ".", "-", "99"))
+```
+
+When you run `read_csv()`, it prints a message showing which column types it guessed. If a column you expected to be numeric shows as character, that usually means there is a non-numeric value hiding somewhere in that column. Investigate before proceeding.
+
+### Exploring Data Structure
+
+```{r}
+#| label: explore-structure
+#| echo: true
+
+# Dimensions: how many rows (facilities) and columns (variables)?
+nrow(facility_data)
+ncol(facility_data)
+dim(facility_data)
+
+# glimpse() — best quick overview (shows every column)
+glimpse(facility_data)
+
+# summary() — numeric summaries + NA counts
+summary(facility_data)
+
+# First and last few rows
+head(facility_data)
+tail(facility_data)
+
+# Column names
+names(facility_data)
+```
+
+Make `glimpse()` your first command after every import. It tells you at a glance whether columns have the right types, whether character columns have unexpected values, and how many observations you are working with. In MNH work, always verify that the number of rows matches the expected number of facilities or reporting periods.
+
+### Diagnosing Missing Values
+
+```{r}
+#| label: diagnose-missing
+#| echo: true
+
+# Count NAs in every column
+colSums(is.na(facility_data))
+
+# Percentage missing per column
+round(colMeans(is.na(facility_data)) * 100, 1)
+
+# Total missing cells in the entire dataset
+sum(is.na(facility_data))
+
+# Which rows have any missing data?
+facility_data[!complete.cases(facility_data), ]
+
+# How many complete rows (no NAs at all)?
+sum(complete.cases(facility_data))
+```
+
+In MNH datasets, missingness is rarely random. Facilities that fail to report are often the ones with the fewest staff, the weakest infrastructure, and potentially the worst outcomes. Before you drop missing rows, ask yourself: "Would removing these facilities bias my results toward healthier-looking facilities?"
+
+### Accessing Columns and Creating Tibbles
+
+```{r}
+#| label: access-and-create
+#| echo: true
+
+# Access a single column with $
+facility_data$facility_name
+facility_data$total_deliveries
+
+# Quick column-level checks
+unique(facility_data$country)
+table(facility_data$facility_type)
+range(facility_data$nmr, na.rm = TRUE)
+
+# Create a tibble from scratch (useful for reference tables)
+country_targets <- tibble(
+  country = c("Ethiopia", "Tanzania", "Malawi", "Kenya", "Rwanda"),
+  nmr_target = c(15, 15, 15, 12, 12),
+  mmr_target = c(200, 200, 200, 150, 150),
+  target_year = rep(2030, 5)
+)
+country_targets
+```
+
+The `$` operator extracts a single column as a vector. The `table()` function gives you a quick frequency count — useful for checking how many facilities of each type exist, or how many observations come from each country.
+
+### Saving Clean Data
+
+```{r}
+#| label: save-clean
+#| echo: true
+
+# After initial inspection and cleaning, save a clean version
+# write_csv(facility_data, "data/facility_data_clean.csv")
+
+# For R-specific format (preserves factor levels, date types, etc.)
+# saveRDS(facility_data, "data/facility_data_clean.rds")
+# facility_data <- readRDS("data/facility_data_clean.rds")
+```
+
+Save your cleaned data separately from the raw import. This way you always have the original file as a reference, and your cleaning steps are documented in the script that produced the clean version.
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Import with `read_csv()`, explore with `glimpse()`.** These two functions bookend your data loading workflow. Always inspect column types and dimensions immediately after import.
+
+**Quantify missingness before analysis.** Count NAs per column, calculate the percentage missing, and ask whether the missingness pattern could bias your results.
+
+**Tibbles are your default data container.** They print cleanly, warn about mistakes, and integrate seamlessly with the tidyverse tools you will learn next.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 4 — Data Transformation with dplyr**, you will learn to reshape and summarize your data using five core verbs:
+
+- `filter()` — select rows based on conditions
+- `select()` — choose specific columns
+- `mutate()` — create or modify columns
+- `summarise()` — compute summary statistics
+- `group_by()` — apply operations within groups (by country, by facility type, by quarter)

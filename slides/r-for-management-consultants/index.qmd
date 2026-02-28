@@ -1,0 +1,77 @@
+---
+title: "R for Management Consultants"
+subtitle: "A Practical Introduction to R Programming for Global Health Professionals"
+---
+
+## Course Overview
+
+This course teaches R programming from scratch, tailored for management consultants working in global health. Across 9 chapters, you will build a complete data analysis toolkit — from writing your first line of R code to producing publication-quality charts and reproducible reports for stakeholders.
+
+::: {.callout-box}
+**The central message:** R is not just for statisticians. It is a **practical tool** that helps consultants answer the questions that matter most: *What does the data say? How confident are we? Can we reproduce this analysis next quarter?*
+:::
+
+## The Consultant's R Workflow
+
+By the end of this course, you will be able to follow this data-driven workflow:
+
+1. **Import** facility-level and program data from CSV and Excel files (Chapter 3)
+2. **Transform** raw data into analysis-ready tables with filtering, grouping, and summaries (Chapters 4--5)
+3. **Visualize** patterns, trends, and comparisons with publication-quality charts (Chapters 6--7)
+4. **Analyze** key indicators with descriptive statistics and simple regression (Chapter 8)
+5. **Communicate** findings in reproducible Quarto reports for donors and program managers (Chapter 9)
+
+## Chapters
+
+### Part I: Getting Started
+
+| Chapter | Title | Focus |
+|---------|-------|-------|
+| 1 | [Why R for Management Consultants](chapters/ch01.qmd) | Motivation, installing R + RStudio, first commands |
+| 2 | [R Building Blocks](chapters/ch02.qmd) | Vectors, data types, functions, packages |
+
+### Part II: Working with Data
+
+| Chapter | Title | Focus |
+|---------|-------|-------|
+| 3 | [Importing & Exploring Data](chapters/ch03.qmd) | read_csv, tibbles, summary, handling missing values |
+| 4 | [Data Transformation with dplyr](chapters/ch04.qmd) | Pipes, filter, select, mutate, summarise, group_by |
+| 5 | [Reshaping & Joining Datasets](chapters/ch05.qmd) | pivot_longer/wider, joins, string basics |
+
+### Part III: Visualization & Analysis
+
+| Chapter | Title | Focus |
+|---------|-------|-------|
+| 6 | [Data Visualization with ggplot2](chapters/ch06.qmd) | Grammar of graphics, geoms, aesthetics, basic plots |
+| 7 | [Publication-Quality Charts](chapters/ch07.qmd) | Themes, faceting, multi-panel layouts, exporting |
+| 8 | [Descriptive Statistics for Consultants](chapters/ch08.qmd) | Means, proportions, confidence intervals, regression basics |
+
+### Part IV: Communication
+
+| Chapter | Title | Focus |
+|---------|-------|-------|
+| 9 | [Reproducible Reports with Quarto](chapters/ch09.qmd) | Code chunks, inline R, rendering to HTML/PDF/DOCX |
+
+## The Complete Toolkit
+
+| Chapters | Skill |
+|----------|-------|
+| 1--2 | R fundamentals & environment |
+| 3--5 | Data import, transformation & reshaping |
+| 6--7 | Data visualization |
+| 8 | Descriptive statistics & regression |
+| 9 | Reproducible reporting |
+
+## Prerequisites
+
+- No prior programming experience required
+- Basic familiarity with spreadsheets (Excel or Google Sheets)
+- See the [R Setup](r-setup.qmd) page for installation instructions
+
+## Connection to Inference and Intervention
+
+This course is designed as a companion to the [Inference and Intervention](../inference-and-intervention/index.qmd) course on causal models for MNH program analysis. The R skills taught here provide the foundation for the R code workshops in that course, including data visualization with ggplot2, data manipulation with dplyr, and statistical analysis.
+
+::: {.callout-box .green}
+**For MNH program analysts:** This toolkit enables you to move beyond Excel-based reporting toward reproducible, transparent analyses that stakeholders and donors can trust — and that you can update in minutes, not days.
+:::

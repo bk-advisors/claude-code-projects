@@ -1,0 +1,209 @@
+---
+title: "Chapter 2: R Building Blocks"
+subtitle: "Vectors, data types, functions, and getting help"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Create and manipulate **vectors** of numeric, character, logical, and factor data
+- Check and convert between **data types** using `is.*()` and `as.*()` functions
+- Explain how R handles **missing values** (`NA`) and why this matters for health data
+- Write **custom functions** to encapsulate repeated calculations
+- Use R's built-in **help system** (`?`, `help()`, `args()`) to learn about any function
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### Vectors
+The most fundamental data structure in R. A vector is an ordered collection of values — all of the same type. When you store NMR values for five countries, that is a numeric vector. When you store country names, that is a character vector. Even a single number in R is technically a vector of length 1.
+:::
+
+::: {.key-concept .green}
+#### Data Types
+Every value in R belongs to one of several types. The four you will use most: **numeric** (numbers like `28.1`), **character** (text like `"Ethiopia"`), **logical** (`TRUE` or `FALSE`), and **factor** (categorical variables with a fixed set of levels, like facility type). Mixing types in a vector triggers automatic coercion — R silently converts everything to the most general type.
+:::
+
+::: {.key-concept .red}
+#### Missing Values (NA)
+R uses `NA` to represent missing data — a facility that did not report, a country with no survey that year, a patient record with an unknown outcome. Most R functions will return `NA` if any input is `NA` unless you explicitly tell them to ignore missing values (e.g., `mean(x, na.rm = TRUE)`). Learning to handle `NA` properly is essential for working with real-world MNH datasets.
+:::
+
+::: {.key-concept .teal}
+#### Functions
+A named block of code that takes inputs (arguments), performs a calculation, and returns a result. R comes with thousands of built-in functions (`mean()`, `sum()`, `paste()`), and packages add thousands more. You can also write your own functions to encapsulate repeated calculations — like computing NMR or MMR from raw counts.
+:::
+
+::: {.key-concept .orange}
+#### Getting Help
+Every R function has a help page accessed with `?function_name` or `help(function_name)`. The help page shows the function's arguments, what it returns, and usage examples. When you are stuck, `?` is your first stop.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch02-building-blocks/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch02-building-blocks/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This workshop builds your fluency with R's core data types and shows you how to write functions that automate MNH indicator calculations.
+
+### Creating and Inspecting Vectors
+
+```{r}
+#| label: creating-vectors
+#| echo: true
+
+# Numeric vector: NMR by country (per 1,000 live births)
+nmr <- c(28.1, 20.3, 22.4, 18.6, 16.2)
+
+# Character vector: country names
+countries <- c("Ethiopia", "Tanzania", "Malawi", "Kenya", "Rwanda")
+
+# Logical vector: does the country have NMR above 20?
+high_nmr <- nmr > 20
+high_nmr  # TRUE TRUE TRUE FALSE FALSE
+
+# Factor vector: facility type (categorical)
+facility_type <- factor(c("hospital", "health_center", "hospital",
+                           "health_post", "health_center"),
+                        levels = c("health_post", "health_center", "hospital"))
+facility_type
+```
+
+Notice the logical vector: `nmr > 20` tests each element and returns `TRUE` or `FALSE`. This is how you will filter data later — by creating logical conditions that select rows.
+
+### Type Checking and Conversion
+
+```{r}
+#| label: type-checking
+#| echo: true
+
+# Check types
+is.numeric(nmr)       # TRUE
+is.character(countries)  # TRUE
+is.logical(high_nmr)  # TRUE
+
+# What happens when types mix?
+mixed <- c(1, 2, "three")
+mixed  # "1" "2" "three" — everything becomes character
+
+# Convert character to numeric (common with imported data)
+reported_values <- c("120", "85", "NA", "200", "150")
+as.numeric(reported_values)  # 120 85 NA 200 150
+
+# Convert numeric to factor for categorical analysis
+nmr_category <- cut(nmr, breaks = c(0, 15, 25, Inf),
+                    labels = c("Low", "Medium", "High"))
+nmr_category
+```
+
+Type coercion is one of the most common sources of bugs when importing data. A column that looks numeric in your CSV may be read as character if it contains a single non-numeric entry (like "N/A" or a footnote symbol). Always check your types after import.
+
+### Handling Missing Values
+
+```{r}
+#| label: missing-values
+#| echo: true
+
+# Real-world data has gaps — some facilities did not report
+deliveries <- c(340, 215, NA, 180, NA, 420, 310)
+
+# Most functions propagate NA by default
+mean(deliveries)      # NA — because R cannot know the true mean
+sum(deliveries)       # NA
+
+# Tell R to remove NAs before computing
+mean(deliveries, na.rm = TRUE)   # 293
+sum(deliveries, na.rm = TRUE)    # 1465
+
+# Count and locate missing values
+sum(is.na(deliveries))         # 2 missing values
+which(is.na(deliveries))       # positions 3 and 5
+
+# Percentage of data that is missing
+mean(is.na(deliveries)) * 100  # 28.6% missing
+```
+
+In MNH data, missing values are not random — facilities that do not report often have the weakest infrastructure. Ignoring `NA` may bias your results. Always report how much data is missing and consider why it is missing before dropping it.
+
+### Writing Custom Functions
+
+```{r}
+#| label: custom-functions
+#| echo: true
+
+# Function to calculate Neonatal Mortality Rate
+calc_nmr <- function(neonatal_deaths, live_births) {
+  nmr <- neonatal_deaths / live_births * 1000
+  return(round(nmr, 1))
+}
+
+# Function to calculate Maternal Mortality Ratio
+calc_mmr <- function(maternal_deaths, live_births) {
+  mmr <- maternal_deaths / live_births * 100000
+  return(round(mmr, 0))
+}
+
+# Use them
+calc_nmr(45, 3200)     # 14.1 per 1,000 live births
+calc_mmr(12, 3200)     # 375 per 100,000 live births
+
+# Functions work on vectors too
+district_neo_deaths <- c(45, 30, 62, 28, 51)
+district_births <- c(3200, 2100, 4500, 1800, 3700)
+calc_nmr(district_neo_deaths, district_births)
+```
+
+Writing functions eliminates copy-paste errors. Instead of re-typing the NMR formula in ten different places (and risking a typo in one), you define it once and call it everywhere. If the formula changes, you update one function.
+
+### Using the Help System
+
+```{r}
+#| label: getting-help
+#| echo: true
+
+# Get help on any function
+?mean
+?round
+?cut
+
+# See a function's arguments
+args(round)
+
+# Search for functions by keyword
+help.search("correlation")
+
+# Example: discovering that mean() has an na.rm argument
+?mean
+# Usage: mean(x, trim = 0, na.rm = FALSE, ...)
+# Setting na.rm = TRUE ignores missing values
+```
+
+The help system is your most reliable reference. Package vignettes (`vignette("dplyr")`) provide longer tutorials. For complex questions, searching "R [your question]" online will usually lead to a Stack Overflow answer.
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Vectors are the foundation.** Every column of data you work with is a vector. Understanding their types (numeric, character, logical, factor) prevents subtle bugs.
+
+**NA is not zero.** Missing data must be handled explicitly. Always check for `NA` values and decide whether to remove, impute, or flag them.
+
+**Write functions for repeated calculations.** If you compute the same indicator more than once, wrap it in a function. This makes your code shorter, more readable, and less error-prone.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 3 — Importing & Exploring Data**, we move from hand-typed vectors to real datasets:
+
+- Reading CSV and Excel files into R with `read_csv()` and `read_excel()`
+- The `tibble` — a modern, friendlier version of the data frame
+- Exploring data structure with `glimpse()`, `summary()`, and `str()`
+- Systematic approaches to diagnosing missing values in imported data

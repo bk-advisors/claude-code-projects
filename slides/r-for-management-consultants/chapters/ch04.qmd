@@ -1,0 +1,225 @@
+---
+title: "Chapter 4: Data Transformation with dplyr"
+subtitle: "Pipes, filter, select, mutate, summarise, and group_by"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Use the **pipe operator** (`|>`) to chain data transformation steps into readable pipelines
+- Apply the five core **dplyr verbs**: `filter()`, `select()`, `mutate()`, `summarise()`, and `arrange()`
+- Combine `group_by()` with `summarise()` to compute **grouped statistics** (e.g., NMR by country, deliveries by facility type)
+- Use `case_when()` to create **categorical variables** from numeric thresholds
+- Build a complete **analytical pipeline** from raw facility data to a summary dashboard table
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### The Pipe Operator
+The pipe (`|>` in base R, or `%>%` from magrittr) takes the result of one function and feeds it as the first argument to the next function. It lets you read code left-to-right, top-to-bottom — like reading a recipe: "Take the data, *then* filter, *then* mutate, *then* summarise." Without pipes, you either nest functions inside each other (unreadable) or create intermediate variables (cluttered).
+:::
+
+::: {.key-concept .green}
+#### The Five dplyr Verbs
+| Verb | Purpose | Example |
+|---|---|---|
+| `filter()` | Keep rows that match a condition | Facilities with NMR > 25 |
+| `select()` | Keep or drop specific columns | Only name, country, NMR |
+| `mutate()` | Create or modify columns | Add a column for NMR category |
+| `summarise()` | Collapse rows into a summary | Mean NMR across all facilities |
+| `arrange()` | Sort rows | Sort by NMR, worst first |
+:::
+
+::: {.key-concept .teal}
+#### group_by + summarise
+The most powerful pattern in dplyr. `group_by(country)` splits your data into invisible groups, and `summarise()` then computes one row per group. This is how you go from facility-level records to a country-level summary table — the foundation of most consulting dashboards.
+:::
+
+::: {.key-concept .orange}
+#### case_when
+A vectorized if-else that maps conditions to values. Use it inside `mutate()` to create categorical columns from numeric data — for example, classifying facilities into "Low NMR", "Medium NMR", and "High NMR" based on threshold values. It evaluates conditions in order and assigns the first match.
+:::
+
+::: {.key-concept .red}
+#### Method Chaining as Analytical Thinking
+Each step in a dplyr pipeline corresponds to an analytical decision: Which records are relevant? Which variables matter? What new measures do I need? What level of aggregation answers my question? Learning dplyr is not just learning syntax — it is learning to decompose analytical questions into discrete, verifiable steps.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch04-data-transformation/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch04-data-transformation/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This workshop builds a complete analytical pipeline — the kind of summary table you might present in a consulting slide deck — using the five dplyr verbs.
+
+### The Pipe in Action
+
+```{r}
+#| label: pipe-demo
+#| echo: true
+
+library(tidyverse)
+
+# Without the pipe — nested and hard to read
+# arrange(summarise(group_by(filter(facility_data, active == TRUE), country), mean_nmr = mean(nmr, na.rm = TRUE)), desc(mean_nmr))
+
+# With the pipe — each step on its own line
+facility_data |>
+  filter(active == TRUE) |>
+  group_by(country) |>
+  summarise(mean_nmr = mean(nmr, na.rm = TRUE)) |>
+  arrange(desc(mean_nmr))
+```
+
+Read the pipe as "and then." Take `facility_data`, *and then* keep only active facilities, *and then* group by country, *and then* compute mean NMR, *and then* sort from worst to best. Each line is a single, verifiable step.
+
+### Filtering and Selecting
+
+```{r}
+#| label: filter-select
+#| echo: true
+
+# Filter: keep only hospitals with more than 100 deliveries
+high_volume <- facility_data |>
+  filter(facility_type == "hospital",
+         total_deliveries > 100)
+
+# Select: keep only the columns we need
+high_volume |>
+  select(facility_name, country, total_deliveries, nmr)
+
+# Combine filter + select in one pipeline
+facility_data |>
+  filter(nmr > 25) |>
+  select(facility_name, country, nmr, total_deliveries) |>
+  arrange(desc(nmr))
+
+# Use ! to negate: drop facilities with missing NMR
+facility_data |>
+  filter(!is.na(nmr))
+```
+
+Filtering is your first analytical decision: "Which observations are relevant to my question?" Be explicit about your inclusion criteria. In MNH work, you often need to filter to a specific reporting period, facility type, or country before summarizing.
+
+### Creating New Variables with mutate
+
+```{r}
+#| label: mutate-demo
+#| echo: true
+
+# Add computed columns
+facility_data |>
+  mutate(
+    # Calculate NMR from raw counts
+    nmr_calculated = neonatal_deaths / live_births * 1000,
+
+    # Classify NMR into categories
+    nmr_category = case_when(
+      nmr < 15  ~ "Low (< 15)",
+      nmr < 25  ~ "Medium (15-25)",
+      nmr >= 25 ~ "High (25+)",
+      TRUE      ~ "Unknown"
+    ),
+
+    # Flag facilities above the national target
+    above_target = nmr > 20,
+
+    # Calculate percentage of deliveries that are cesarean
+    cs_rate = cesarean_deliveries / total_deliveries * 100
+  ) |>
+  select(facility_name, country, nmr, nmr_category, above_target, cs_rate)
+```
+
+`case_when()` is especially useful for creating the kind of traffic-light categories that appear in consulting dashboards — green/yellow/red, on-track/at-risk/off-track. The `TRUE ~ "Unknown"` at the end is the catch-all for any values that do not match the earlier conditions (including `NA`).
+
+### Grouped Summaries: The Country Dashboard
+
+```{r}
+#| label: grouped-summary
+#| echo: true
+
+# Build a country-level MNH dashboard
+country_dashboard <- facility_data |>
+  filter(!is.na(nmr), active == TRUE) |>
+  group_by(country) |>
+  summarise(
+    n_facilities    = n(),
+    total_births    = sum(live_births, na.rm = TRUE),
+    total_neo_death = sum(neonatal_deaths, na.rm = TRUE),
+    mean_nmr        = mean(nmr, na.rm = TRUE),
+    median_nmr      = median(nmr, na.rm = TRUE),
+    worst_nmr       = max(nmr, na.rm = TRUE),
+    pct_high_nmr    = mean(nmr > 25, na.rm = TRUE) * 100
+  ) |>
+  arrange(desc(mean_nmr))
+
+country_dashboard
+```
+
+This is the pipeline pattern you will use most often in consulting work: filter to relevant records, group by the dimension your client cares about (country, region, facility type, quarter), summarise the indicators, and sort to highlight the worst performers. The result is a single table that could go directly into a slide.
+
+### Putting It All Together
+
+```{r}
+#| label: full-pipeline
+#| echo: true
+
+# Complete pipeline: from raw data to a presentation-ready summary
+facility_data |>
+  # Step 1: Keep only active facilities with valid data
+  filter(active == TRUE, !is.na(nmr), !is.na(total_deliveries)) |>
+
+  # Step 2: Add derived columns
+  mutate(
+    nmr_category = case_when(
+      nmr < 15  ~ "Low",
+      nmr < 25  ~ "Medium",
+      nmr >= 25 ~ "High"
+    ),
+    volume_category = case_when(
+      total_deliveries < 50  ~ "Low volume",
+      total_deliveries < 200 ~ "Medium volume",
+      TRUE                   ~ "High volume"
+    )
+  ) |>
+
+  # Step 3: Summarise by country and NMR category
+  group_by(country, nmr_category) |>
+  summarise(
+    n_facilities = n(),
+    avg_deliveries = mean(total_deliveries, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+
+  # Step 4: Sort for presentation
+  arrange(country, factor(nmr_category, levels = c("High", "Medium", "Low")))
+```
+
+Notice the `.groups = "drop"` argument in `summarise()`. After summarizing grouped data, this removes the grouping so subsequent operations apply to the entire result. Forgetting this is a common source of unexpected behavior.
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**The pipe makes your thinking visible.** Each line in a dplyr pipeline is one analytical decision. Write your pipelines so a colleague can read them top-to-bottom and understand your logic.
+
+**group_by + summarise is your most powerful tool.** It transforms facility-level data into the country-level, region-level, or quarter-level summaries that drive consulting recommendations.
+
+**case_when creates dashboard categories.** Map numeric indicators to human-readable labels — these are the traffic-light classifications your clients expect.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 5 — Reshaping & Joining Datasets**, you will learn to combine multiple data sources and restructure data layouts:
+
+- `pivot_longer()` and `pivot_wider()` — converting between wide and long formats (essential for time-series data from DHIS2)
+- `left_join()`, `inner_join()`, `anti_join()` — merging facility data with country indicators, training records, and equipment inventories
+- String cleaning with `stringr` — standardizing messy facility names

@@ -1,0 +1,155 @@
+---
+title: "Chapter 1: Why R for Management Consultants"
+subtitle: "Motivation, installation, RStudio orientation, and first commands"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Explain why **reproducibility** matters for consulting deliverables in maternal and newborn health (MNH)
+- Navigate the four panes of the **RStudio IDE** (Source, Console, Environment, Files/Plots)
+- Write and run your first **R commands** in the console and in an R script
+- Install and load **packages** from CRAN
+- Perform basic arithmetic with real-world MNH indicators (neonatal mortality rate, maternal mortality ratio)
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### Reproducibility
+The ability to re-run an analysis and get the same result. In consulting, this means your client can verify your numbers, your team can update a report when new data arrives, and you can trace every figure in a deliverable back to a specific line of code. Spreadsheet-based workflows (copy-paste, manual formatting) break reproducibility.
+:::
+
+::: {.key-concept .green}
+#### RStudio IDE
+An integrated development environment that wraps around R, providing a code editor with syntax highlighting, a console for interactive commands, an environment pane showing your data objects, and a files/plots/help pane. Think of R as the engine and RStudio as the dashboard.
+:::
+
+::: {.key-concept .teal}
+#### R Scripts
+Plain-text files (`.R` extension) that contain a sequence of R commands. Scripts are the basic unit of reproducible work — you write your analysis once, save it, and anyone can re-run it. Every consulting analysis should live in a script, not typed directly into the console.
+:::
+
+::: {.key-concept .orange}
+#### Packages
+Extensions that add new functions to R. The base installation handles arithmetic and basic statistics, but packages like `tidyverse`, `readxl`, and `ggplot2` provide the tools consultants actually need. You install a package once with `install.packages()` and load it each session with `library()`.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch01-why-r/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch01-why-r/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This workshop walks you through your very first R session — from basic arithmetic to creating variables that hold real MNH indicator data.
+
+### Your First Calculations
+
+```{r}
+#| label: first-calculations
+#| echo: true
+
+# R works as a calculator
+2 + 2
+100 / 4
+sqrt(144)
+
+# Neonatal deaths per 1,000 live births (NMR formula)
+# If a district had 45 neonatal deaths out of 3,200 live births:
+45 / 3200 * 1000
+```
+
+The last line computes a neonatal mortality rate (NMR) of about 14.1 per 1,000 live births. In a spreadsheet you might type this into a cell — in R, you write it as a formula that anyone can read, verify, and re-run.
+
+### Creating Variables
+
+```{r}
+#| label: creating-variables
+#| echo: true
+
+# Store values in named variables using the assignment operator <-
+neonatal_deaths <- 45
+live_births <- 3200
+
+# Now compute NMR from the stored values
+nmr <- neonatal_deaths / live_births * 1000
+nmr
+
+# Maternal mortality ratio (MMR): maternal deaths per 100,000 live births
+maternal_deaths <- 12
+mmr <- maternal_deaths / live_births * 100000
+mmr
+```
+
+Variable names should be descriptive and use `snake_case` (lowercase with underscores). This makes your code self-documenting — a colleague reading `neonatal_deaths / live_births * 1000` immediately understands the calculation without needing a comment.
+
+### Working with Multiple Values
+
+```{r}
+#| label: multiple-values
+#| echo: true
+
+# NMR for five countries (per 1,000 live births)
+country_names <- c("Ethiopia", "Tanzania", "Malawi", "Kenya", "Rwanda")
+nmr_values <- c(28.1, 20.3, 22.4, 18.6, 16.2)
+
+# R operates element-wise — no loops needed
+# Convert NMR to deaths per 10,000 births
+nmr_per_10k <- nmr_values * 10
+nmr_per_10k
+
+# Which country has the highest NMR?
+max(nmr_values)
+country_names[which.max(nmr_values)]
+```
+
+The `c()` function combines values into a **vector** — R's fundamental data structure. You will work with vectors constantly. Notice how `nmr_values * 10` multiplied every element at once; this vectorized behavior is what makes R powerful for data analysis.
+
+### Installing and Loading Packages
+
+```{r}
+#| label: installing-packages
+#| echo: true
+
+# Install the tidyverse (run this ONCE — it downloads from the internet)
+# install.packages("tidyverse")
+
+# Load it at the start of every script
+library(tidyverse)
+
+# Now you have access to dplyr, ggplot2, readr, and more
+# Quick example: create a tibble (modern data frame)
+mnh_data <- tibble(
+  country = country_names,
+  nmr = nmr_values
+)
+mnh_data
+```
+
+You only need to install a package once (like installing an app), but you must load it with `library()` every time you start a new R session (like opening the app).
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**R replaces spreadsheets** with a reproducible, scriptable workflow — essential for consulting teams that need to update analyses when new data arrives.
+
+**RStudio is your workspace.** Learn the four panes: Source (write code), Console (run code), Environment (see your data), Files/Plots/Help (everything else).
+
+**Variables store values, vectors store collections.** These are the building blocks for every analysis you will do in this course.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 2 — R Building Blocks**, we dive deeper into the data structures that power R:
+
+- Vectors and their four main types (numeric, character, logical, factor)
+- How R handles missing values (`NA`) — critical for real-world health data
+- Writing your own custom functions for MNH indicator calculations
+- Getting help with `?`, `help()`, and online resources

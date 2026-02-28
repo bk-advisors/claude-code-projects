@@ -1,0 +1,265 @@
+---
+title: "Chapter 9: Reproducible Reports with Quarto"
+subtitle: "Document structure, code chunks, output formats, and parameterized reports"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Explain the structure of a **Quarto document**: YAML header, markdown text, and code chunks
+- Use **code chunk options** (`echo`, `eval`, `warning`, `fig-width`) to control what appears in the rendered output
+- Insert **inline R code** to make narrative text update automatically when data changes
+- Render documents to **multiple output formats** (HTML, PDF, Word) from a single source file
+- Build a **parameterized report** that generates a separate country brief for every country in your dataset
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### Quarto Documents
+A `.qmd` file combines three elements: a **YAML header** (metadata like title, author, format), **markdown text** (narrative with headings, bold, lists), and **code chunks** (R code that runs and produces output). When you render the document, Quarto executes the code, captures the results, and weaves them into a polished document. The source file is plain text — version-controllable, reviewable, and reproducible.
+:::
+
+::: {.key-concept .green}
+#### Code Chunks
+Code chunks are fenced with ` ```{r} ` and ` ``` `. Chunk options (prefixed with `#|`) control behavior: `echo: true` shows the code, `eval: true` runs it, `warning: false` hides warnings, `fig-width: 8` sets the figure width. You decide what the reader sees: code + output, output only, or code only.
+:::
+
+::: {.key-concept .teal}
+#### Inline R Code
+Inline code uses backtick-r-expression syntax inside markdown text. For example, writing the expression `round(mean(nmr), 1)` as inline R produces a live number: "The mean NMR was 28.4 per 1,000 live births." When the data updates, the number in the sentence updates automatically. No more manually updating figures in your narrative — a major source of errors in traditional reporting.
+:::
+
+::: {.key-concept .orange}
+#### Output Formats
+A single `.qmd` file can render to HTML (for web sharing), PDF (for formal reports), and Word (for client editing). Change the format in the YAML header or render to all three at once. HTML is best for interactive documents; PDF for archival; Word for documents your client will edit.
+:::
+
+::: {.key-concept .red}
+#### Parameterized Reports
+Quarto documents can accept **parameters** — variables set in the YAML header that change the document's behavior. A country brief parameterized with `params: {country: "Ethiopia"}` filters all data, charts, and narrative to Ethiopia. You can then loop through all countries and render a separate brief for each — producing 10 country reports from a single template.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch09-quarto-reports/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch09-quarto-reports/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This workshop walks through building an MNH country brief — from document structure to parameterized rendering across all countries.
+
+### Document Structure
+
+```{r}
+#| label: document-structure
+#| echo: true
+
+# A Quarto document (.qmd) looks like this:
+#
+# ---
+# title: "MNH Country Brief"
+# author: "BK Advisors"
+# date: today
+# format: html
+# ---
+#
+# ## Background
+#
+# This report summarizes neonatal mortality indicators...
+#
+# ```{r}
+# library(tidyverse)
+# facility_data <- read_csv("data/facility_data.csv")
+# ```
+#
+# ## Key Findings
+#
+# The mean NMR was `r round(mean(facility_data$nmr, na.rm = TRUE), 1)`
+# per 1,000 live births.
+
+# The YAML header (between ---) sets metadata.
+# Markdown text provides narrative.
+# Code chunks produce analysis and charts.
+# Inline R dynamically inserts computed values.
+```
+
+Think of a Quarto document as a script that tells a story. The code produces the evidence (tables, charts, statistics), and the markdown wraps it in narrative context that explains what the numbers mean for your client. When the data updates, you re-render and the entire document updates — narrative included.
+
+### Building Summary Tables with kable
+
+```{r}
+#| label: kable-tables
+#| echo: true
+
+library(tidyverse)
+library(knitr)
+
+# Simulated facility data
+set.seed(42)
+facility_data <- tibble(
+  facility_id   = paste0("F", 1:60),
+  country       = rep(c("Ethiopia", "Tanzania", "Malawi"), each = 20),
+  facility_type = sample(c("hospital", "health_center", "health_post"),
+                          60, replace = TRUE),
+  live_births   = round(runif(60, 50, 500)),
+  neonatal_deaths = round(runif(60, 0, 20))
+) |>
+  mutate(nmr = round(neonatal_deaths / live_births * 1000, 1))
+
+# Create a summary table
+country_summary <- facility_data |>
+  group_by(country) |>
+  summarise(
+    Facilities     = n(),
+    `Total Births` = sum(live_births),
+    `Mean NMR`     = round(mean(nmr, na.rm = TRUE), 1),
+    `Median NMR`   = round(median(nmr, na.rm = TRUE), 1),
+    .groups = "drop"
+  )
+
+# Render as a formatted table
+kable(country_summary,
+      caption = "Table 1: MNH Indicators by Country",
+      align = c("l", "r", "r", "r", "r"))
+```
+
+`kable()` from the `knitr` package produces clean tables in HTML, PDF, and Word. For more advanced formatting (colors, conditional highlighting, footnotes), use `kableExtra`. In consulting reports, every table should have a caption (Table 1, Table 2...) and clear column headers.
+
+### Inline R for Dynamic Narrative
+
+```{r}
+#| label: inline-r-demo
+#| echo: true
+
+# Store key numbers for use in inline code
+total_facilities <- nrow(facility_data)
+total_births     <- sum(facility_data$live_births)
+overall_nmr      <- round(
+  sum(facility_data$neonatal_deaths) / sum(facility_data$live_births) * 1000,
+  1
+)
+worst_country    <- facility_data |>
+  group_by(country) |>
+  summarise(nmr = mean(nmr)) |>
+  slice_max(nmr, n = 1) |>
+  pull(country)
+
+# In your Quarto document, you would write:
+#
+# Our analysis covers `r total_facilities` facilities across three
+# countries, representing `r format(total_births, big.mark = ",")` live
+# births. The overall neonatal mortality rate is `r overall_nmr` per
+# 1,000 live births. `r worst_country` has the highest average NMR
+# and should be prioritized for intervention.
+```
+
+Inline R is the feature that makes Quarto reports truly reproducible. When new quarterly data arrives, you replace the CSV file, re-render the document, and every number in every sentence updates automatically. No manual find-and-replace, no risk of updating a table but forgetting to update the narrative.
+
+### Rendering to Multiple Formats
+
+```{r}
+#| label: multi-format
+#| echo: true
+
+# YAML header for multi-format output:
+#
+# ---
+# title: "MNH Country Brief"
+# author: "BK Advisors"
+# date: today
+# format:
+#   html:
+#     toc: true
+#     code-fold: true
+#   pdf:
+#     toc: true
+#     number-sections: true
+#   docx:
+#     toc: true
+#     reference-doc: bka-template.docx
+# ---
+#
+# Render from the terminal:
+# quarto render country-brief.qmd                  # renders all formats
+# quarto render country-brief.qmd --to html        # HTML only
+# quarto render country-brief.qmd --to pdf         # PDF only
+# quarto render country-brief.qmd --to docx        # Word only
+```
+
+The `reference-doc` option in the Word format lets you apply a branded Word template. Create a `bka-template.docx` with BK Advisors fonts, colors, and headers, and Quarto will apply that styling to every rendered document. This is how you produce client-ready Word documents directly from code.
+
+### Parameterized Reports
+
+```{r}
+#| label: parameterized-reports
+#| echo: true
+
+# YAML header with parameters:
+#
+# ---
+# title: "MNH Country Brief"
+# params:
+#   country: "Ethiopia"
+# ---
+
+# In the document body, filter everything by the parameter:
+#
+# ```{r}
+# country_data <- facility_data |>
+#   filter(country == params$country)
+# ```
+#
+# All subsequent analysis, charts, and inline R use `country_data`
+# instead of `facility_data`.
+
+# Render for a specific country from the terminal:
+# quarto render country-brief.qmd -P country:"Tanzania"
+
+# Loop to render for ALL countries (run in R):
+countries <- c("Ethiopia", "Tanzania", "Malawi", "Kenya", "Rwanda")
+
+for (cntry in countries) {
+  quarto::quarto_render(
+    input = "country-brief.qmd",
+    output_file = paste0("brief-", tolower(cntry), ".html"),
+    execute_params = list(country = cntry)
+  )
+}
+
+# This produces:
+# brief-ethiopia.html
+# brief-tanzania.html
+# brief-malawi.html
+# brief-kenya.html
+# brief-rwanda.html
+```
+
+Parameterized reports are the ultimate productivity tool for consulting. One template, five countries, five polished briefs — generated in seconds. When the next quarter's data arrives, you re-run the loop and all five briefs update. This is the power of combining R with Quarto: your analysis, visualization, and communication are all in one reproducible pipeline.
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Quarto unifies code, narrative, and output.** A single `.qmd` file produces a complete document — no more copying charts into Word and manually updating numbers.
+
+**Inline R eliminates manual errors.** Every number in your narrative is computed from the data. When the data changes, the narrative changes with it.
+
+**Parameterized reports scale your work.** Write one template, render it for every country, region, or quarter. This is how a small consulting team produces deliverables at the speed of a large one.
+:::
+
+## Looking Ahead
+
+This chapter completes the R for Management Consultants course. You now have the skills to:
+
+- Import, transform, and visualize MNH data in R
+- Build publication-quality charts with consistent branding
+- Compute descriptive statistics and interpret regression results
+- Produce automated, reproducible reports for clients
+
+The natural next step is the **Inference and Intervention** course, where you will apply causal modeling to the data analysis skills you have built here. The question shifts from "What does the data show?" to "What should we *do* about it?" — using directed acyclic graphs, do-calculus, and intervention analysis to move from correlation to actionable causal claims.

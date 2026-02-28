@@ -1,0 +1,250 @@
+---
+title: "Chapter 5: Reshaping & Joining Datasets"
+subtitle: "pivot_longer, pivot_wider, joins, and string basics"
+---
+
+## Learning Objectives
+
+::: {.learning-objectives}
+After this chapter, you will be able to:
+
+- Distinguish between **wide** and **long** data formats and explain when each is appropriate
+- Use `pivot_longer()` to convert wide DHIS2 exports into analysis-ready long format
+- Use `pivot_wider()` to create summary tables for reports and slide decks
+- Apply **joins** (`left_join`, `inner_join`, `anti_join`) to merge datasets from different sources
+- Use `stringr` functions to **clean and standardize** messy text data (facility names, region labels)
+:::
+
+## Key Concepts
+
+::: {.key-concept}
+#### Wide vs Long Format
+Wide format has one row per unit (e.g., one row per facility) with separate columns for each time period (Q1, Q2, Q3, Q4). Long format has one row per observation (e.g., one row per facility-quarter combination) with a single column for the value. Most R analysis and plotting functions expect long format; most reports and spreadsheets use wide format.
+:::
+
+::: {.key-concept .green}
+#### Pivot Operations
+`pivot_longer()` converts wide to long — it gathers multiple columns into key-value pairs. `pivot_wider()` does the reverse — it spreads key-value pairs into separate columns. These are the two most important data reshaping operations in the tidyverse, and you will use them constantly when working with quarterly DHIS2 data.
+:::
+
+::: {.key-concept .teal}
+#### Joins
+Joins combine two tables based on a shared key column (like `facility_id` or `country_code`). `left_join()` keeps all rows from the left table and adds matching data from the right. `inner_join()` keeps only rows that match in both tables. `anti_join()` returns rows from the left table that have *no* match in the right — invaluable for finding non-reporting facilities.
+:::
+
+::: {.key-concept .orange}
+#### String Cleaning with stringr
+Real-world data has inconsistent text: "Addis Ababa" vs "addis ababa" vs "ADDIS ABABA", trailing spaces, special characters. The `stringr` package provides `str_to_lower()`, `str_trim()`, `str_replace()`, and `str_detect()` to standardize text before joining or grouping. Dirty strings cause silent join failures — rows that should match but do not.
+:::
+
+::: {.key-concept .red}
+#### anti_join for Data Quality
+`anti_join(facilities, reports, by = "facility_id")` returns all facilities that did *not* appear in the reports table. This is the fastest way to find non-reporting facilities, unmatched records, or data gaps. In MNH work, the facilities that fail to report are often the ones most in need of support.
+:::
+
+## Lecture Slides
+
+::: {.slide-embed}
+<iframe src="../ch05-reshaping-joining/index.html"></iframe>
+<div class="slide-embed-footer">
+<a href="../ch05-reshaping-joining/index.html" target="_blank">Open slides full-screen &rarr;</a>
+</div>
+:::
+
+## R Code Workshop
+
+This workshop covers the two core data wrangling skills that distinguish intermediate R users from beginners: reshaping data between wide and long formats, and joining multiple datasets together.
+
+### Pivoting Quarterly Data from Wide to Long
+
+```{r}
+#| label: pivot-longer
+#| echo: true
+
+library(tidyverse)
+
+# Simulate quarterly DHIS2 data in wide format
+# (This is how data often arrives from health information systems)
+dhis2_wide <- tibble(
+  facility_id   = c("F001", "F002", "F003", "F004"),
+  facility_name = c("Jimma Hospital", "Hawassa HC", "Bahir Dar Hospital", "Mekelle HC"),
+  deliveries_q1 = c(320, 85, 410, 120),
+  deliveries_q2 = c(345, 90, 395, NA),
+  deliveries_q3 = c(310, NA, 420, 115),
+  deliveries_q4 = c(330, 88, 435, 125)
+)
+
+# Pivot to long format for analysis
+dhis2_long <- dhis2_wide |>
+  pivot_longer(
+    cols = starts_with("deliveries_"),
+    names_to = "quarter",
+    names_prefix = "deliveries_",
+    values_to = "deliveries"
+  )
+
+dhis2_long
+```
+
+After pivoting, each facility-quarter combination is its own row. This format is what `ggplot2` needs for plotting trends over time, and what `group_by(quarter)` needs for quarterly summaries. The `names_prefix` argument strips the "deliveries_" prefix so the quarter column contains just "q1", "q2", etc.
+
+### Pivoting from Long to Wide for Reports
+
+```{r}
+#| label: pivot-wider
+#| echo: true
+
+# Suppose you have a country-level summary in long format
+country_summary <- tibble(
+  country   = rep(c("Ethiopia", "Tanzania", "Malawi"), each = 2),
+  indicator = rep(c("NMR", "MMR"), 3),
+  value     = c(28.1, 412, 20.3, 321, 22.4, 349)
+)
+
+# Pivot to wide format for a report table
+country_summary |>
+  pivot_wider(
+    names_from = indicator,
+    values_from = value
+  )
+
+# Pivot quarterly long data back to wide for a spreadsheet export
+dhis2_long |>
+  pivot_wider(
+    names_from = quarter,
+    values_from = deliveries,
+    names_prefix = "deliveries_"
+  )
+```
+
+Use `pivot_wider()` when you need to create a table for a report or export to Excel. In consulting, your analysis happens in long format (one observation per row), but your deliverables are often in wide format (one country per row with indicators across columns).
+
+### Joining Datasets
+
+```{r}
+#| label: joins
+#| echo: true
+
+# Facility master list
+facilities <- tibble(
+  facility_id   = c("F001", "F002", "F003", "F004", "F005"),
+  facility_name = c("Jimma Hospital", "Hawassa HC", "Bahir Dar Hospital",
+                     "Mekelle HC", "Adama Hospital"),
+  facility_type = c("hospital", "health_center", "hospital",
+                     "health_center", "hospital"),
+  country       = c("Ethiopia", "Ethiopia", "Ethiopia",
+                     "Ethiopia", "Ethiopia")
+)
+
+# Monthly reporting data (F005 did not report)
+monthly_reports <- tibble(
+  facility_id = c("F001", "F002", "F003", "F004"),
+  month       = rep("2024-06", 4),
+  deliveries  = c(110, 28, 140, 42),
+  neo_deaths  = c(3, 1, 4, 2)
+)
+
+# left_join: keep ALL facilities, add report data where available
+facilities |>
+  left_join(monthly_reports, by = "facility_id")
+
+# inner_join: keep only facilities that reported
+facilities |>
+  inner_join(monthly_reports, by = "facility_id")
+
+# anti_join: find facilities that did NOT report
+facilities |>
+  anti_join(monthly_reports, by = "facility_id")
+```
+
+The `anti_join` at the end is the most important for data quality work. It reveals that Adama Hospital (F005) did not submit a report. In a real engagement, this list of non-reporters is what you would flag to the Ministry of Health or the regional health bureau.
+
+### Cleaning Strings Before Joining
+
+```{r}
+#| label: string-cleaning
+#| echo: true
+
+# Messy facility names from two different data sources
+source_a <- tibble(
+  name = c("Jimma University Hospital", "hawassa Health Center",
+           " Bahir Dar Hospital", "MEKELLE HC"),
+  beds = c(450, 30, 380, 25)
+)
+
+source_b <- tibble(
+  name = c("jimma university hospital", "Hawassa Health Center",
+           "Bahir Dar Hospital", "Mekelle HC"),
+  nmr = c(12.5, 18.3, 15.1, 22.7)
+)
+
+# Standardize names before joining
+clean_name <- function(x) {
+  x |>
+    str_to_lower() |>       # lowercase everything
+    str_trim() |>            # remove leading/trailing spaces
+    str_squish() |>          # collapse multiple spaces to one
+    str_replace_all("[^a-z0-9 ]", "")  # remove special characters
+}
+
+source_a_clean <- source_a |> mutate(name_clean = clean_name(name))
+source_b_clean <- source_b |> mutate(name_clean = clean_name(name))
+
+# Now the join works
+source_a_clean |>
+  left_join(source_b_clean, by = "name_clean") |>
+  select(name_clean, beds, nmr)
+```
+
+String cleaning is unglamorous but essential. Without the `clean_name()` function above, "Jimma University Hospital" and "jimma university hospital" would not match, and you would lose data. Build a cleaning function once and reuse it across all your join operations.
+
+### Combining Multiple Operations
+
+```{r}
+#| label: combined-reshape-join
+#| echo: true
+
+# Country-level targets
+targets <- tibble(
+  country = c("Ethiopia", "Tanzania", "Malawi"),
+  nmr_target = c(15, 15, 15)
+)
+
+# Full pipeline: reshape, join, compute, summarise
+dhis2_long |>
+  # Join with facility master data
+  left_join(facilities |> select(facility_id, facility_type, country),
+            by = "facility_id") |>
+  # Remove missing quarters
+  filter(!is.na(deliveries)) |>
+  # Summarise by country
+  group_by(country) |>
+  summarise(
+    total_deliveries = sum(deliveries),
+    reporting_quarters = n(),
+    .groups = "drop"
+  ) |>
+  # Join with targets
+  left_join(targets, by = "country")
+```
+
+This pipeline demonstrates the typical consulting workflow: import from multiple sources, reshape to a common format, join on shared keys, and summarise to the level your analysis requires. Each step is readable and verifiable.
+
+## Key Takeaways
+
+::: {.key-takeaway}
+**Pivot long for analysis, pivot wide for reports.** Most R functions expect long format. Most clients expect wide format. Master both directions.
+
+**Joins combine data sources; anti_join finds gaps.** In MNH work, the facilities missing from your reports are often the ones that need the most attention.
+
+**Clean your strings before joining.** Inconsistent capitalization, trailing spaces, and special characters cause silent data loss in joins. Build a reusable cleaning function.
+:::
+
+## Looking Ahead
+
+Next in **Chapter 6 — Data Visualization with ggplot2**, you will learn to create charts from your transformed data:
+
+- The grammar of graphics: data + aesthetics + geoms
+- Bar charts, scatter plots, line charts, histograms, and boxplots
+- Mapping variables to color, size, and shape
+- Choosing the right chart type for your data and your audience

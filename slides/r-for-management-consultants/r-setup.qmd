@@ -1,0 +1,126 @@
+---
+title: "R Environment Setup"
+subtitle: "Installing R, RStudio, and the required packages for this course"
+---
+
+## Required Software
+
+| Software | Version | Download |
+|----------|---------|----------|
+| **R** | 4.3 or later | [r-project.org](https://www.r-project.org/) |
+| **RStudio** (recommended IDE) | Latest | [posit.co/downloads](https://posit.co/download/rstudio-desktop/) |
+| **Quarto** (for Chapter 9) | 1.8 or later | [quarto.org](https://quarto.org/docs/get-started/) |
+
+::: {.callout-box}
+**Note:** The slide decks and this website use `eval: false` for all R code blocks, meaning R code is displayed but not executed during rendering. You do **not** need R installed to view the slides or website. However, to follow along with the exercises, you will need R and the packages below.
+:::
+
+## Package Installation
+
+Run this once in your R console to install all packages used across the 9 chapters:
+
+```{r}
+#| label: install-all
+#| eval: false
+
+install.packages(c(
+  "tidyverse",  # Includes dplyr, ggplot2, tidyr, readr, stringr, and more
+  "readxl",     # Reading Excel files
+  "scales",     # Axis formatting (percent, comma, dollar)
+  "patchwork",  # Multi-panel chart composition
+  "knitr"       # Tables in Quarto documents (kable)
+))
+```
+
+## Packages by Chapter
+
+| Package | Purpose | Chapters Used |
+|---------|---------|---------------|
+| (base R) | Vectors, data types, functions, basic stats | 1, 2, 8 |
+| `readr` | `read_csv` for data import | 3, 4, 5, 6, 7, 8, 9 |
+| `readxl` | `read_excel` for Excel files | 3 |
+| `dplyr` | Data transformation (filter, mutate, summarise) | 4, 5, 6, 7, 8, 9 |
+| `tidyr` | Reshaping data (pivot_longer, pivot_wider) | 5, 7 |
+| `stringr` | String manipulation basics | 5 |
+| `ggplot2` | Data visualization | 6, 7, 8, 9 |
+| `scales` | Axis formatting (percent, comma) | 7, 8 |
+| `patchwork` | Multi-panel chart layouts | 7 |
+| `knitr` | `kable` for tables in Quarto | 9 |
+
+## Verification Script
+
+After installing, run this script to verify all packages load correctly:
+
+```{r}
+#| label: verify-packages
+#| eval: false
+
+# Verification: load each package and print version
+packages <- c("readr", "readxl", "dplyr", "tidyr", "stringr",
+              "ggplot2", "scales", "patchwork", "knitr")
+
+for (pkg in packages) {
+  if (requireNamespace(pkg, quietly = TRUE)) {
+    cat(sprintf("✓ %s %s\n", pkg, packageVersion(pkg)))
+  } else {
+    cat(sprintf("✗ %s — NOT INSTALLED\n", pkg))
+  }
+}
+```
+
+Expected output (version numbers may vary):
+
+```
+✓ readr 2.1.5
+✓ readxl 1.4.3
+✓ dplyr 1.1.4
+✓ tidyr 1.3.1
+✓ stringr 1.5.1
+✓ ggplot2 3.5.1
+✓ scales 1.3.0
+✓ patchwork 1.2.0
+✓ knitr 1.45
+```
+
+## Troubleshooting
+
+### tidyverse installation issues on Windows
+
+If `install.packages("tidyverse")` fails:
+
+1. Install [Rtools](https://cran.r-project.org/bin/windows/Rtools/) (match the version to your R version)
+2. Restart R and try `install.packages("tidyverse")` again
+
+### Package installation behind a proxy
+
+If you are on a corporate network with a proxy, set it before installing:
+
+```{r}
+#| label: proxy-setup
+#| eval: false
+
+Sys.setenv(http_proxy = "http://your-proxy:port")
+Sys.setenv(https_proxy = "http://your-proxy:port")
+install.packages("tidyverse")
+```
+
+### readxl on older R versions
+
+If `readxl` installation fails, ensure your R version is 4.3 or later. Update R from [r-project.org](https://www.r-project.org/).
+
+## Consistent MNH Variables
+
+These variable names are used consistently across chapters in the R code examples:
+
+| Variable | Description | Example Values | R Name |
+|----------|-------------|----------------|--------|
+| Facility ID | Unique identifier | F001, F002, ... | `facility_id` |
+| Country | Country name | Ethiopia, Tanzania, Malawi, Mozambique, Kenya | `country` |
+| Facility Type | Level of care | Hospital, Health Center, Health Post | `facility_type` |
+| Staffing Level | Staff adequacy | Adequate, Low | `staffing_level` |
+| CPAP Available | Equipment status | TRUE / FALSE | `has_cpap` |
+| Delivery Volume | Monthly deliveries | 15--200 | `delivery_volume` |
+| NMR | Neonatal mortality rate | Per 1,000 live births | `nmr` |
+| MMR | Maternal mortality ratio | Per 100,000 live births | `mmr` |
+| ANC Coverage | Antenatal care coverage | 0--100% | `anc_coverage` |
+| Training | Training completion | TRUE / FALSE | `training_completed` |
