@@ -24,7 +24,12 @@
       "Bash(git diff:*)",
       "Bash(python:*)",
       "Bash(\"C:\\\\Users\\\\HP\\\\AppData\\\\Local\\\\Microsoft\\\\WindowsApps\\\\python.exe\" -c \"import matplotlib; print\\(matplotlib.__version__\\)\")",
-      "Bash(do wc -l \"$f\")"
+      "Bash(do wc -l \"$f\")",
+      "Bash(du:*)",
+      "Bash(do cp \"../inference-and-intervention/ch01-intro/custom.scss\" \"$dir/custom.scss\")",
+      "Bash(grep:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

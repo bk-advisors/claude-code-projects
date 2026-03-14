@@ -1,0 +1,418 @@
+---
+title: "Chart Reengineering 03 — Measles Vaccination Heatmap for Africa"
+subtitle: "Real WHO data showing how mass immunization campaigns transformed a continent"
+format: html
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, fig.width = 12, fig.height = 14)
+```
+
+## About This Lesson
+
+Lessons [01](01-vaccination-heatmap.qmd) and [02](02-vaccination-heatmap-original.qmd) used synthetic MNH data and the original US measles dataset. This lesson tells the **real story of measles vaccination in Africa** using WHO surveillance data and World Bank population estimates — 46 countries across 44 years.
+
+The landmark year is **2001**, when the WHO/UNICEF **Measles & Rubella Initiative** launched targeted supplementary immunization activities (SIAs) across Africa. Within a decade, reported measles cases dropped by over 90% in most countries.
+
+### Data Sources
+
+The pre-processed CSV (`data/africa_measles.csv`) was built from two public APIs:
+
+| Source | Indicator | What It Provides |
+|--------|-----------|-----------------|
+| [WHO Global Health Observatory](https://www.who.int/data/gho) | `WHS3_62` | Measles reported cases by country, 1980-2023 |
+| [World Bank Open Data](https://data.worldbank.org) | `SP.POP.TOTL` | Total population by country, 1980-2023 |
+
+To regenerate the data from scratch, run `source("../data/prep_africa_measles.R")` (requires `jsonlite`).
+
+### Techniques You Will Practice
+
+| Technique | Function | From Lesson |
+|-----------|----------|-------------|
+| Heatmap grid | `geom_tile()` | 1.4 — Geometries |
+| Multi-stop color gradient | `scale_fill_gradientn()` | 2.4 — Palettes |
+| Squish outliers into gradient range | `oob = scales::squish` | 2.4 — Palettes |
+| Y-axis ordering with factors | `factor(levels = ...)` | 1.2 — Aesthetics |
+| Vertical reference line | `geom_vline()` | 3.2 — Annotations |
+| Floating text label | `annotate("text")` | 3.2 — Annotations |
+| Minto-style insight title | `labs()` | 3.1 — Titles & Captions |
+| Continuous color legend | `guide_colourbar()` | 2.5 — Legend Styling |
+| Axis formatting | `scale_x_continuous()` | 1.7 — Scales |
+| Custom theme + overrides | `theme_bka()` | 2.2 — Custom Themes |
+
+## The Answer
+
+A publication-ready heatmap of measles cases per million across 46 African countries from 1980-2023, with a reference line marking the 2001 WHO/UNICEF Measles Initiative:
+
+```{r the-answer}
+library(ggplot2)
+library(dplyr)
+source("../../synthesized-lessons/_common/theme_bka.R")
+
+# ---- Load pre-processed data ----
+# Built from WHO GHO API (cases) + World Bank API (population)
+# To regenerate: source("../data/prep_africa_measles.R")
+africa_measles <- read.csv("../data/africa_measles.csv")
+
+# ---- Sort countries by average pre-2001 case rate (highest at top) ----
+# See Lesson 1.2 (Aesthetics) — factor() with custom levels for y-axis ordering
+country_order <- africa_measles %>%
+  filter(year < 2001) %>%
+  group_by(country) %>%
+  summarise(avg_rate = mean(cases_per_million, na.rm = TRUE), .groups = "drop") %>%
+  arrange(avg_rate) %>%
+  pull(country)
+
+africa_measles <- africa_measles %>%
+  mutate(country = factor(country, levels = country_order))
+
+# ---- BKA multi-stop gradient ----
+# See Lesson 2.4 (Palettes) — colorRampPalette() creates smooth multi-stop gradients
+# Asymmetric split: 15 steps for low-mid range, 5 for high = visual urgency at top end
+measles_gradient <- c(
+  colorRampPalette(c("#ACCBF9", "#005CB9", "#83BD00", "#F8A623"))(15),
+  colorRampPalette(c("#F8A623", "#FA7650", "#E24A3F"))(5)
+)
+
+# ---- The heatmap ----
+ggplot(africa_measles, aes(x = year, y = country, fill = cases_per_million)) +
+  # See Lesson 1.4 (Geometries) — geom_tile() with white borders
+  geom_tile(colour = "white", linewidth = 0.4,
+            width = 0.9, height = 0.9) +    # Tufte: white space between tiles
+  # See Lesson 2.4 (Palettes) — scale_fill_gradientn() for multi-stop gradients
+  scale_fill_gradientn(
+    colours = measles_gradient,
+    limits = c(0, 5000),
+    breaks = seq(0, 5000, by = 1000),
+    labels = c("0", "1K", "2K", "3K", "4K", "5K"),
+    na.value = "#F5F5F5",
+    name = "Reported cases per million population",
+    oob = scales::squish,    # Squish outliers beyond 5000 to the max color
+    # See Lesson 2.5 (Legend Styling) — guide_colourbar() for continuous legends
+    guide = guide_colourbar(
+      barwidth = 15, barheight = 0.6,
+      title.position = "top",
+      title.hjust = 0.5,
+      ticks = TRUE, nbin = 50
+    )
+  ) +
+  # See Lesson 1.7 (Scales) — expand = c(0,0) removes padding
+  scale_x_continuous(expand = c(0, 0),
+                     breaks = seq(1980, 2020, by = 5)) +
+  # See Lesson 3.2 (Annotations) — geom_vline() marks a policy milestone
+  geom_vline(xintercept = 2001, color = bka_colors$title_dark,
+             linewidth = 1.2, alpha = 0.8) +    # Cairo: annotations are essential, not optional
+  # See Lesson 3.2 (Annotations) — annotate("text") for floating labels
+  annotate("text", label = "WHO/UNICEF\nMeasles Initiative",
+           x = 2001, y = length(country_order) + 0.5,
+           hjust = -0.05, vjust = 1,
+           size = 4, fontface = "bold", family = "Lato",
+           color = bka_colors$title_dark) +
+  coord_cartesian(clip = "off") +    # Prevent annotation text from being clipped
+  # See Lesson 3.1 (Titles & Captions) — Minto-style title states the insight
+  labs(
+    title = "Mass immunization campaigns cut African measles cases by over 90%\nbut outbreaks persist where coverage gaps remain",
+    subtitle = "Reported measles cases per million population by country, 1980-2023",
+    x = NULL, y = NULL,
+    caption = paste0(
+      "Source: WHO Global Health Observatory (cases) & World Bank (population) | ",
+      "Countries with 15+ years of reporting shown\n",
+      "Original inspiration: r-graph-gallery.com/vaccination-heatmap.html"
+    )
+  ) +
+  # See Lesson 2.2 (Custom Themes) — theme_bka() + heatmap-specific overrides
+  theme_bka() +
+  theme(
+    panel.grid = element_blank(),    # Tufte: no gridlines for heatmaps
+    axis.line = element_blank(),
+    axis.text.y = element_text(size = 9, face = "bold", family = "Lato", hjust = 1),    # Few: readable with many rows
+    axis.text.x = element_text(size = 8),
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.title = element_text(size = 9, face = "bold",
+                                color = bka_colors$title_dark),
+    legend.text = element_text(size = 8, color = bka_colors$subtitle_gray),
+    plot.title = element_text(lineheight = 1.15),
+    plot.margin = margin(15, 15, 25, 15)
+  )
+```
+
+## Key Insight
+
+> **Real-world data tells a more complex story than synthetic data.** The US measles heatmap shows a clean before/after break. Africa's version reveals the same dramatic decline, but also the reality of periodic outbreaks when vaccination coverage slips — a pattern invisible in tidy synthetic datasets. Missing data (gray tiles) is itself informative, showing gaps in surveillance infrastructure.
+
+## Building Blocks
+
+### Step 1: Load and inspect the data
+
+The CSV was pre-built from WHO and World Bank APIs (see `../data/prep_africa_measles.R`). Each row is one country-year with reported cases, population, and the per-million rate.
+
+```{r step-1-load}
+library(ggplot2)
+library(dplyr)
+source("../../synthesized-lessons/_common/theme_bka.R")
+
+africa_measles <- read.csv("../data/africa_measles.csv")
+
+cat("Countries:", length(unique(africa_measles$country)), "\n")
+cat("Year range:", min(africa_measles$year), "-", max(africa_measles$year), "\n")
+cat("Cases per million range:", round(min(africa_measles$cases_per_million)),
+    "-", round(max(africa_measles$cases_per_million)), "\n")
+```
+
+46 countries, 1980-2023. The cases_per_million variable ranges from 0 to over 30,000 — a massive range that we'll handle with `oob = scales::squish`.
+
+### Step 2: Order countries by disease burden
+
+Alphabetical order is the default, but it tells no story. Sorting by pre-2001 average case rate puts the highest-burden countries at the top — where the visual drama is greatest.
+
+```{r step-2-order}
+# See Lesson 1.2 (Aesthetics) — factor() with custom levels for meaningful y-axis order
+country_order <- africa_measles %>%
+  filter(year < 2001) %>%
+  group_by(country) %>%
+  summarise(avg_rate = mean(cases_per_million, na.rm = TRUE), .groups = "drop") %>%
+  arrange(avg_rate) %>%
+  pull(country)
+
+africa_measles <- africa_measles %>%
+  mutate(country = factor(country, levels = country_order))
+
+# Top 5 highest-burden countries (pre-2001)
+tail(country_order, 5)
+```
+
+### Step 3: Basic heatmap
+
+```{r step-3-basic, fig.height=14}
+# See Lesson 1.4 (Geometries) — geom_tile() creates a heatmap grid
+ggplot(africa_measles, aes(x = year, y = country, fill = cases_per_million)) +
+  geom_tile(colour = "white", linewidth = 0.4,
+            width = 0.9, height = 0.9) +    # Tufte: tile spacing improves readability
+  labs(title = "Step 3: Basic heatmap — default gradient hides the story") +
+  theme_bka() +
+  theme(panel.grid = element_blank(),
+        axis.text.y = element_text(size = 9, face = "bold"))
+```
+
+The default gradient compresses everything because of extreme outliers. We need `scale_fill_gradientn()` with `oob = scales::squish` to handle the range.
+
+### Step 4: Apply BKA gradient with outlier squishing
+
+The data ranges from 0 to 33,000+ cases per million. Setting `limits = c(0, 5000)` captures 95% of the data; `oob = scales::squish` maps outliers beyond 5,000 to the maximum gradient color instead of turning them gray.
+
+```{r step-4-gradient, fig.height=14}
+# See Lesson 2.4 (Palettes) — colorRampPalette() + asymmetric split
+measles_gradient <- c(
+  colorRampPalette(c("#ACCBF9", "#005CB9", "#83BD00", "#F8A623"))(15),
+  colorRampPalette(c("#F8A623", "#FA7650", "#E24A3F"))(5)
+)
+
+# See Lesson 2.4 (Palettes) — scale_fill_gradientn() for multi-stop gradients
+ggplot(africa_measles, aes(x = year, y = country, fill = cases_per_million)) +
+  geom_tile(colour = "white", linewidth = 0.4,
+            width = 0.9, height = 0.9) +
+  scale_fill_gradientn(
+    colours = measles_gradient,
+    limits = c(0, 5000),
+    na.value = "#F5F5F5",
+    oob = scales::squish,    # Values above 5000 get the max color, not gray
+    name = "Cases per million"
+  ) +
+  labs(title = "Step 4: BKA gradient with squished outliers — pattern emerges") +
+  theme_bka() +
+  theme(panel.grid = element_blank(),
+        axis.text.y = element_text(size = 9, face = "bold"))
+```
+
+Now the before/after pattern is visible: warm colors on the left (pre-2001), cooler colors on the right (post-2001).
+
+### Step 5: Add the 2001 reference line and annotation
+
+```{r step-5-annotation, fig.height=14}
+ggplot(africa_measles, aes(x = year, y = country, fill = cases_per_million)) +
+  geom_tile(colour = "white", linewidth = 0.4,
+            width = 0.9, height = 0.9) +
+  scale_fill_gradientn(
+    colours = measles_gradient,
+    limits = c(0, 5000),
+    na.value = "#F5F5F5",
+    oob = scales::squish,
+    name = "Cases per million"
+  ) +
+  scale_x_continuous(expand = c(0, 0), breaks = seq(1980, 2020, by = 5)) +
+  # See Lesson 3.2 (Annotations) — geom_vline() + annotate("text")
+  geom_vline(xintercept = 2001, color = bka_colors$title_dark,
+             linewidth = 1.2, alpha = 0.8) +    # Cairo: annotations anchor the narrative
+  annotate("text", label = "WHO/UNICEF\nMeasles Initiative",
+           x = 2001, y = length(country_order) + 0.5,
+           hjust = -0.05, vjust = 1,
+           size = 4, fontface = "bold", family = "Lato",
+           color = bka_colors$title_dark) +
+  coord_cartesian(clip = "off") +
+  labs(title = "Step 5: The 2001 reference line anchors the before/after story") +
+  theme_bka() +
+  theme(panel.grid = element_blank(),
+        axis.text.y = element_text(size = 9, face = "bold"))
+```
+
+In 2001, the WHO/UNICEF Measles & Rubella Initiative launched targeted supplementary immunization activities (SIAs) across Africa. The reference line shows where the color regime shifts from warm to cool for most countries.
+
+### Step 6: Final polish — Minto title, legend, and BKA styling
+
+```{r step-6-final, fig.height=14}
+ggplot(africa_measles, aes(x = year, y = country, fill = cases_per_million)) +
+  geom_tile(colour = "white", linewidth = 0.4,
+            width = 0.9, height = 0.9) +
+  scale_fill_gradientn(
+    colours = measles_gradient,
+    limits = c(0, 5000),
+    breaks = seq(0, 5000, by = 1000),
+    labels = c("0", "1K", "2K", "3K", "4K", "5K"),
+    na.value = "#F5F5F5",
+    name = "Reported cases per million population",
+    oob = scales::squish,
+    # See Lesson 2.5 (Legend Styling) — guide_colourbar() for continuous legends
+    guide = guide_colourbar(
+      barwidth = 15, barheight = 0.6,
+      title.position = "top", title.hjust = 0.5,
+      ticks = TRUE, nbin = 50
+    )
+  ) +
+  scale_x_continuous(expand = c(0, 0), breaks = seq(1980, 2020, by = 5)) +
+  geom_vline(xintercept = 2001, color = bka_colors$title_dark,
+             linewidth = 1.2, alpha = 0.8) +
+  annotate("text", label = "WHO/UNICEF\nMeasles Initiative",
+           x = 2001, y = length(country_order) + 0.5,
+           hjust = -0.05, vjust = 1,
+           size = 4, fontface = "bold", family = "Lato",
+           color = bka_colors$title_dark) +
+  coord_cartesian(clip = "off") +
+  # See Lesson 3.1 (Titles & Captions) — Minto-style insight title
+  labs(
+    title = "Mass immunization campaigns cut African measles cases by over 90%\nbut outbreaks persist where coverage gaps remain",
+    subtitle = "Reported measles cases per million population by country, 1980-2023",
+    x = NULL, y = NULL,
+    caption = paste0(
+      "Source: WHO Global Health Observatory (cases) & World Bank (population) | ",
+      "Countries with 15+ years of reporting shown\n",
+      "Original inspiration: r-graph-gallery.com/vaccination-heatmap.html"
+    )
+  ) +
+  # See Lesson 2.2 (Custom Themes) — theme_bka() + heatmap-specific overrides
+  theme_bka() +
+  theme(
+    panel.grid = element_blank(),    # Tufte: no gridlines for heatmaps
+    axis.line = element_blank(),
+    axis.text.y = element_text(size = 9, face = "bold", family = "Lato", hjust = 1),    # Few: readable with many rows
+    axis.text.x = element_text(size = 8),
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.title = element_text(size = 9, face = "bold",
+                                color = bka_colors$title_dark),
+    legend.text = element_text(size = 8, color = bka_colors$subtitle_gray),
+    plot.title = element_text(lineheight = 1.15),
+    plot.margin = margin(15, 15, 25, 15)
+  )
+```
+
+## Three Heatmaps Compared
+
+| Dimension | 01 — MNH (Synthetic) | 02 — US Measles (Original) | 03 — Africa Measles (This Lesson) |
+|-----------|---------------------|---------------------------|----------------------------------|
+| Data source | Local CSV | GitHub CSV | WHO + World Bank (pre-processed) |
+| Rows | 8 regions | 51 states | 46 countries |
+| Columns | 11 years | 84 years | 44 years |
+| Metric | MMR per 100k | Cases per million | Cases per million |
+| Reference line | 2020 HSTP II | 1963 vaccine | 2001 WHO/UNICEF Initiative |
+| Missing data | None | Some (pre-reporting) | Common (surveillance gaps) |
+| Outlier handling | None needed | None needed | `oob = scales::squish` |
+
+## Data Notes
+
+**What makes this chart different from the US version:**
+
+1. **Missing data is real.** Gray tiles represent years where a country didn't report to WHO — this is itself informative, showing gaps in surveillance infrastructure.
+
+2. **Outbreaks recur.** Unlike the US chart's clean post-vaccine silence, Africa shows periodic red spikes even after 2001. These represent real outbreaks when vaccination coverage dips below herd immunity thresholds (~95% for measles).
+
+3. **The rollout was gradual.** Africa's EPI (Expanded Programme on Immunization) began incorporating measles vaccine in the late 1970s-1980s, but mass supplementary campaigns didn't accelerate until 2001. Some countries show early declines; others were late adopters.
+
+4. **Per-capita normalization matters.** Without dividing by population, Nigeria's absolute case count would dominate the entire chart. Cases per million makes countries comparable. The data prep script (`../data/prep_africa_measles.R`) handles this join.
+
+5. **Extreme outliers need squishing.** Some country-years exceed 30,000 cases per million. `oob = scales::squish` maps these to the gradient maximum instead of showing them as gray NA tiles.
+
+### How the data was prepared
+
+The CSV was generated by `../data/prep_africa_measles.R`, which:
+
+1. Loads measles case counts from the WHO GHO API (`jsonlite::fromJSON()`)
+2. Loads population from the World Bank API
+3. Joins on country code + year
+4. Computes `cases_per_million = cases / population * 1e6`
+5. Maps ISO3 codes to country names via the WHO dimension lookup
+6. Filters to countries with 15+ years of reporting
+
+To refresh the data, re-run the prep script (requires internet and the `jsonlite` package).
+
+## Quick Reference
+
+| Technique | Function | Key Arguments | Lesson |
+|-----------|----------|---------------|--------|
+| Load local CSV | `read.csv()` | File path | — |
+| Y-axis ordering | `factor(levels = ...)` | Custom sort order | 1.2 — Aesthetics |
+| Heatmap grid | `geom_tile()` | `colour`, `linewidth`, `width`, `height` | 1.4 — Geometries |
+| Multi-stop gradient | `scale_fill_gradientn()` | `colours`, `limits`, `oob` | 2.4 — Palettes |
+| Squish outliers | `oob = scales::squish` | Inside `scale_fill_*()` | 2.4 — Palettes |
+| Generate gradient | `colorRampPalette()` | Hex vectors, `(n)` | 2.4 — Palettes |
+| Reference line | `geom_vline()` | `xintercept` | 3.2 — Annotations |
+| Floating text | `annotate("text")` | `x`, `y`, `label` | 3.2 — Annotations |
+| Colorbar legend | `guide_colourbar()` | `barwidth`, `barheight` | 2.5 — Legend Styling |
+| Axis formatting | `scale_x_continuous()` | `expand`, `breaks` | 1.7 — Scales |
+| Minto title | `labs(title = "...")` | Insight-first | 3.1 — Titles & Captions |
+| Custom theme | `theme_bka()` + overrides | `panel.grid = element_blank()` | 2.2 — Custom Themes |
+
+## Your Turn
+
+Try filtering the heatmap to just the **"meningitis belt"** countries (Burkina Faso, Chad, Ethiopia, Mali, Niger, Nigeria, Senegal, Sudan) to see if the pattern differs for this high-burden sub-region.
+
+```{r your-turn, eval=FALSE}
+belt_countries <- c("Burkina Faso", "Chad", "Ethiopia", "Mali",
+                    "Niger", "Nigeria", "Senegal", "___")
+
+belt_measles <- africa_measles %>%
+  filter(country %in% ___) %>%
+  mutate(country = factor(country, levels = ___))
+
+ggplot(belt_measles, aes(x = year, y = country, fill = cases_per_million)) +
+  geom_tile(colour = "white", linewidth = ___,
+            width = ___, height = ___) +
+  scale_fill_gradientn(
+    colours = measles_gradient,
+    limits = c(___, ___),
+    oob = scales::squish,
+    name = "___",
+    guide = guide_colourbar(
+      barwidth = ___, barheight = ___,
+      title.position = "top", title.hjust = 0.5
+    )
+  ) +
+  scale_x_continuous(expand = c(0, 0), breaks = ___) +
+  geom_vline(xintercept = ___, color = bka_colors$title_dark) +
+  annotate("text", label = "___", x = ___, y = ___,
+           hjust = -0.05, size = 3, family = "Lato",
+           color = bka_colors$title_dark) +
+  labs(
+    title = "___",
+    subtitle = "Meningitis belt countries — measles cases per million, 1980-2023",
+    x = NULL, y = NULL,
+    caption = "___"
+  ) +
+  theme_bka() +
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_blank(),
+    legend.position = "bottom",
+    legend.direction = "horizontal"
+  )
+```

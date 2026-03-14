@@ -1,0 +1,361 @@
+---
+title: "Chart Reengineering 02 — Vaccination Heatmap (Original Data)"
+subtitle: "Faithful recreation of the R Graph Gallery's measles heatmap with BKA styling"
+format: html
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, fig.width = 12, fig.height = 10)
+```
+
+## About This Lesson
+
+This is the companion to [01-vaccination-heatmap.qmd](01-vaccination-heatmap.qmd), which adapted the chart to Ethiopian MNH data. Here we recreate the **original chart** using the actual US measles dataset — 51 states across 84 years (1928-2011). Compare the two side by side to see how the same structural pattern works at very different data scales.
+
+Original: [r-graph-gallery.com/vaccination-heatmap.html](https://r-graph-gallery.com/vaccination-heatmap.html)
+
+## The Answer
+
+The original vaccination heatmap, rebuilt with BKA typography and styling:
+
+```{r the-answer}
+library(ggplot2)
+library(dplyr)
+library(readr)
+source("../../synthesized-lessons/_common/theme_bka.R")
+
+# Load the original measles dataset from R Graph Gallery
+measles <- read_csv("https://raw.githubusercontent.com/holtzy/R-graph-gallery/refs/heads/master/measles_data_1928-2011.csv")
+
+# See Lesson 1.2 (Aesthetics) — factor() with rev() for reverse-alphabetical y-axis
+measles <- measles %>%
+  mutate(State = factor(State, levels = rev(sort(unique(State)))))
+
+# See Lesson 2.4 (Palettes) — colorRampPalette() creates a smooth multi-stop gradient
+# Original chart uses asymmetric split: 20 steps for low-mid, 80 for high
+# This compresses the upper range into intense reds — visual urgency for outbreaks
+cols <- c(
+  colorRampPalette(c("#e7f0fa", "#c9e2f6", "#95cbee",
+                     "#0099dc", "#4ab04a", "#ffd73e",
+                     "#eec73a", "#e29421"))(20),
+  colorRampPalette(c("#e29421", "#f05336", "#ce472e"))(80)
+)
+
+ggplot(measles, aes(x = Year, y = State, fill = value)) +
+  # See Lesson 1.4 (Geometries) — geom_tile() with white borders and sub-1.0 dimensions
+  geom_tile(colour = "white", linewidth = 0.5,
+            width = 0.9, height = 0.9) +    # Tufte: white space between tiles improves readability
+  # See Lesson 2.4 (Palettes) — scale_fill_gradientn() for multi-stop continuous gradients
+  scale_fill_gradientn(
+    colours = cols,
+    limits = c(0, 4000),
+    breaks = seq(0, 4000, by = 1000),
+    labels = c("0k", "1k", "2k", "3k", "4k"),
+    na.value = rgb(246/255, 246/255, 246/255),
+    name = "Cases per million",
+    # See Lesson 2.5 (Legend Styling) — guide_colourbar() for continuous fill legends
+    guide = guide_colourbar(
+      barwidth = 15, barheight = 0.6,
+      title.position = "top",
+      title.hjust = 0.5,
+      ticks = TRUE, nbin = 50
+    )
+  ) +
+  # See Lesson 1.7 (Scales) — expand = c(0,0) removes padding; breaks set tick marks
+  scale_x_continuous(expand = c(0, 0),
+                     breaks = seq(1930, 2010, by = 10),
+                     limits = c(1928, 2012)) +
+  # See Lesson 3.2 (Annotations) — geom_vline() marks a policy milestone
+  geom_vline(xintercept = 1963, color = bka_colors$title_dark,
+             linewidth = 0.5) +    # Cairo: annotations are essential, not optional
+  # See Lesson 3.2 (Annotations) — annotate("text") for floating labels
+  annotate("text", label = "Vaccine\nintroduced",
+           x = 1963, y = 53,
+           hjust = -0.1, vjust = 0.9,
+           size = 3, family = "Lato",
+           color = bka_colors$title_dark) +
+  # See Lesson 3.1 (Titles & Captions) — Minto-style title states the insight
+  labs(
+    title = "Measles vaccination in 1963 nearly eliminated outbreaks within a decade",
+    subtitle = "Measles cases per million by US state, 1928-2011",
+    x = NULL, y = NULL,
+    caption = "Source: Project Tycho / R Graph Gallery | Recreated with BKA styling"
+  ) +
+  # See Lesson 2.2 (Custom Themes) — theme_bka() + heatmap-specific overrides
+  theme_bka() +
+  theme(
+    panel.grid = element_blank(),    # Tufte: no gridlines for heatmaps — tiles ARE the data
+    axis.line = element_blank(),
+    axis.text.y = element_text(size = 6, family = "Lato", hjust = 1),    # Few: small text for 51 states
+    axis.text.x = element_text(size = 8),
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.title = element_text(size = 9, face = "bold",
+                                color = bka_colors$title_dark),
+    legend.text = element_text(size = 8, color = bka_colors$subtitle_gray),
+    plot.margin = margin(15, 15, 25, 15)
+  )
+```
+
+## Key Insight
+
+> **The most powerful heatmaps encode a clear before/after story.** The 1963 vaccine line splits the chart into two unmistakable color regimes — hot reds on the left, cool blues on the right. When your data has a structural break, a single reference line can do more narrative work than paragraphs of text.
+
+## Building Blocks
+
+### Step 1: Load and inspect the original data
+
+The dataset has ~4,300 rows: 51 states across 84 years, with measles cases per million as the value.
+
+```{r step-1-data}
+library(ggplot2)
+library(dplyr)
+library(readr)
+source("../../synthesized-lessons/_common/theme_bka.R")
+
+measles <- read_csv("https://raw.githubusercontent.com/holtzy/R-graph-gallery/refs/heads/master/measles_data_1928-2011.csv")
+
+# See Lesson 1.2 (Aesthetics) — factor() controls y-axis display order
+measles <- measles %>%
+  mutate(State = factor(State, levels = rev(sort(unique(State)))))
+
+glimpse(measles)
+```
+
+The `value` column ranges from 0 to over 3,000 cases per million, with many NAs (states that didn't report in early years).
+
+### Step 2: Basic heatmap — 51 states x 84 years
+
+At this scale (4,284 tiles), you immediately see why heatmaps work: no other geometry can show this much data in one view.
+
+```{r step-2-basic}
+# See Lesson 1.4 (Geometries) — geom_tile() creates a heatmap grid
+ggplot(measles, aes(x = Year, y = State, fill = value)) +
+  geom_tile() +
+  labs(title = "Step 2: Basic heatmap — default gradient hides the story") +
+  theme_bka() +
+  theme(axis.text.y = element_text(size = 5))
+```
+
+The default gradient compresses everything into a uniform blue wash. We need a gradient that makes outbreaks visually alarming.
+
+### Step 3: Tile spacing at scale
+
+With 4,000+ tiles, the white borders create a subtle texture that helps the eye track rows and columns.
+
+```{r step-3-spacing}
+# See Lesson 1.4 (Geometries) — colour, linewidth, width, height for tile appearance
+ggplot(measles, aes(x = Year, y = State, fill = value)) +
+  geom_tile(colour = "white", linewidth = 0.5,
+            width = 0.9, height = 0.9) +    # Tufte: white space between tiles
+  labs(title = "Step 3: White borders separate each state-year cell") +
+  theme_bka() +
+  theme(panel.grid = element_blank(),
+        axis.text.y = element_text(size = 5))
+```
+
+### Step 4: The original multi-stop gradient
+
+This is the signature design choice. The asymmetric 20/80 split means most of the gradient's visual range is spent on the high values (outbreaks), while the low values (post-vaccine era) compress into cool blues.
+
+```{r step-4-gradient}
+# See Lesson 2.4 (Palettes) — colorRampPalette() for smooth multi-stop gradients
+# Original chart: 20 steps for 8 anchor colors (low-mid), 80 steps for 3 anchor colors (high)
+cols <- c(
+  colorRampPalette(c("#e7f0fa", "#c9e2f6", "#95cbee",
+                     "#0099dc", "#4ab04a", "#ffd73e",
+                     "#eec73a", "#e29421"))(20),
+  colorRampPalette(c("#e29421", "#f05336", "#ce472e"))(80)
+)
+
+# See Lesson 2.4 (Palettes) — scale_fill_gradientn() maps data to gradient
+ggplot(measles, aes(x = Year, y = State, fill = value)) +
+  geom_tile(colour = "white", linewidth = 0.5,
+            width = 0.9, height = 0.9) +
+  scale_fill_gradientn(
+    colours = cols,
+    limits = c(0, 4000),
+    breaks = seq(0, 4000, by = 1000),
+    labels = c("0k", "1k", "2k", "3k", "4k"),
+    na.value = rgb(246/255, 246/255, 246/255),    # Light gray for missing data
+    name = "Cases per million"
+  ) +
+  labs(title = "Step 4: Asymmetric gradient — outbreaks pop, post-vaccine fades") +
+  theme_bka() +
+  theme(panel.grid = element_blank(),
+        axis.text.y = element_text(size = 5))
+```
+
+Why asymmetric? With a symmetric gradient, the rare extreme values (3,000+ per million) would dominate and the moderate outbreaks (500-1,500) would look identical to low values. The 20/80 split ensures the *entire* pre-vaccine era reads as visually intense.
+
+### Step 5: The 1963 reference line
+
+This is the annotation that transforms the chart from "a wall of color" into "a story about vaccination."
+
+```{r step-5-reference-line}
+ggplot(measles, aes(x = Year, y = State, fill = value)) +
+  geom_tile(colour = "white", linewidth = 0.5,
+            width = 0.9, height = 0.9) +
+  scale_fill_gradientn(
+    colours = cols, limits = c(0, 4000),
+    breaks = seq(0, 4000, by = 1000),
+    labels = c("0k", "1k", "2k", "3k", "4k"),
+    na.value = rgb(246/255, 246/255, 246/255),
+    name = "Cases per million"
+  ) +
+  scale_x_continuous(expand = c(0, 0),
+                     breaks = seq(1930, 2010, by = 10),
+                     limits = c(1928, 2012)) +
+  # See Lesson 3.2 (Annotations) — geom_vline() for reference lines
+  geom_vline(xintercept = 1963, color = bka_colors$title_dark,
+             linewidth = 0.5) +    # Cairo: annotations are essential, not optional
+  # See Lesson 3.2 (Annotations) — annotate("text") for floating labels
+  annotate("text", label = "Vaccine\nintroduced",
+           x = 1963, y = 53,
+           hjust = -0.1, vjust = 0.9,
+           size = 3, family = "Lato",
+           color = bka_colors$title_dark) +
+  labs(title = "Step 5: The 1963 line splits the chart into two color regimes") +
+  theme_bka() +
+  theme(panel.grid = element_blank(),
+        axis.text.y = element_text(size = 5))
+```
+
+The label sits at `y = 53`, slightly above the 51 state rows. This is the same `annotate("text")` technique from **Lesson 3.2 — Annotations**.
+
+### Step 6: Final polish with BKA styling
+
+```{r step-6-final}
+ggplot(measles, aes(x = Year, y = State, fill = value)) +
+  geom_tile(colour = "white", linewidth = 0.5,
+            width = 0.9, height = 0.9) +
+  scale_fill_gradientn(
+    colours = cols,
+    limits = c(0, 4000),
+    breaks = seq(0, 4000, by = 1000),
+    labels = c("0k", "1k", "2k", "3k", "4k"),
+    na.value = rgb(246/255, 246/255, 246/255),
+    name = "Cases per million",
+    # See Lesson 2.5 (Legend Styling) — guide_colourbar() for continuous legends
+    guide = guide_colourbar(
+      barwidth = 15, barheight = 0.6,
+      title.position = "top", title.hjust = 0.5,
+      ticks = TRUE, nbin = 50
+    )
+  ) +
+  scale_x_continuous(expand = c(0, 0),
+                     breaks = seq(1930, 2010, by = 10),
+                     limits = c(1928, 2012)) +
+  geom_vline(xintercept = 1963, color = bka_colors$title_dark, linewidth = 0.5) +
+  annotate("text", label = "Vaccine\nintroduced",
+           x = 1963, y = 53,
+           hjust = -0.1, vjust = 0.9,
+           size = 3, family = "Lato",
+           color = bka_colors$title_dark) +
+  # See Lesson 3.1 (Titles & Captions) — Minto-style title states the insight
+  labs(
+    title = "Measles vaccination in 1963 nearly eliminated outbreaks within a decade",
+    subtitle = "Measles cases per million by US state, 1928-2011",
+    x = NULL, y = NULL,
+    caption = "Source: Project Tycho / R Graph Gallery | Recreated with BKA styling"
+  ) +
+  # See Lesson 2.2 (Custom Themes) — theme_bka() + heatmap-specific overrides
+  theme_bka() +
+  theme(
+    panel.grid = element_blank(),    # Tufte: no gridlines for heatmaps
+    axis.line = element_blank(),
+    axis.text.y = element_text(size = 6, family = "Lato", hjust = 1),    # Few: readable at 51 rows
+    axis.text.x = element_text(size = 8),
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.title = element_text(size = 9, face = "bold",
+                                color = bka_colors$title_dark),
+    legend.text = element_text(size = 8, color = bka_colors$subtitle_gray),
+    plot.margin = margin(15, 15, 25, 15)
+  )
+```
+
+## Scale Comparison: 8 Regions vs 51 States
+
+The same heatmap pattern works at very different scales:
+
+| Dimension | MNH Version (Lesson 01) | Original (This Lesson) |
+|-----------|------------------------|----------------------|
+| Y-axis rows | 8 regions | 51 states |
+| X-axis columns | 11 years | 84 years |
+| Total tiles | 88 | ~4,300 |
+| Y-axis text size | 9pt | 6pt |
+| Figure dimensions | 10 x 7 | 12 x 10 |
+| Gradient range | 150-500 MMR | 0-4,000 cases/million |
+| Gradient split | 15/5 (BKA colors) | 20/80 (original colors) |
+
+The key design adaptation for scale: smaller y-axis text, taller figure, and wider x-axis range.
+
+## Quick Reference
+
+| Technique | Function | Key Arguments | Lesson |
+|-----------|----------|---------------|--------|
+| Load CSV from URL | `readr::read_csv()` | URL string | — |
+| Heatmap grid | `geom_tile()` | `colour`, `linewidth`, `width`, `height` | 1.4 — Geometries |
+| Map fill to continuous | `aes(fill = value)` | Inside `ggplot()` | 1.2 — Aesthetics |
+| Y-axis ordering | `factor(levels = rev(...))` | `rev(sort(unique(...)))` | 1.2 — Aesthetics |
+| Multi-stop gradient | `scale_fill_gradientn()` | `colours`, `limits`, `breaks`, `labels` | 2.4 — Palettes |
+| Generate gradient | `colorRampPalette()` | Hex vectors, `(n)` steps | 2.4 — Palettes |
+| NA tile color | `na.value = rgb(...)` | Inside `scale_fill_gradientn()` | 2.4 — Palettes |
+| Reference line | `geom_vline()` | `xintercept`, `color` | 3.2 — Annotations |
+| Floating text | `annotate("text")` | `x`, `y`, `label`, `hjust` | 3.2 — Annotations |
+| Colorbar legend | `guide_colourbar()` | `barwidth`, `barheight`, `nbin` | 2.5 — Legend Styling |
+| Remove axis padding | `scale_x_continuous(expand = c(0,0))` | `limits`, `breaks` | 1.7 — Scales |
+| Minto title | `labs(title = "...")` | Insight-first phrasing | 3.1 — Titles & Captions |
+
+## Your Turn
+
+The original chart uses the author's custom color palette. Try replacing it with a BKA-branded gradient using the same anchor colors from Lesson 01. Does the BKA version tell the same story as effectively?
+
+```{r your-turn, eval=FALSE}
+# Replace the original gradient with BKA colors
+# Hint: use the same anchor points from 01-vaccination-heatmap.qmd
+bka_gradient <- c(
+  colorRampPalette(c("___", "___", "___", "___"))(20),
+  colorRampPalette(c("___", "___", "___"))(80)
+)
+
+ggplot(measles, aes(x = Year, y = State, fill = value)) +
+  geom_tile(colour = "white", linewidth = 0.5,
+            width = 0.9, height = 0.9) +
+  scale_fill_gradientn(
+    colours = ___,
+    limits = c(0, 4000),
+    breaks = seq(0, 4000, by = 1000),
+    labels = c("0k", "1k", "2k", "3k", "4k"),
+    na.value = "#F5F5F5",
+    name = "Cases per million",
+    guide = guide_colourbar(
+      barwidth = 15, barheight = 0.6,
+      title.position = "top", title.hjust = 0.5
+    )
+  ) +
+  scale_x_continuous(expand = c(0, 0),
+                     breaks = seq(1930, 2010, by = 10),
+                     limits = c(1928, 2012)) +
+  geom_vline(xintercept = 1963, color = bka_colors$title_dark) +
+  annotate("text", label = "Vaccine\nintroduced",
+           x = 1963, y = 53,
+           hjust = -0.1, vjust = 0.9,
+           size = 3, family = "Lato",
+           color = bka_colors$title_dark) +
+  labs(
+    title = "___",
+    subtitle = "Measles cases per million by US state, 1928-2011",
+    x = NULL, y = NULL,
+    caption = "___"
+  ) +
+  theme_bka() +
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_blank(),
+    axis.text.y = element_text(size = 6, family = "Lato", hjust = 1),
+    legend.position = "bottom",
+    legend.direction = "horizontal"
+  )
+```

@@ -1,0 +1,376 @@
+---
+title: "Chart Reengineering 01 — Vaccination Heatmap"
+subtitle: "Recreate the R Graph Gallery's measles heatmap with Ethiopian MNH data and BKA branding"
+format: html
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, fig.width = 10, fig.height = 7)
+```
+
+## About This Series
+
+This lesson reverse-engineers a polished chart from the wild and rebuilds it step by step using techniques from the synthesized lessons. The original: a [measles vaccination heatmap](https://r-graph-gallery.com/vaccination-heatmap.html) from the R Graph Gallery showing US measles cases by state from 1928-2011. Our version: a maternal mortality heatmap showing MMR by Ethiopian region from 2015-2025, styled with `theme_bka()`.
+
+### Techniques You Will Practice
+
+| Technique | Function | From Lesson |
+|-----------|----------|-------------|
+| Heatmap grid | `geom_tile()` | 1.4 — Geometries |
+| Map fill to continuous variable | `aes(fill = mmr)` | 1.2 — Aesthetics |
+| Y-axis ordering with factors | `factor(levels = rev(...))` | 1.2 — Aesthetics |
+| Multi-stop color gradient | `scale_fill_gradientn()` | 2.4 — Palettes |
+| Generate gradient colors | `colorRampPalette()` | 2.4 — Palettes |
+| Vertical reference line | `geom_vline()` | 3.2 — Annotations |
+| Floating text label | `annotate("text")` | 3.2 — Annotations |
+| Minto-style insight title | `labs()` | 3.1 — Titles & Captions |
+| Custom theme + overrides | `theme_bka()` | 2.2 — Custom Themes |
+| Continuous color legend | `guide_colourbar()` | 2.5 — Legend Styling |
+| Axis formatting | `scale_x_continuous()` | 1.7 — Scales |
+
+## The Answer
+
+A complete BKA-branded heatmap showing maternal mortality trends across Ethiopian regions, with a policy milestone reference line and publication-ready styling:
+
+```{r the-answer}
+library(ggplot2)
+library(dplyr)
+source("../../synthesized-lessons/_common/theme_bka.R")
+
+outcomes <- read.csv("../../synthesized-lessons/_common/data/mnh_outcomes.csv")
+
+# See Lesson 1.2 (Aesthetics) — factor() with rev() for reverse-alphabetical y-axis
+outcomes <- outcomes %>%
+  mutate(region = factor(region, levels = rev(sort(unique(region)))))
+
+# See Lesson 2.4 (Palettes) — colorRampPalette() blends BKA colors into a smooth gradient
+# Asymmetric split: 15 steps for low-mid range, 5 for high = visual urgency at top end
+mmr_gradient <- c(
+  colorRampPalette(c("#ACCBF9", "#005CB9", "#83BD00", "#F8A623"))(15),
+  colorRampPalette(c("#F8A623", "#FA7650", "#E24A3F"))(5)
+)
+
+ggplot(outcomes, aes(x = year, y = region, fill = mmr)) +
+  # See Lesson 1.4 (Geometries) — geom_tile() with white borders and sub-1.0 dimensions
+  geom_tile(colour = "white", linewidth = 0.5,
+            width = 0.9, height = 0.9) +    # Tufte: white space between tiles improves readability
+  # See Lesson 2.4 (Palettes) — scale_fill_gradientn() for multi-stop continuous gradients
+  scale_fill_gradientn(
+    colours = mmr_gradient,
+    limits = c(150, 500),
+    breaks = seq(150, 500, by = 50),
+    na.value = "#F5F5F5",
+    name = "MMR\n(per 100k live births)",
+    # See Lesson 2.5 (Legend Styling) — guide_colourbar() for continuous fill legends
+    guide = guide_colourbar(
+      barwidth = 15, barheight = 0.6,
+      title.position = "top",
+      title.hjust = 0.5,
+      ticks = TRUE, nbin = 50
+    )
+  ) +
+  # See Lesson 1.7 (Scales) — expand = c(0,0) removes padding; breaks set tick marks
+  scale_x_continuous(expand = c(0, 0), breaks = seq(2015, 2025, by = 2)) +
+  # See Lesson 3.2 (Annotations) — geom_vline() marks a policy milestone
+  geom_vline(xintercept = 2020, color = bka_colors$title_dark,
+             linewidth = 0.5) +    # Cairo: annotations are essential, not optional
+  # See Lesson 3.2 (Annotations) — annotate("text") for floating labels
+  annotate("text", label = "HSTP II\nlaunched",
+           x = 2020, y = 8.6,
+           hjust = -0.1, vjust = 0.9,
+           size = 3, family = "Lato",
+           color = bka_colors$title_dark) +
+  # See Lesson 3.1 (Titles & Captions) — Minto-style title states the insight
+  labs(
+    title = "Maternal mortality is declining, but rural regions still lag far behind Addis Ababa",
+    subtitle = "MMR per 100,000 live births by Ethiopian region, 2015-2025",
+    x = NULL, y = NULL,
+    caption = "Source: Synthetic data based on Ethiopia DHS estimates | BKA analysis\nOriginal chart: r-graph-gallery.com/vaccination-heatmap.html"
+  ) +
+  # See Lesson 2.2 (Custom Themes) — theme_bka() + heatmap-specific overrides
+  theme_bka() +
+  theme(
+    panel.grid = element_blank(),    # Tufte: no gridlines for heatmaps — tiles ARE the data
+    axis.line = element_blank(),
+    axis.text.y = element_text(size = 9, family = "Lato", hjust = 1),    # Few: readable at print size
+    axis.text.x = element_text(size = 9),
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.title = element_text(size = 9, face = "bold",
+                                color = bka_colors$title_dark),
+    legend.text = element_text(size = 8, color = bka_colors$subtitle_gray),
+    plot.margin = margin(15, 15, 25, 15)
+  )
+```
+
+## Key Insight
+
+> **Heatmaps reveal patterns across two dimensions simultaneously.** By encoding a continuous variable as color intensity across a grid of categories and time, you can spot both the overall trend (declining MMR) and the outliers (persistent gaps in Amhara and Oromia) at a glance. A single reference line anchors the narrative to a policy milestone.
+
+## Building Blocks
+
+### Step 1: Load data and create a basic heatmap
+
+Start with the minimum viable heatmap. `geom_tile()` needs three aesthetics: `x` (year), `y` (region), and `fill` (the value to encode as color).
+
+```{r step-1-basic-tile}
+library(ggplot2)
+library(dplyr)
+source("../../synthesized-lessons/_common/theme_bka.R")
+
+outcomes <- read.csv("../../synthesized-lessons/_common/data/mnh_outcomes.csv")
+
+# See Lesson 1.2 (Aesthetics) — factor() controls y-axis display order
+outcomes <- outcomes %>%
+  mutate(region = factor(region, levels = rev(sort(unique(region)))))
+
+# See Lesson 1.4 (Geometries) — geom_tile() creates a heatmap grid
+# See Lesson 1.2 (Aesthetics) — aes(fill = mmr) maps a continuous variable to color
+ggplot(outcomes, aes(x = year, y = region, fill = mmr)) +
+  geom_tile() +
+  labs(title = "Step 1: Basic heatmap with default gradient") +
+  theme_bka()
+```
+
+The default blue gradient works but doesn't communicate severity — high MMR (a bad outcome) appears in light blue, which feels passive. We need a gradient that makes dangerous values look dangerous.
+
+### Step 2: Add tile spacing and white borders
+
+The original vaccination heatmap uses white borders between tiles to visually separate each cell. This follows the same Tufte principle as using `width = 0.7` for bar charts — spacing improves readability.
+
+```{r step-2-tile-styling}
+# See Lesson 1.4 (Geometries) — colour, linewidth, width, height control tile appearance
+ggplot(outcomes, aes(x = year, y = region, fill = mmr)) +
+  geom_tile(colour = "white", linewidth = 0.5,
+            width = 0.9, height = 0.9) +    # Tufte: white space between tiles improves readability
+  labs(title = "Step 2: White borders and tile spacing separate each cell") +
+  theme_bka() +
+  theme(panel.grid = element_blank())    # Tufte: no gridlines for heatmaps
+```
+
+Setting `width = 0.9` and `height = 0.9` shrinks each tile to 90% of its cell, creating visible gaps. Combined with `colour = "white"`, this produces the characteristic bordered-tile look from the original chart.
+
+### Step 3: Apply a multi-stop color gradient
+
+The original chart uses `colorRampPalette()` to blend multiple colors into a smooth 100-stop gradient. We use BKA palette colors instead, with an asymmetric split: 15 steps for the lower range (cool blues and greens) and 5 for the upper range (warm oranges and reds). This compresses high-MMR values into intense reds, creating visual urgency.
+
+```{r step-3-gradient}
+# See Lesson 2.4 (Palettes) — colorRampPalette() creates smooth multi-stop gradients
+mmr_gradient <- c(
+  colorRampPalette(c("#ACCBF9", "#005CB9", "#83BD00", "#F8A623"))(15),
+  colorRampPalette(c("#F8A623", "#FA7650", "#E24A3F"))(5)
+)
+
+# See Lesson 2.4 (Palettes) — scale_fill_gradientn() maps data to the gradient
+ggplot(outcomes, aes(x = year, y = region, fill = mmr)) +
+  geom_tile(colour = "white", linewidth = 0.5,
+            width = 0.9, height = 0.9) +
+  scale_fill_gradientn(
+    colours = mmr_gradient,
+    limits = c(150, 500),
+    breaks = seq(150, 500, by = 50),
+    na.value = "#F5F5F5",
+    name = "MMR"
+  ) +
+  labs(title = "Step 3: Multi-stop gradient — cool blues (low) to hot reds (high)") +
+  theme_bka() +
+  theme(panel.grid = element_blank())
+```
+
+`scale_fill_gradientn()` accepts any number of colors, unlike `scale_fill_gradient()` (2 colors only) or `scale_fill_gradient2()` (3 colors with a midpoint). This is covered in detail in **Lesson 2.4 — Palettes**.
+
+### Step 4: Add the reference line and annotation
+
+The original chart marks 1963 (vaccine introduction) with a vertical line and text label. We mark 2020 (Ethiopia's Health Sector Transformation Plan II launch). The annotation sits at `y = 8.6` — slightly above the 8th region — so it doesn't overlap any tiles.
+
+```{r step-4-annotation}
+ggplot(outcomes, aes(x = year, y = region, fill = mmr)) +
+  geom_tile(colour = "white", linewidth = 0.5,
+            width = 0.9, height = 0.9) +
+  scale_fill_gradientn(colours = mmr_gradient,
+                       limits = c(150, 500), name = "MMR") +
+  # See Lesson 3.2 (Annotations) — geom_vline() marks a policy milestone
+  geom_vline(xintercept = 2020, color = bka_colors$title_dark,
+             linewidth = 0.5) +    # Cairo: annotations are essential, not optional
+  # See Lesson 3.2 (Annotations) — annotate("text") for floating labels
+  annotate("text", label = "HSTP II\nlaunched",
+           x = 2020, y = 8.6,
+           hjust = -0.1, vjust = 0.9,
+           size = 3, family = "Lato",
+           color = bka_colors$title_dark) +
+  labs(title = "Step 4: Reference line anchors the narrative to a policy event") +
+  theme_bka() +
+  theme(panel.grid = element_blank())
+```
+
+This is the same technique covered in **Lesson 3.2 — Annotations**. `geom_vline()` draws the line; `annotate("text")` places a label at exact coordinates.
+
+### Step 5: Style the legend as a horizontal colorbar
+
+The original uses `guide_colourbar()` to create a wide, thin horizontal bar below the chart — much better than discrete color swatches for continuous data.
+
+```{r step-5-legend}
+ggplot(outcomes, aes(x = year, y = region, fill = mmr)) +
+  geom_tile(colour = "white", linewidth = 0.5,
+            width = 0.9, height = 0.9) +
+  scale_fill_gradientn(
+    colours = mmr_gradient,
+    limits = c(150, 500),
+    breaks = seq(150, 500, by = 50),
+    na.value = "#F5F5F5",
+    name = "MMR (per 100k live births)",
+    # See Lesson 2.5 (Legend Styling) — guide_colourbar() for continuous fill legends
+    guide = guide_colourbar(
+      barwidth = 15, barheight = 0.6,    # Knaflic: wide + thin = compact, readable
+      title.position = "top",
+      title.hjust = 0.5,
+      ticks = TRUE, nbin = 50
+    )
+  ) +
+  geom_vline(xintercept = 2020, color = bka_colors$title_dark, linewidth = 0.5) +
+  annotate("text", label = "HSTP II\nlaunched", x = 2020, y = 8.6,
+           hjust = -0.1, vjust = 0.9, size = 3, family = "Lato",
+           color = bka_colors$title_dark) +
+  labs(title = "Step 5: Horizontal colorbar at bottom — compact and publication-ready") +
+  theme_bka() +
+  theme(
+    panel.grid = element_blank(),
+    legend.position = "bottom",
+    legend.direction = "horizontal"
+  )
+```
+
+Key arguments: `barwidth = 15` (wide enough to see gradations), `barheight = 0.6` (thin), `title.position = "top"` (label above the bar), `nbin = 50` (smooth gradient rendering). This differs from `guide_legend()` which shows discrete color swatches — both are covered in **Lesson 2.5 — Legend Styling**.
+
+### Step 6: Polish with Minto title, axis formatting, and theme overrides
+
+The final step combines everything and adds a Minto-style title that states the conclusion, not a description.
+
+```{r step-6-final-polish}
+ggplot(outcomes, aes(x = year, y = region, fill = mmr)) +
+  geom_tile(colour = "white", linewidth = 0.5,
+            width = 0.9, height = 0.9) +
+  scale_fill_gradientn(
+    colours = mmr_gradient,
+    limits = c(150, 500),
+    breaks = seq(150, 500, by = 50),
+    na.value = "#F5F5F5",
+    name = "MMR\n(per 100k live births)",
+    guide = guide_colourbar(
+      barwidth = 15, barheight = 0.6,
+      title.position = "top", title.hjust = 0.5,
+      ticks = TRUE, nbin = 50
+    )
+  ) +
+  # See Lesson 1.7 (Scales) — expand = c(0,0) removes padding; breaks set tick marks
+  scale_x_continuous(expand = c(0, 0), breaks = seq(2015, 2025, by = 2)) +
+  geom_vline(xintercept = 2020, color = bka_colors$title_dark, linewidth = 0.5) +
+  annotate("text", label = "HSTP II\nlaunched", x = 2020, y = 8.6,
+           hjust = -0.1, vjust = 0.9, size = 3, family = "Lato",
+           color = bka_colors$title_dark) +
+  # See Lesson 3.1 (Titles & Captions) — Minto-style title states the insight
+  labs(
+    title = "Maternal mortality is declining, but rural regions still lag far behind Addis Ababa",
+    subtitle = "MMR per 100,000 live births by Ethiopian region, 2015-2025",
+    x = NULL, y = NULL,
+    caption = "Source: Synthetic data based on Ethiopia DHS estimates | BKA analysis\nOriginal chart: r-graph-gallery.com/vaccination-heatmap.html"
+  ) +
+  # See Lesson 2.2 (Custom Themes) — theme_bka() + heatmap-specific overrides
+  theme_bka() +
+  theme(
+    panel.grid = element_blank(),    # Tufte: no gridlines for heatmaps — tiles ARE the data
+    axis.line = element_blank(),
+    axis.text.y = element_text(size = 9, family = "Lato", hjust = 1),    # Few: readable at print size
+    axis.text.x = element_text(size = 9),
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.title = element_text(size = 9, face = "bold",
+                                color = bka_colors$title_dark),
+    legend.text = element_text(size = 8, color = bka_colors$subtitle_gray),
+    plot.margin = margin(15, 15, 25, 15)
+  )
+```
+
+The caption credits both the data source and the original chart — good practice when reengineering someone else's design.
+
+## Original vs BKA Comparison
+
+How does our adaptation map to the original?
+
+| Element | Original (R Graph Gallery) | BKA Adaptation |
+|---------|---------------------------|----------------|
+| Data | US states (51 rows), 1928-2011 | Ethiopian regions (8 rows), 2015-2025 |
+| Metric | Measles cases per million | MMR per 100,000 live births |
+| Milestone | 1963 vaccine introduction | 2020 HSTP II launch |
+| Gradient | Blue → green → yellow → orange → red | BKA palette: `#ACCBF9` → `#005CB9` → `#83BD00` → `#F8A623` → `#E24A3F` |
+| Font | Helvetica | Lato (BKA brand) |
+| Theme | `theme_minimal()` | `theme_bka()` |
+| Legend | Horizontal colorbar at bottom | Same pattern, BKA-styled |
+| Tile styling | `width = 0.9, height = 0.9`, white borders | Identical approach |
+
+The structural DNA is the same — the branding and data are different. This is the power of reengineering: learn the *pattern*, then adapt it to your context.
+
+## Quick Reference
+
+| Technique | Function | Key Arguments | Lesson |
+|-----------|----------|---------------|--------|
+| Heatmap grid | `geom_tile()` | `colour`, `linewidth`, `width`, `height` | 1.4 — Geometries |
+| Map fill to continuous | `aes(fill = mmr)` | Inside `ggplot()` or geom | 1.2 — Aesthetics |
+| Y-axis ordering | `factor(levels = rev(...))` | `rev(sort(unique(...)))` | 1.2 — Aesthetics |
+| Multi-stop gradient | `scale_fill_gradientn()` | `colours`, `limits`, `breaks`, `na.value` | 2.4 — Palettes |
+| Generate gradient colors | `colorRampPalette()` | Vector of hex, `(n)` for steps | 2.4 — Palettes |
+| Vertical reference line | `geom_vline()` | `xintercept`, `color`, `linewidth` | 3.2 — Annotations |
+| Floating text | `annotate("text")` | `x`, `y`, `label`, `hjust`, `vjust` | 3.2 — Annotations |
+| Continuous legend | `guide_colourbar()` | `barwidth`, `barheight`, `title.position`, `nbin` | 2.5 — Legend Styling |
+| Axis formatting | `scale_x_continuous()` | `expand`, `breaks` | 1.7 — Scales |
+| Minto insight title | `labs(title = "...")` | Answer-first phrasing | 3.1 — Titles & Captions |
+| Remove gridlines | `theme(panel.grid = element_blank())` | Heatmap-specific override | 2.2 — Custom Themes |
+
+## Your Turn
+
+Recreate the heatmap using a **different metric** from `mnh_outcomes.csv`. Instead of MMR, use institutional delivery percentage (`inst_delivery_pct`). Reverse the color logic: green for high delivery rates (good), red for low (bad).
+
+```{r your-turn, eval=FALSE}
+outcomes <- read.csv("../../synthesized-lessons/_common/data/mnh_outcomes.csv")
+
+outcomes <- outcomes %>%
+  mutate(region = factor(region, levels = rev(sort(unique(region)))))
+
+# Reversed gradient: red (low coverage) → green (high coverage)
+# Cairo: semantic color — red = bad outcome, green = good outcome
+delivery_gradient <- c(
+  colorRampPalette(c("___", "___", "___"))(15),
+  colorRampPalette(c("___", "___"))(5)
+)
+
+ggplot(outcomes, aes(x = year, y = region, fill = ___)) +
+  geom_tile(colour = "white", linewidth = ___, width = ___, height = ___) +
+  scale_fill_gradientn(
+    colours = delivery_gradient,
+    limits = c(___, ___),
+    labels = scales::___,
+    name = "___",
+    guide = guide_colourbar(
+      barwidth = ___, barheight = ___,
+      title.position = "___", title.hjust = 0.5
+    )
+  ) +
+  scale_x_continuous(expand = c(0, 0), breaks = ___) +
+  geom_vline(xintercept = ___, color = bka_colors$title_dark) +
+  annotate("text", label = "___", x = ___, y = ___,
+           hjust = -0.1, size = 3, family = "Lato",
+           color = bka_colors$title_dark) +
+  labs(
+    title = "___",
+    subtitle = "___",
+    x = NULL, y = NULL,
+    caption = "___"
+  ) +
+  theme_bka() +
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_blank(),
+    legend.position = "bottom",
+    legend.direction = "horizontal"
+  )
+```
