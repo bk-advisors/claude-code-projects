@@ -1,0 +1,174 @@
+/*-- scss:defaults --*/
+
+// BK Advisors brand colors (from PPTX template)
+$bka-blue:        #005CB9;
+$bka-light-blue:  #00A1DF;
+$bka-green:       #83BD00;
+$bka-teal:        #3E9B6E;
+$bka-red:         #E24A3F;
+$bka-orange:      #FA7650;
+$bka-amber:       #F8A623;
+$bka-yellow:      #FED141;
+
+// Bootstrap / Quarto website theme overrides
+$body-color:            #333333;
+$link-color:            $bka-blue;
+$headings-color:        $bka-blue;
+$code-color:            $bka-teal;
+
+// Fonts (matching PPTX template)
+$font-family-sans-serif: "Calibri", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+$headings-font-family:   "Calibri Light", "Calibri", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
+/*-- scss:rules --*/
+
+// ===== Page title =====
+.title {
+  border-bottom: 3px solid $bka-light-blue;
+  padding-bottom: 0.3em;
+}
+
+// ===== Readable width =====
+.content {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+// ===== Callout boxes =====
+.callout-box {
+  background: linear-gradient(135deg, rgba($bka-blue, 0.04), rgba($bka-light-blue, 0.06));
+  border-left: 4px solid $bka-blue;
+  border-radius: 6px;
+  padding: 1em 1.2em;
+  margin: 1em 0;
+}
+
+.callout-box.green {
+  background: linear-gradient(135deg, rgba($bka-green, 0.06), rgba($bka-teal, 0.04));
+  border-left-color: $bka-green;
+}
+
+.callout-box.orange {
+  background: linear-gradient(135deg, rgba($bka-orange, 0.06), rgba($bka-amber, 0.04));
+  border-left-color: $bka-orange;
+}
+
+.callout-box.red {
+  background: linear-gradient(135deg, rgba($bka-red, 0.04), rgba($bka-orange, 0.04));
+  border-left-color: $bka-red;
+}
+
+// ===== Key concept cards =====
+.key-concept {
+  background: white;
+  border: 1px solid rgba($bka-blue, 0.15);
+  border-left: 4px solid $bka-blue;
+  border-radius: 6px;
+  padding: 1em 1.2em;
+  margin: 1em 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+
+  h4 {
+    color: $bka-blue;
+    margin-top: 0;
+    margin-bottom: 0.4em;
+  }
+}
+
+.key-concept.green  { border-left-color: $bka-green; h4 { color: $bka-green; } }
+.key-concept.teal   { border-left-color: $bka-teal; h4 { color: $bka-teal; } }
+.key-concept.orange { border-left-color: $bka-orange; h4 { color: $bka-orange; } }
+.key-concept.red    { border-left-color: $bka-red; h4 { color: $bka-red; } }
+
+// ===== Key takeaway =====
+.key-takeaway {
+  background: $bka-blue;
+  color: white;
+  border-radius: 8px;
+  padding: 1em 1.5em;
+  margin: 1.5em 0;
+
+  strong {
+    font-size: 1.1em;
+  }
+
+  a {
+    color: $bka-yellow;
+  }
+}
+
+// ===== Step number badges =====
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: $bka-blue;
+  color: white;
+  font-weight: 700;
+  margin-right: 0.4em;
+  flex-shrink: 0;
+}
+
+.step-number.green  { background-color: $bka-green; }
+.step-number.teal   { background-color: $bka-teal; }
+.step-number.orange { background-color: $bka-orange; }
+.step-number.red    { background-color: $bka-red; }
+
+// ===== Blockquotes =====
+blockquote {
+  border-left: 4px solid $bka-light-blue;
+  padding: 0.5em 1.2em;
+  margin: 1.2em 0;
+  color: #555;
+  font-style: italic;
+  background: rgba($bka-light-blue, 0.04);
+  border-radius: 0 6px 6px 0;
+}
+
+// ===== Figure captions =====
+figcaption, .figure-caption {
+  color: #777;
+  font-size: 0.9em;
+  font-style: italic;
+  text-align: center;
+  margin-top: 0.5em;
+}
+
+// ===== Table enhancements =====
+.table th {
+  background: $bka-blue;
+  color: white;
+}
+
+// ===== Quadrant diagram (four modes — web version) =====
+.quadrant-diagram {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 1em;
+  max-width: 680px;
+  margin: 1.5em auto;
+}
+
+.quadrant-box {
+  background: white;
+  border-radius: 8px;
+  padding: 1em 1.2em;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  border-top: 4px solid transparent;
+
+  strong {
+    display: block;
+    font-size: 1.1em;
+    margin-bottom: 0.3em;
+  }
+}
+
+.quadrant-box.q-diagnostic  { border-top-color: $bka-orange; }
+.quadrant-box.q-descriptive { border-top-color: $bka-light-blue; }
+.quadrant-box.q-prescriptive { border-top-color: $bka-green; }
+.quadrant-box.q-predictive  { border-top-color: $bka-teal; }

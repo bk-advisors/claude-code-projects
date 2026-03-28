@@ -1,0 +1,297 @@
+---
+title: "My Approach to Storytelling with Data"
+subtitle: "From curiosity to causation — completing the scientific method loop"
+author: "Matthew Kuch"
+date: 2026-03-28
+format:
+  html:
+    theme: [cosmo, blog-styles.scss]
+    toc: true
+    toc-depth: 2
+    code-copy: true
+---
+
+## The Article That Started a Project
+
+Last year I came across an article on Our World in Data — ["Measles vaccines save millions of lives each year"](https://ourworldindata.org/measles-vaccines-save-lives) by Saloni Dattani and Fiona Spooner. It had everything you'd want in a data story: clear writing, strong evidence, and a staggering headline number — 94 million lives saved over 50 years of vaccination programs.
+
+But the thing that stopped me wasn't the number. It was a heatmap.
+
+The article included a heatmap of measles cases across US states from 1929 to 2022. Before the vaccine, the map was a wall of color — cases everywhere, every year, in every state. Then, around 1963 when the vaccine was introduced, the color just... drops off. A cliff. The before-and-after was so stark it didn't need a caption. You could *see* the intervention working.
+
+I stared at that chart for a while. Then I thought: what does this look like for Africa?
+
+Africa is where the measles burden is heaviest today, and it's where vaccination campaigns have saved the most lives — 29 million, according to the article. But I'd never seen the African story told with that same visual clarity. So I opened R, pulled the WHO data, and started building my own heatmap. Forty-three years of measles data, every African country, side by side.
+
+What came out of that afternoon became [the africa-measles project](https://bk-advisors.github.io/africa-measles/). And working on it taught me something I keep re-learning: the most important part of a data story is the part that isn't data. It's the question that got you to open the dataset in the first place.
+
+## Where It Starts
+
+It all starts with curiosity — that itch of a question you want to answer or find a solution for.
+
+But the question builds from a few places:
+
+- A phenomenon or situation you've observed in the world, or talked about with friends, colleagues, or family
+- A curiosity about what caused it — what happened to get things to this state (a story is a causal chain of events, after all)
+- A desire to measure it — how can you quantify this change to better understand or estimate its potential future effects?
+- And eventually, a need to communicate it — to present what you found in a way that actually reaches someone
+
+That last point matters more than people think. You can have a great question, perfect data, and a genuine insight — but if you can't get it across to the person who needs to hear it, none of it matters. I've been on both sides of that failure.
+
+When I think about the full arc of a data story, I think of it as four modes:
+
+- **Diagnostic** — understanding the past: why did this happen?
+- **Descriptive** — understanding the present: what does the data show?
+- **Prescriptive** — deciding on action: what should we do about it, and how do we communicate it?
+- **Predictive** — looking ahead: what will happen next if we act, or if we don't?
+
+::: {.callout-box}
+Every data story worth telling has a backward-looking question (why did this happen?), a present-tense description (what does the data show?), a prescriptive layer (what should we do and how do we tell this story?), and a forward-looking implication (what might happen next?). Most data storytelling courses focus on the middle two and skip the bookends.
+:::
+
+I've been doing data visualization since 2015. Over the years, I've noticed that the work that actually changes how people think and act — the stuff that gets referenced in meetings months later — tends to engage all four of those modes. The chart alone is never enough. The story behind the chart, the argument within it, and the story ahead of it — that's what moves people.
+
+## What's the Norm
+
+In many quantitative courses, the typical analysis process runs as follows:
+
+1. Define a problem
+2. List the data requirements to understand or solve it
+3. Collect data
+4. Organize and clean it
+5. Explore it
+6. Visualize it
+7. Put it in a report. Done.
+
+It's a fine process. Linear enough to follow when you're starting out, and it gets you from A to B. But it skips the curiosity, meaning, and creative side of data visualization. You end up with dashboards full of descriptive summaries that nobody reads past the first page. I've made plenty of those myself.
+
+::: {.callout-box .orange}
+The standard process tells you *how* to get from data to chart. It doesn't tell you *why* you should care, *who* you're making it for, or *what* you want them to do with it.
+:::
+
+I'm of the school of thought that to produce impactful data visualization, it needs to be meaningful to your audience. So before I touch a dataset, I try to think about:
+
+- **Who** I'm making it for
+- **Why** it should matter to them
+- **What** will move them to change their worldview, even slightly, and maybe even act on what I've shared
+
+## Start with an Audience of One
+
+Despite being a big fan of data visualization, I strongly believe that it is only complementary to good writing and storytelling. The story comes first.
+
+One of my favourite storytellers, Morgan Housel, barely uses charts or visuals in his articles or books, but it's hard to stop reading his writing. He has such a simple, conversational style. He doesn't need a chart to make you feel the weight of a number. He uses context, comparison, and a well-placed anecdote to do what most dashboards can't — make you *care*.
+
+But above all, he understands how to hook an audience and make what he writes matter to them.
+
+When I start a new data story, I don't begin with the dataset or the tool. I begin with one person — a specific reader, colleague, or client — and I ask: *What would make this person stop scrolling and actually read?* If I can answer that question, the visualization decisions become much easier. The form follows the hook.
+
+## Making a Story
+
+This is the **prescriptive** part — the how. Over the years I've settled into a process that works for me — five steps that I keep coming back to, whether I'm building a quick chart for a meeting or a months-long interactive project. This is also the part that most data storytelling frameworks cover well, and for good reason: you need a reliable process before you can layer the other modes on top.
+
+### <span class="step-number">1</span> Find Your Question
+
+Every data story I've made started with an itch. Something that didn't add up. Something that surprised me. Something I couldn't explain with the information I had.
+
+In consulting, the question often arrives pre-packaged — a client brief, a terms of reference, a policy gap flagged in a strategy document. But the best work I've done happened when I let my own curiosity sharpen the question beyond what was asked for.
+
+A useful test: can you fill in this sentence?
+
+> "I am curious about **X**, so I will measure **Y** to see if **Z** is true."
+
+If you can't complete it, you don't have a question yet — you have a topic. Topics are vague ("measles in Africa"). Questions are specific ("Did the 2001 WHO/UNICEF Measles Initiative cause the dramatic decline in reported cases across African countries?").
+
+::: {.callout-box .green}
+I noticed measles was declining dramatically across Africa in the data — but I wanted to know: was it everywhere? Was it the vaccination campaigns? Or was it something else — better surveillance, improved nutrition, urbanization? That question led to the project.
+:::
+
+### <span class="step-number teal">2</span> Make It Measurable
+
+A question becomes answerable when you can translate it into operations on data. This is where vague becomes specific:
+
+| Vague | Specific |
+|-------|----------|
+| "How bad is measles in Africa?" | "How did reported measles cases per million change across African countries from 1980 to 2023?" |
+| "Should PNG vaccinate for HPV?" | "What is the projected impact on cervical cancer mortality if PNG achieves 80% HPV vaccination coverage by 2030?" |
+| "Is maternal health improving?" | "How has the maternal mortality ratio changed in the 10 countries with the highest burden between 2000 and 2020?" |
+
+The pattern is almost always: **filter** (which countries? which years?), **group** (by country, by time period), **count or summarize** (cases per million, mortality ratio), **compare** (before vs. after, country A vs. country B).
+
+In consulting, this is the step where you turn a Terms of Reference into an analytical question. The ToR says "assess the effectiveness of the vaccination program." Your measurable question says "compare coverage rates and case incidence in the 5 years before and after the program launched, by district." Night and day.
+
+### <span class="step-number orange">3</span> Analyze
+
+Analysis is where you sit with the data and look for patterns. The good news: most findings come from four basic operations.
+
+1. **Filter** for extremes or subsets — which countries had the highest measles burden?
+2. **Group** by meaningful categories — by region, by income level, by time period
+3. **Summarize** with simple statistics — means, medians, rates, percentages
+4. **Compare** across groups or time — before/after, country A vs. country B
+
+You don't need to be a statistician. You need clarity of thought and the discipline to let the data surprise you rather than confirming what you already believe. I say this as someone who spent years doing exactly the opposite — going into analysis looking for the answer I expected. It doesn't work.
+
+::: {.callout-box .orange}
+When analysis yields nothing interesting, the instinct is to try fancier methods or different tools. Resist that. Go back and revisit the question. A better question almost always beats a better algorithm.
+:::
+
+### <span class="step-number green">4</span> Synthesize
+
+This is the step most people skip, and it's the most important one. Synthesis means declaring what you found — in one clear sentence.
+
+I think of it as the **"so what?" test**: if you can't answer "so what?" in one sentence, what you have is still *exploration*, not *explanation*. Exploration is the work you do for yourself — messy, iterative, full of dead ends. Explanation is the intentional communication you prepare for your reader.
+
+The mistake I made early on — and I see it constantly — is showing your exploration when your audience expects explanation. They don't need to see every chart you made along the way. They need the one finding that matters.
+
+> **My synthesis for the measles project:** "Coordinated vaccination campaigns launched in 2001 drove a 90%+ reduction in measles cases across Africa, but the decline was uneven — a handful of countries still carry most of the remaining burden."
+
+That's a story. Everything else — the heatmap, the annotations, the interactivity — exists to make that sentence land harder.
+
+### <span class="step-number red">5</span> Choose Your Form
+
+The chart type is the *last* decision, not the first. What a lot of people get wrong about data visualization is thinking it starts with choosing between a bar chart and a line chart. It doesn't. It starts with having something to say.
+
+Once you know your finding and your audience, the form often suggests itself:
+
+- Change over time? Line chart, heatmap, small multiples
+- Comparing categories? Bar chart, dot plot, table
+- Geographic patterns? Map, cartogram
+- A sequential story? Scrollytelling, annotated walkthrough
+
+And sometimes the right form isn't a chart at all. For the [HPV vaccination story in Papua New Guinea](https://bk-advisors.github.io/hpv-png-story/), I built an interactive scrollytelling experience in Svelte — because the audience needed to *experience* the scale of the problem, not just see a number. A bar chart wouldn't have done the job.
+
+::: {.key-takeaway}
+**The form is the last decision. The question is the point.**
+
+A well-chosen chart amplifies a clear finding. No chart can rescue a finding that doesn't exist.
+:::
+
+## The Missing Pieces
+
+The five steps above are the prescriptive mode — the *how*. And most courses and frameworks do a solid job there. The descriptive mode — showing what the data says — is usually well covered too. Between the two, you can produce good charts and clear reports.
+
+But I keep coming back to the question: is that enough?
+
+For me, the answer is no. What I've found missing — both from courses I've taken and frameworks I've read — are the two bookends I mentioned at the start:
+
+- **Diagnostic**: Why did this happen? What's the causal chain?
+- **Predictive**: What will happen next? What are the scenarios?
+
+The prescriptive and descriptive modes tell you what happened and how to show it well. The diagnostic and predictive modes tell you *why* it happened and *what comes next*. That's where the real arguments live.
+
+### The Diagnostic Lens: "Why Did This Happen?"
+
+Most data stories stop at *what* happened. Measles cases dropped. Maternal mortality improved. Coverage rates increased. The charts show the trend, the annotations highlight the inflection points, and the reader nods along. But a nagging question remains: *why?*
+
+I can't not ask that question. I think it comes from two places.
+
+The first is my physics background. In physics, every effect has a cause, and causes are testable. You don't just observe that an object accelerated — you identify the force, measure it, and check whether the model holds. That habit of asking "but what *caused* this?" has followed me into every data project I've done since.
+
+The second is consulting. Clients don't just want to know *what* happened. They want to know *why*. "Measles declined" is interesting. "Measles declined because of coordinated multi-country campaigns that achieved >95% coverage in supplementary immunization activities" is actionable. The diagnosis is what turns a descriptive briefing into a strategic one.
+
+::: {.callout-box .green}
+#### Africa Measles Heatmap
+
+The descriptive story is straightforward: measles cases dropped by more than 90% across African countries between 1980 and 2023.
+
+But the diagnostic story is what makes it interesting. The 2001 WHO/UNICEF Measles Initiative marks a visible inflection point in the heatmap. Before 2001, the map is a patchwork of high-burden red tiles. After 2001, it shifts toward low-burden blues and greens — but not uniformly. Countries that achieved high coverage in supplementary immunization activities saw faster declines. Countries with conflict, weak health systems, or displaced populations lagged behind.
+
+The heatmap doesn't just show what happened. The temporal structure — 1980 to 2023, country by country — lets the reader *see* the intervention effect as a visual cliff. That cliff is the diagnosis.
+
+[See the full project →](https://bk-advisors.github.io/africa-measles/)
+:::
+
+### The Predictive Lens: "What Comes Next?"
+
+Telling someone what to do is a recommendation. Telling them what will happen if they do — or don't — is a prediction. And predictions are what drive decisions.
+
+This is the other piece that most frameworks skip. They'll tell you how to present a finding clearly, but they won't push you to project that finding forward. And that's a missed opportunity.
+
+Again, I think the physics side of my brain is partly responsible. If you understand the mechanism (the diagnostic part), you can model the future. Newton's laws don't just explain why the ball fell — they tell you where it will land. Same logic applies here: if you know that vaccination coverage drives measles decline, you can model what happens if coverage drops.
+
+And in consulting, recommendations without projected impact are opinions with nice formatting. "PNG should implement HPV vaccination" is a recommendation. "If PNG achieves 80% HPV vaccination coverage by 2030, we project a 65% reduction in cervical cancer deaths by 2050" is a recommendation that actually gets funded.
+
+::: {.callout-box .teal}
+#### HPV Vaccination in Papua New Guinea
+
+The recommendation is straightforward: PNG should implement a national HPV vaccination program to reduce its exceptionally high cervical cancer burden.
+
+But what gives the recommendation weight is the prediction. Papua New Guinea has one of the highest cervical cancer incidence rates in the world. Without intervention, the burden grows as the population grows. With meaningful vaccination coverage, the data projects significant reductions in incidence and mortality over the coming decades.
+
+I chose a Svelte-based scrollytelling format for this one because the prediction needs to be *felt*, not just read. As the reader scrolls, the projected future unfolds. They can explore different coverage scenarios themselves. It's one thing to read "65% reduction." It's another to watch that reduction happen on screen as you scroll through it.
+
+[See the full project →](https://bk-advisors.github.io/hpv-png-story/)
+:::
+
+### Completing the Loop
+
+After about a decade of doing this work, I've arrived at a framework that captures how I think about data storytelling. It maps four modes onto two axes:
+
+- **Time**: Past (backward-looking) ↔ Future (forward-looking)
+- **Intent**: Understanding (why/what) ↔ Action (how/what if)
+
+::: {.quadrant-diagram}
+::: {.quadrant-box .q-diagnostic}
+**Diagnostic**
+
+*Why did this happen?*
+
+Backward-looking, causal. Identifies mechanisms and root causes.
+:::
+
+::: {.quadrant-box .q-descriptive}
+**Descriptive**
+
+*What is happening?*
+
+Present state. The data itself — trends, patterns, comparisons.
+:::
+
+::: {.quadrant-box .q-prescriptive}
+**Prescriptive**
+
+*What should we do?*
+
+Process and action. How to find, analyze, and present.
+:::
+
+::: {.quadrant-box .q-predictive}
+**Predictive**
+
+*What will happen next?*
+
+Forward-looking. Scenarios, projections, stakes.
+:::
+:::
+
+Most data storytelling courses and frameworks do the descriptive and prescriptive quadrants well — here's what the data shows, here's how to show it. That's the five-step process from the previous section, and it's genuinely valuable. It's where I started too.
+
+But completing the loop means your audience gets the full picture:
+
+1. **What happened** — the data, the trend, the chart
+2. **Why it happened** — the causal story behind the numbers
+3. **What we recommend** — the action, the intervention, the policy
+4. **What we expect** — the projected impact, the scenarios, the stakes
+
+When you cover all four, you're not just presenting data. You're building an argument. And arguments change minds in ways that dashboards don't.
+
+::: {.key-takeaway}
+Descriptive tells them *what*. Diagnostic tells them *why*. Prescriptive tells them *how*. Predictive tells them *what if*. Most data stories cover one or two. The best ones I've seen — and the best ones I've tried to make — cover all four.
+:::
+
+## The Compound Effect
+
+If you've made it this far, you might be thinking: this is a lot. Four quadrants, five process steps, two extra lenses. Where do you start?
+
+Honestly? You start small. A clear question, a clean finding, the courage to say something specific. That's it. You don't need an elaborate interactive experience. You don't need Svelte or D3.
+
+My first data visualization in 2015 was a simple bar chart. It wasn't interactive. It wasn't pretty. But it answered a specific question for a specific person, and it changed how that person thought about the problem. That was enough.
+
+Since then, each project has built on the last. The measles heatmap taught me how temporal structure can reveal causal mechanisms. The HPV-PNG project taught me how interactivity can make predictions feel real rather than abstract. I didn't plan this progression — I just kept following questions that interested me, and the skills accumulated.
+
+You don't need to master all four quadrants on day one. But it helps to know they exist, and to notice when your story is missing one. Once you start looking, you see it everywhere — the report that describes but never diagnoses, the recommendation that prescribes but never predicts.
+
+Start with a clear question. Make it measurable. Sit with the data honestly. Say what you found. Pick a form that serves the finding. And when you're ready, ask *why it happened* and *what comes next*.
+
+---
+
+*Matthew Kuch is the founder of [BK Advisors](https://bk-advisors.github.io/), a management consulting practice working in global health. He has been doing data visualization since 2015.* ^[This post was partly inspired by [Aman Bhargava's "Data Storytelling in Lowercase"](https://aman.bh/blog/2026/data-storytelling-in-lowercase-guest-talk-at-purdue) guest talk at Purdue, which covers the prescriptive process side well.]

@@ -58,6 +58,7 @@ Each standalone deck also includes supplementary lecture materials:
 | `causal-arguments/` | Causal reasoning: correlation vs. causation, three alternatives to rule out, causal stories, removal test | Ethiopia MNH (CHEWs, woredas, HSTP) | Sequel to anatomy-of-a-good-point; signposts to inference-and-intervention |
 | `inference-and-intervention/` | 10-chapter course on causal models for business analysis, applied to MNH | Ethiopia MNH | Sequel to causal-arguments |
 | `r-for-management-consultants/` | 9-chapter R programming course (tidyverse, ggplot2, Quarto reports) for consultants with no prior coding experience | MNH facility datasets (5 countries, 200 facilities) | Prerequisite for inference-and-intervention |
+| `storytelling-with-data/` | Four-mode data storytelling framework (Diagnostic, Descriptive, Prescriptive, Predictive) with blog post, slides, and R tutorial | Africa measles heatmap, HPV-PNG scrollytelling | — |
 
 ## Shared Assets (`slide-master/`)
 

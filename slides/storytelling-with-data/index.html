@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/tabby.min.js"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.8.27">
+
+  <meta name="author" content="BK Advisors">
+  <meta name="dcterms.date" content="2026-03-28">
+  <title>Storytelling with Data</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="index_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="index_files/libs/revealjs/dist/reveal.css">
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="index_files/libs/revealjs/dist/theme/quarto-942a5257c77f66b1b845164ad92a35d7.css">
+  <link href="index_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="index_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="index_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="index_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section data-background-color="#005CB9" class="quarto-title-block center">
+  <h1 class="title">Storytelling with Data</h1>
+  <p class="subtitle">From curiosity to causation — completing the scientific method loop</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+BK Advisors 
+</div>
+</div>
+</div>
+
+  <p class="date">2026-03-28</p>
+</section>
+<section class="slide level2">
+<h2>The Chart That Started a Project</h2>
+<p>Last year I read an <a href="https://ourworldindata.org/measles-vaccines-save-lives">Our World in Data article</a> about measles vaccination. 94 million lives saved. Powerful number.</p>
+<div class="fragment">
+<p>But what stopped me wasn’t the number. It was a <strong>heatmap</strong> of US measles cases, 1929–2022.</p>
+<ul>
+<li class="fragment">Before the vaccine: a wall of color. Cases everywhere, every year, every state.</li>
+<li class="fragment">After 1963: the color drops off. A cliff. You could <em>see</em> the intervention working.</li>
+<li class="fragment">I thought: <strong>what does this look like for Africa?</strong></li>
+</ul>
+</div>
+<div class="fragment">
+<div class="callout-box">
+<p>That question led to <a href="https://bk-advisors.github.io/africa-measles/">a project</a>. And it taught me something I keep re-learning: the most important part of a data story is the part that isn’t data. It’s the question that got you to open the dataset.</p>
+</div>
+</div>
+</section>
+<section class="slide level2" data-background-color="#005CB9">
+<h2></h2>
+<p><span style="font-size:1.3em; font-weight:300;">Part I: Philosophy</span></p>
+<p><span style="font-size:0.8em; font-weight:300; opacity:0.85;">Where stories begin</span></p>
+</section>
+<section class="slide level2">
+<h2>Where It Starts</h2>
+<p>It all starts with <strong>curiosity</strong> — that itch of a question you want to answer.</p>
+<ul>
+<li class="fragment">A phenomenon you’ve observed in the world</li>
+<li class="fragment">A curiosity about what caused it</li>
+<li class="fragment">A desire to measure it and estimate what happens next</li>
+<li class="fragment">And eventually, a need to communicate it — to get it across to someone who can act on it</li>
+</ul>
+<div class="fragment">
+<div class="callout-box green">
+<p><strong>Diagnostic</strong> (past) → <strong>Descriptive</strong> (present) → <strong>Prescriptive</strong> (action) → <strong>Predictive</strong> (future)</p>
+<p>Every data story worth telling has a backward-looking question, a present-tense description, a clear recommendation with a way to communicate it, and a forward-looking implication. Most courses focus on the middle two.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>What’s the Norm</h2>
+<p>The standard analysis process:</p>
+<div class="step-flow">
+<div class="step-item">
+Define Problem
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item">
+Collect Data
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item">
+Clean
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item">
+Explore
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item">
+Visualize
+</div>
+<div class="step-arrow">
+→
+</div>
+<div class="step-item">
+Report
+</div>
+</div>
+<div class="fragment">
+<div class="callout-box orange">
+<p>It’s fine when you’re starting out. But it skips the curiosity, meaning, and creative side. You end up with dashboards nobody reads past the first page. I’ve made plenty of those myself.</p>
+</div>
+<ul>
+<li class="fragment">It tells you <em>how</em> to get from data to chart</li>
+<li class="fragment">It doesn’t tell you <em>why</em> you should care, <em>who</em> it’s for, or <em>what</em> you want them to do</li>
+</ul>
+</div>
+</section>
+<section class="slide level2">
+<h2>Start with an Audience of One</h2>
+<p>Data visualization is complementary to good writing. The story comes first.</p>
+<div class="fragment">
+<div class="columns-equal">
+<div class="col">
+<div class="callout-box">
+<p><strong>Morgan Housel</strong> barely uses charts in his books, but you can’t stop reading. He uses context, comparison, and anecdote to make you <em>care</em> about a number.</p>
+</div>
+</div>
+<div class="col">
+<div class="callout-box green">
+<p><strong>Start with one person</strong> — a specific reader, colleague, or client. Ask: <em>What would make this person stop scrolling and actually read?</em></p>
+</div>
+</div>
+</div>
+</div>
+<div class="fragment">
+<p>Before you touch data, ask:</p>
+<ol type="1">
+<li><strong>Who</strong> am I making this for?</li>
+<li><strong>Why</strong> should it matter to them?</li>
+<li><strong>What</strong> will move them to act?</li>
+</ol>
+</div>
+</section>
+<section class="slide level2" data-background-color="#005CB9">
+<h2></h2>
+<p><span style="font-size:1.3em; font-weight:300;">Part II: Making a Story</span></p>
+<p><span style="font-size:0.8em; font-weight:300; opacity:0.85;">Five steps I keep coming back to</span></p>
+</section>
+<section class="slide level2">
+<h2><span style="font-size:0.95em;"><span class="step-number">1</span> Find Your Question</span></h2>
+<p>Every data story starts with an itch. Something doesn’t add up. Something surprises you.</p>
+<div class="fragment">
+<p>Can you fill in this sentence?</p>
+<div class="callout-box">
+<p>“I am curious about <strong>X</strong>, so I will measure <strong>Y</strong> to see if <strong>Z</strong> is true.”</p>
+</div>
+</div>
+<div class="fragment">
+<div class="columns-equal">
+<div class="col">
+<div class="example-block">
+<p><span class="example-label bad-example">Topic (vague)</span></p>
+<p>“Measles in Africa”</p>
+</div>
+</div>
+<div class="col">
+<div class="example-block">
+<p><span class="example-label good-example">Question (specific)</span></p>
+<p>“Did the 2001 WHO/UNICEF initiative cause the dramatic decline in measles cases across African countries?”</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2><span style="font-size:0.95em;"><span class="step-number teal">2</span> Make It Measurable</span></h2>
+<p>A question becomes answerable when you can translate it into <strong>operations on data</strong>.</p>
+<div class="fragment">
+<table class="caption-top">
+<colgroup>
+<col style="width: 41%">
+<col style="width: 58%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Vague</th>
+<th>Specific</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>“How bad is measles in Africa?”</td>
+<td>“How did cases per million change across countries, 1980–2023?”</td>
+</tr>
+<tr class="even">
+<td>“Should PNG vaccinate for HPV?”</td>
+<td>“What’s the projected impact on cervical cancer if PNG achieves 80% coverage by 2030?”</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="fragment">
+<div class="callout-box green">
+<p>Filter (which countries?) → Group (by what?) → Summarize (count, rate, ratio) → Compare (before/after, A vs.&nbsp;B)</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2><span style="font-size:0.95em;"><span class="step-number orange">3</span> Analyze</span></h2>
+<p>Most findings come from four basic operations:</p>
+<ol type="1">
+<li class="fragment"><strong>Filter</strong> for extremes or subsets</li>
+<li class="fragment"><strong>Group</strong> by meaningful categories</li>
+<li class="fragment"><strong>Summarize</strong> with simple statistics</li>
+<li class="fragment"><strong>Compare</strong> across groups or time</li>
+</ol>
+<div class="fragment">
+<div class="callout-box orange">
+<p>When analysis yields nothing interesting, don’t reach for fancier tools. Go back and revisit the question. A better question beats a better algorithm. Every time.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2><span style="font-size:0.95em;"><span class="step-number green">4</span> Synthesize</span></h2>
+<p>Declare what you found — <strong>in one sentence</strong>.</p>
+<div class="fragment">
+<div class="callout-box">
+<p><strong>The “so what?” test:</strong> If you can’t answer “so what?” in one sentence, you’re still doing <em>exploration</em>, not <em>explanation</em>.</p>
+</div>
+</div>
+<div class="fragment">
+<div class="columns-equal">
+<div class="col">
+<div class="example-block">
+<p><span class="example-label bad-example">Exploration</span></p>
+<p>“Here are 12 charts showing measles trends by country and year with various normalizations…”</p>
+</div>
+</div>
+<div class="col">
+<div class="example-block">
+<p><span class="example-label good-example">Explanation</span></p>
+<p>“Coordinated campaigns from 2001 drove a 90%+ decline in measles — but a handful of countries still carry most of the burden.”</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2><span style="font-size:0.95em;"><span class="step-number red">5</span> Choose Your Form</span></h2>
+<p>The chart type is the <strong>last</strong> decision, not the first.</p>
+<ul>
+<li class="fragment">Change over time? Line chart, heatmap, small multiples</li>
+<li class="fragment">Comparing categories? Bar chart, dot plot, table</li>
+<li class="fragment">Geographic patterns? Map, cartogram</li>
+<li class="fragment">A sequential story? Scrollytelling, annotated walkthrough</li>
+</ul>
+<div class="fragment">
+<div class="key-takeaway">
+<p><strong>The form is the last decision. The question is the point.</strong></p>
+<p>A well-chosen chart amplifies a clear finding. No chart can rescue a finding that doesn’t exist.</p>
+</div>
+</div>
+</section>
+<section class="slide level2" data-background-color="#005CB9">
+<h2></h2>
+<p><span style="font-size:1.3em; font-weight:300;">Part III: The Missing Pieces</span></p>
+<p><span style="font-size:0.8em; font-weight:300; opacity:0.85;">Diagnostic and predictive thinking</span></p>
+</section>
+<section class="slide level2">
+<h2>Most Data Stories Stop Here</h2>
+<p>The five steps are the <strong>prescriptive</strong> mode — the <em>how</em>. Combined with description — the <em>what</em> — you can make good charts and clear reports.</p>
+<div class="fragment">
+<p>But is that enough?</p>
+<div class="callout-box">
+<p>Descriptive + Prescriptive = here’s the data, here’s how to show it well</p>
+</div>
+</div>
+<div class="fragment">
+<p>What I keep finding missing are the two bookends:</p>
+<ul>
+<li class="fragment"><strong>Diagnostic</strong>: Why did this happen? What’s the causal chain?</li>
+<li class="fragment"><strong>Predictive</strong>: What will happen next? What are the scenarios?</li>
+</ul>
+</div>
+</section>
+<section class="slide level2">
+<h2>The Diagnostic Lens</h2>
+<p><span style="color:#FA7650; font-size:1.1em;"><strong>“Why did this happen?”</strong></span></p>
+<div class="columns-equal">
+<div class="col">
+<div class="callout-box orange">
+<p><strong>The physics side</strong></p>
+<p>Every effect has a cause. You don’t just observe that an object accelerated — you identify the force and check whether the model holds. That habit followed me into data work.</p>
+</div>
+</div>
+<div class="col">
+<div class="callout-box">
+<p><strong>The consulting side</strong></p>
+<p>Clients don’t want to know <em>what</em> happened. “Measles declined” is interesting. “Measles declined <em>because of</em> coordinated campaigns” is actionable.</p>
+</div>
+</div>
+</div>
+<div class="fragment">
+<p>The diagnosis is what turns a descriptive briefing into a strategic one.</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>Africa Measles Heatmap</h2>
+<div class="columns-equal">
+<div class="col">
+<p><strong>The descriptive story:</strong></p>
+<p>Measles cases dropped 90%+ across Africa.</p>
+<p>. . .</p>
+<p><strong>The diagnostic story:</strong></p>
+<p>The 2001 WHO/UNICEF Measles Initiative marks a visible inflection point. Before 2001: high-burden red tiles everywhere. After 2001: a shift to blues and greens — but not uniformly.</p>
+<p>The temporal structure lets you <em>see</em> the intervention effect as a visual cliff. That cliff is the diagnosis.</p>
+</div>
+<div class="col">
+<div class="callout-box green">
+<p><strong>What the heatmap reveals:</strong></p>
+<ul>
+<li>Countries with high SIA coverage saw faster declines</li>
+<li>Countries with conflict or weak health systems lagged</li>
+<li>The intervention effect is visible as a temporal cliff</li>
+</ul>
+<p><a href="https://bk-advisors.github.io/africa-measles/" target="_blank">See the project →</a></p>
+</div>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>The Predictive Lens</h2>
+<p><span style="color:#3E9B6E; font-size:1.1em;"><strong>“What comes next?”</strong></span></p>
+<div class="columns-equal">
+<div class="col">
+<div class="callout-box green">
+<p><strong>The physics side</strong></p>
+<p>If you understand the mechanism, you can model the future. Newton’s laws don’t just explain why the ball fell — they tell you where it will land.</p>
+</div>
+</div>
+<div class="col">
+<div class="callout-box">
+<p><strong>The consulting side</strong></p>
+<p>Recommendations without projected impact are opinions with nice formatting. “80% coverage by 2030 projects a 65% reduction in cervical cancer deaths” — that actually gets funded.</p>
+</div>
+</div>
+</div>
+<div class="fragment">
+<p>Predictions are what drive decisions. Descriptions just set the scene.</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>HPV Vaccination in PNG</h2>
+<div class="columns-equal">
+<div class="col">
+<p><strong>The recommendation:</strong></p>
+<p>Papua New Guinea should implement a national HPV vaccination program.</p>
+<p>. . .</p>
+<p><strong>The prediction:</strong></p>
+<p>PNG has one of the highest cervical cancer rates in the world. Without intervention, the burden grows with the population. With meaningful coverage, the data projects significant reductions.</p>
+<p>I chose scrollytelling because the prediction needs to be <em>felt</em>, not just read. As you scroll, the projected future unfolds.</p>
+</div>
+<div class="col">
+<div class="callout-box teal">
+<p><strong>Why scrollytelling for this one:</strong></p>
+<ul>
+<li>The prediction unfolds as the reader scrolls</li>
+<li>Different coverage scenarios are explorable</li>
+<li>It’s one thing to read “65% reduction” — another to watch it happen on screen</li>
+</ul>
+<p><a href="https://bk-advisors.github.io/hpv-png-story/" target="_blank">See the project →</a></p>
+</div>
+</div>
+</div>
+</section>
+<section class="slide level2" data-background-color="#005CB9">
+<h2></h2>
+<p><span style="font-size:1.3em; font-weight:300;">Completing the Loop</span></p>
+<p><span style="font-size:0.8em; font-weight:300; opacity:0.85;">The full scientific method for data storytelling</span></p>
+</section>
+<section class="slide level2">
+<h2>Four Modes of Data Storytelling</h2>
+<div class="quadrant-diagram">
+<div class="quadrant-box q-diagnostic">
+<p><strong>Diagnostic</strong> <em>Why did this happen?</em><br> Backward-looking, causal</p>
+</div>
+<div class="quadrant-box q-descriptive">
+<p><strong>Descriptive</strong> <em>What is happening?</em><br> Present state, the data itself</p>
+</div>
+<div class="quadrant-box q-prescriptive">
+<p><strong>Prescriptive</strong> <em>What should we do?</em><br> Process and action</p>
+</div>
+<div class="quadrant-box q-predictive">
+<p><strong>Predictive</strong> <em>What will happen next?</em><br> Forward-looking, modeled</p>
+</div>
+</div>
+<div class="fragment">
+<p>Most frameworks do <strong>Descriptive</strong> + <strong>Prescriptive</strong> well. That’s the five-step process — and it’s where I started too.</p>
+<p>The best work I’ve seen also engages the bookends: <strong>Diagnostic</strong> + <strong>Predictive</strong>.</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>The Full Loop</h2>
+<ol type="1">
+<li class="fragment"><strong>What happened</strong> — the data, the trend, the chart</li>
+<li class="fragment"><strong>Why it happened</strong> — the causal story behind the numbers</li>
+<li class="fragment"><strong>What we recommend</strong> — the action, the intervention</li>
+<li class="fragment"><strong>What we expect</strong> — the projected impact, the stakes</li>
+</ol>
+<div class="fragment">
+<div class="key-takeaway">
+<p><strong>Most data stories cover one or two of these. The best ones cover all four.</strong></p>
+<p>When you cover all four, you’re not presenting data — you’re building an argument. And arguments change minds in ways that dashboards don’t.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>The Compound Effect</h2>
+<ul>
+<li class="fragment">My first data viz in 2015 was a simple bar chart. It wasn’t pretty. But it answered a specific question for a specific person.</li>
+<li class="fragment">Each project since has built on the last — the measles heatmap taught me how temporal structure reveals causes, the HPV project taught me how interactivity makes predictions feel real.</li>
+<li class="fragment">I didn’t plan this progression. I just kept following questions that interested me.</li>
+<li class="fragment">You don’t need to master all four quadrants on day one. But it helps to know they exist, and to notice when your story is missing one.</li>
+</ul>
+<div class="fragment">
+<div class="callout-box green">
+<p>Start with a clear question. Make it measurable. Sit with the data honestly. Say what you found. Pick a form that serves the finding.</p>
+<p>And when you’re ready — ask <strong>why it happened</strong> and <strong>what comes next</strong>.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2></h2>
+<div style="text-align:center; margin-top:2em;">
+<p><img data-src="bka-logo.png" width="300"></p>
+<p><span style="display:block; margin-top:0.8em; font-size:0.7em; color:#005CB9;"><strong>BK Advisors</strong></span></p>
+<p><span style="display:block; margin-top:0.3em; font-size:0.55em; color:#00A1DF;">Storytelling with Data</span></p>
+</div>
+
+</section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<p><img src="bka-logo.png" class="slide-logo"></p>
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="index_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="index_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="index_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="index_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="index_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="index_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="index_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="index_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="index_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="index_files/libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'fade',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'slide',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1280,
+
+        height: 720,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

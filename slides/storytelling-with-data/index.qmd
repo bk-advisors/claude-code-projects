@@ -1,0 +1,462 @@
+---
+title: "Storytelling with Data"
+subtitle: "From curiosity to causation — completing the scientific method loop"
+author: "BK Advisors"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    logo: bka-logo.png
+    slide-number: true
+    transition: fade
+    background-transition: slide
+    title-slide-attributes:
+      data-background-color: "#005CB9"
+    hash-type: number
+    center: false
+    width: 1280
+    height: 720
+---
+
+## The Chart That Started a Project
+
+Last year I read an [Our World in Data article](https://ourworldindata.org/measles-vaccines-save-lives) about measles vaccination. 94 million lives saved. Powerful number.
+
+. . .
+
+But what stopped me wasn't the number. It was a **heatmap** of US measles cases, 1929–2022.
+
+::: {.incremental}
+- Before the vaccine: a wall of color. Cases everywhere, every year, every state.
+- After 1963: the color drops off. A cliff. You could *see* the intervention working.
+- I thought: **what does this look like for Africa?**
+:::
+
+. . .
+
+::: {.callout-box}
+That question led to [a project](https://bk-advisors.github.io/africa-measles/). And it taught me something I keep re-learning: the most important part of a data story is the part that isn't data. It's the question that got you to open the dataset.
+:::
+
+## {background-color="#005CB9"}
+
+[Part I: Philosophy]{style="font-size:1.3em; font-weight:300;"}
+
+[Where stories begin]{style="font-size:0.8em; font-weight:300; opacity:0.85;"}
+
+## Where It Starts
+
+It all starts with **curiosity** — that itch of a question you want to answer.
+
+::: {.incremental}
+- A phenomenon you've observed in the world
+- A curiosity about what caused it
+- A desire to measure it and estimate what happens next
+- And eventually, a need to communicate it — to get it across to someone who can act on it
+:::
+
+. . .
+
+::: {.callout-box .green}
+**Diagnostic** (past) → **Descriptive** (present) → **Prescriptive** (action) → **Predictive** (future)
+
+Every data story worth telling has a backward-looking question, a present-tense description, a clear recommendation with a way to communicate it, and a forward-looking implication. Most courses focus on the middle two.
+:::
+
+## What's the Norm
+
+The standard analysis process:
+
+<div class="step-flow">
+<div class="step-item">Define Problem</div>
+<div class="step-arrow">→</div>
+<div class="step-item">Collect Data</div>
+<div class="step-arrow">→</div>
+<div class="step-item">Clean</div>
+<div class="step-arrow">→</div>
+<div class="step-item">Explore</div>
+<div class="step-arrow">→</div>
+<div class="step-item">Visualize</div>
+<div class="step-arrow">→</div>
+<div class="step-item">Report</div>
+</div>
+
+. . .
+
+::: {.callout-box .orange}
+It's fine when you're starting out. But it skips the curiosity, meaning, and creative side. You end up with dashboards nobody reads past the first page. I've made plenty of those myself.
+:::
+
+::: {.incremental}
+- It tells you *how* to get from data to chart
+- It doesn't tell you *why* you should care, *who* it's for, or *what* you want them to do
+:::
+
+## Start with an Audience of One
+
+Data visualization is complementary to good writing. The story comes first.
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box}
+**Morgan Housel** barely uses charts in his books, but you can't stop reading. He uses context, comparison, and anecdote to make you *care* about a number.
+:::
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**Start with one person** — a specific reader, colleague, or client. Ask: *What would make this person stop scrolling and actually read?*
+:::
+:::
+:::
+
+. . .
+
+Before you touch data, ask:
+
+1. **Who** am I making this for?
+2. **Why** should it matter to them?
+3. **What** will move them to act?
+
+## {background-color="#005CB9"}
+
+[Part II: Making a Story]{style="font-size:1.3em; font-weight:300;"}
+
+[Five steps I keep coming back to]{style="font-size:0.8em; font-weight:300; opacity:0.85;"}
+
+## [<span class="step-number">1</span> Find Your Question]{style="font-size:0.95em;"}
+
+Every data story starts with an itch. Something doesn't add up. Something surprises you.
+
+. . .
+
+Can you fill in this sentence?
+
+::: {.callout-box}
+"I am curious about **X**, so I will measure **Y** to see if **Z** is true."
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.example-block}
+[Topic (vague)]{.example-label .bad-example}
+
+"Measles in Africa"
+:::
+:::
+
+::: {.col}
+::: {.example-block}
+[Question (specific)]{.example-label .good-example}
+
+"Did the 2001 WHO/UNICEF initiative cause the dramatic decline in measles cases across African countries?"
+:::
+:::
+:::
+
+## [<span class="step-number teal">2</span> Make It Measurable]{style="font-size:0.95em;"}
+
+A question becomes answerable when you can translate it into **operations on data**.
+
+. . .
+
+| Vague | Specific |
+|-------|----------|
+| "How bad is measles in Africa?" | "How did cases per million change across countries, 1980–2023?" |
+| "Should PNG vaccinate for HPV?" | "What's the projected impact on cervical cancer if PNG achieves 80% coverage by 2030?" |
+
+. . .
+
+::: {.callout-box .green}
+Filter (which countries?) → Group (by what?) → Summarize (count, rate, ratio) → Compare (before/after, A vs. B)
+:::
+
+## [<span class="step-number orange">3</span> Analyze]{style="font-size:0.95em;"}
+
+Most findings come from four basic operations:
+
+::: {.incremental}
+1. **Filter** for extremes or subsets
+2. **Group** by meaningful categories
+3. **Summarize** with simple statistics
+4. **Compare** across groups or time
+:::
+
+. . .
+
+::: {.callout-box .orange}
+When analysis yields nothing interesting, don't reach for fancier tools. Go back and revisit the question. A better question beats a better algorithm. Every time.
+:::
+
+## [<span class="step-number green">4</span> Synthesize]{style="font-size:0.95em;"}
+
+Declare what you found — **in one sentence**.
+
+. . .
+
+::: {.callout-box}
+**The "so what?" test:** If you can't answer "so what?" in one sentence, you're still doing *exploration*, not *explanation*.
+:::
+
+. . .
+
+::: {.columns-equal}
+::: {.col}
+::: {.example-block}
+[Exploration]{.example-label .bad-example}
+
+"Here are 12 charts showing measles trends by country and year with various normalizations..."
+:::
+:::
+
+::: {.col}
+::: {.example-block}
+[Explanation]{.example-label .good-example}
+
+"Coordinated campaigns from 2001 drove a 90%+ decline in measles — but a handful of countries still carry most of the burden."
+:::
+:::
+:::
+
+## [<span class="step-number red">5</span> Choose Your Form]{style="font-size:0.95em;"}
+
+The chart type is the **last** decision, not the first.
+
+::: {.incremental}
+- Change over time? Line chart, heatmap, small multiples
+- Comparing categories? Bar chart, dot plot, table
+- Geographic patterns? Map, cartogram
+- A sequential story? Scrollytelling, annotated walkthrough
+:::
+
+. . .
+
+::: {.key-takeaway}
+**The form is the last decision. The question is the point.**
+
+A well-chosen chart amplifies a clear finding. No chart can rescue a finding that doesn't exist.
+:::
+
+## {background-color="#005CB9"}
+
+[Part III: The Missing Pieces]{style="font-size:1.3em; font-weight:300;"}
+
+[Diagnostic and predictive thinking]{style="font-size:0.8em; font-weight:300; opacity:0.85;"}
+
+## Most Data Stories Stop Here
+
+The five steps are the **prescriptive** mode — the *how*. Combined with description — the *what* — you can make good charts and clear reports.
+
+. . .
+
+But is that enough?
+
+::: {.callout-box}
+Descriptive + Prescriptive = here's the data, here's how to show it well
+:::
+
+. . .
+
+What I keep finding missing are the two bookends:
+
+::: {.incremental}
+- **Diagnostic**: Why did this happen? What's the causal chain?
+- **Predictive**: What will happen next? What are the scenarios?
+:::
+
+## The Diagnostic Lens
+
+[**"Why did this happen?"**]{style="color:#FA7650; font-size:1.1em;"}
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box .orange}
+**The physics side**
+
+Every effect has a cause. You don't just observe that an object accelerated — you identify the force and check whether the model holds. That habit followed me into data work.
+:::
+:::
+
+::: {.col}
+::: {.callout-box}
+**The consulting side**
+
+Clients don't want to know *what* happened. "Measles declined" is interesting. "Measles declined *because of* coordinated campaigns" is actionable.
+:::
+:::
+:::
+
+. . .
+
+The diagnosis is what turns a descriptive briefing into a strategic one.
+
+## Africa Measles Heatmap
+
+::: {.columns-equal}
+::: {.col}
+**The descriptive story:**
+
+Measles cases dropped 90%+ across Africa.
+
+. . .
+
+**The diagnostic story:**
+
+The 2001 WHO/UNICEF Measles Initiative marks a visible inflection point. Before 2001: high-burden red tiles everywhere. After 2001: a shift to blues and greens — but not uniformly.
+
+The temporal structure lets you *see* the intervention effect as a visual cliff. That cliff is the diagnosis.
+:::
+
+::: {.col}
+::: {.callout-box .green}
+**What the heatmap reveals:**
+
+- Countries with high SIA coverage saw faster declines
+- Countries with conflict or weak health systems lagged
+- The intervention effect is visible as a temporal cliff
+
+[See the project →](https://bk-advisors.github.io/africa-measles/){target="_blank"}
+:::
+:::
+:::
+
+## The Predictive Lens
+
+[**"What comes next?"**]{style="color:#3E9B6E; font-size:1.1em;"}
+
+::: {.columns-equal}
+::: {.col}
+::: {.callout-box .green}
+**The physics side**
+
+If you understand the mechanism, you can model the future. Newton's laws don't just explain why the ball fell — they tell you where it will land.
+:::
+:::
+
+::: {.col}
+::: {.callout-box}
+**The consulting side**
+
+Recommendations without projected impact are opinions with nice formatting. "80% coverage by 2030 projects a 65% reduction in cervical cancer deaths" — that actually gets funded.
+:::
+:::
+:::
+
+. . .
+
+Predictions are what drive decisions. Descriptions just set the scene.
+
+## HPV Vaccination in PNG
+
+::: {.columns-equal}
+::: {.col}
+**The recommendation:**
+
+Papua New Guinea should implement a national HPV vaccination program.
+
+. . .
+
+**The prediction:**
+
+PNG has one of the highest cervical cancer rates in the world. Without intervention, the burden grows with the population. With meaningful coverage, the data projects significant reductions.
+
+I chose scrollytelling because the prediction needs to be *felt*, not just read. As you scroll, the projected future unfolds.
+:::
+
+::: {.col}
+::: {.callout-box .teal}
+**Why scrollytelling for this one:**
+
+- The prediction unfolds as the reader scrolls
+- Different coverage scenarios are explorable
+- It's one thing to read "65% reduction" — another to watch it happen on screen
+
+[See the project →](https://bk-advisors.github.io/hpv-png-story/){target="_blank"}
+:::
+:::
+:::
+
+## {background-color="#005CB9"}
+
+[Completing the Loop]{style="font-size:1.3em; font-weight:300;"}
+
+[The full scientific method for data storytelling]{style="font-size:0.8em; font-weight:300; opacity:0.85;"}
+
+## Four Modes of Data Storytelling
+
+<div class="quadrant-diagram">
+<div class="quadrant-box q-diagnostic">
+<strong>Diagnostic</strong>
+<em>Why did this happen?</em><br>
+Backward-looking, causal
+</div>
+<div class="quadrant-box q-descriptive">
+<strong>Descriptive</strong>
+<em>What is happening?</em><br>
+Present state, the data itself
+</div>
+<div class="quadrant-box q-prescriptive">
+<strong>Prescriptive</strong>
+<em>What should we do?</em><br>
+Process and action
+</div>
+<div class="quadrant-box q-predictive">
+<strong>Predictive</strong>
+<em>What will happen next?</em><br>
+Forward-looking, modeled
+</div>
+</div>
+
+. . .
+
+Most frameworks do **Descriptive** + **Prescriptive** well. That's the five-step process — and it's where I started too.
+
+The best work I've seen also engages the bookends: **Diagnostic** + **Predictive**.
+
+## The Full Loop
+
+::: {.incremental}
+1. **What happened** — the data, the trend, the chart
+2. **Why it happened** — the causal story behind the numbers
+3. **What we recommend** — the action, the intervention
+4. **What we expect** — the projected impact, the stakes
+:::
+
+. . .
+
+::: {.key-takeaway}
+**Most data stories cover one or two of these. The best ones cover all four.**
+
+When you cover all four, you're not presenting data — you're building an argument. And arguments change minds in ways that dashboards don't.
+:::
+
+## The Compound Effect
+
+::: {.incremental}
+- My first data viz in 2015 was a simple bar chart. It wasn't pretty. But it answered a specific question for a specific person.
+- Each project since has built on the last — the measles heatmap taught me how temporal structure reveals causes, the HPV project taught me how interactivity makes predictions feel real.
+- I didn't plan this progression. I just kept following questions that interested me.
+- You don't need to master all four quadrants on day one. But it helps to know they exist, and to notice when your story is missing one.
+:::
+
+. . .
+
+::: {.callout-box .green}
+Start with a clear question. Make it measurable. Sit with the data honestly. Say what you found. Pick a form that serves the finding.
+
+And when you're ready — ask **why it happened** and **what comes next**.
+:::
+
+##
+
+::: {style="text-align:center; margin-top:2em;"}
+![](bka-logo.png){width="300px"}
+
+[**BK Advisors**]{style="display:block; margin-top:0.8em; font-size:0.7em; color:#005CB9;"}
+
+[Storytelling with Data]{style="display:block; margin-top:0.3em; font-size:0.55em; color:#00A1DF;"}
+:::
