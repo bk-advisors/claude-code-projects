@@ -60,6 +60,15 @@ Each standalone deck also includes supplementary lecture materials:
 | `r-for-management-consultants/` | 9-chapter R programming course (tidyverse, ggplot2, Quarto reports) for consultants with no prior coding experience | MNH facility datasets (5 countries, 200 facilities) | Prerequisite for inference-and-intervention |
 | `storytelling-with-data/` | Four-mode data storytelling framework (Diagnostic, Descriptive, Prescriptive, Predictive) with blog post, slides, and R tutorial | Africa measles heatmap, HPV-PNG scrollytelling | — |
 
+### `storytelling-with-data/` Structure
+
+This deck has three Quarto outputs (slides, blog post, R tutorial) and uses an organized subfolder layout:
+
+- `generators/` — Python generator scripts (`generate_essay.py`, etc.). Run with `python storytelling-with-data/generators/generate_essay.py`
+- `generated/` — All generator output (`.docx`, `.png`). Gitignored; regenerate by running the scripts
+- `reference/` — Research notes (`Storytelling with data 2026.docx`) and editing guide (`ai-writing-tells.md`)
+- Root contains: `index.qmd` (slides), `blog.qmd` (blog post), `tutorial.qmd` (R tutorial), `tutorial-analysis.R`, `speaker-notes.md`, SCSS themes, logo
+
 ## Shared Assets (`slide-master/`)
 
 - `BKA_Enhanced_Logo_Apr2025.png` — Canonical BK Advisors logo

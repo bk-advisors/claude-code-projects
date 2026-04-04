@@ -1,0 +1,11 @@
+# Quarto render output
+*.html
+*_files/
+.quarto/
+
+# R artifacts
+.Rhistory
+.Rproj.user/
+
+# Generated lecture materials (regenerate via generators/)
+generated/

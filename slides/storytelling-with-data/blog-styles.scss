@@ -10,37 +10,122 @@ $bka-orange:      #FA7650;
 $bka-amber:       #F8A623;
 $bka-yellow:      #FED141;
 
+// Design system
+$bka-navy:        #242852;
+$bka-body:        #2D3748;
+
+// Border-radius system
+$radius-sm:  6px;
+$radius-md:  10px;
+$radius-lg:  16px;
+
 // Bootstrap / Quarto website theme overrides
-$body-color:            #333333;
+$body-bg:               #FAFBFC;
+$body-color:            $bka-body;
 $link-color:            $bka-blue;
-$headings-color:        $bka-blue;
+$headings-color:        $bka-navy;
 $code-color:            $bka-teal;
 
-// Fonts (matching PPTX template)
-$font-family-sans-serif: "Calibri", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-$headings-font-family:   "Calibri Light", "Calibri", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+// Typography — Inter with Calibri fallback
+$font-family-sans-serif: "Inter", "Calibri", "Segoe UI", system-ui, sans-serif;
+$headings-font-family:   "Inter", "Calibri Light", "Calibri", system-ui, sans-serif;
 
 /*-- scss:rules --*/
 
+// Load Inter from Google Fonts
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+// ===== Global typography =====
+body {
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: $bka-navy;
+}
+
 // ===== Page title =====
 .title {
-  border-bottom: 3px solid $bka-light-blue;
-  padding-bottom: 0.3em;
+  padding-bottom: 0.4em;
+  margin-bottom: 0.2em;
+  position: relative;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    margin-top: 12px;
+    background: linear-gradient(90deg, $bka-blue, $bka-light-blue);
+    border-radius: 2px;
+  }
+}
+
+.subtitle {
+  color: #64748B;
+  font-weight: 400;
 }
 
 // ===== Readable width =====
 .content {
-  max-width: 780px;
+  max-width: 760px;
   margin: 0 auto;
+}
+
+// ===== Section headings =====
+h2 {
+  margin-top: 2em;
+  padding-bottom: 0.3em;
+  position: relative;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 2px;
+    margin-top: 8px;
+    background: linear-gradient(90deg, $bka-blue, transparent);
+    border-radius: 2px;
+  }
+}
+
+// ===== Code blocks =====
+pre {
+  border-radius: $radius-md;
+  border-left: 3px solid $bka-blue;
+  background: #F1F3F5 !important;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.03);
+  padding: 1em 1.2em;
+}
+
+code {
+  font-size: 0.88em;
+}
+
+// Inline code
+p code, li code {
+  background: rgba($bka-blue, 0.06);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.88em;
 }
 
 // ===== Callout boxes =====
 .callout-box {
   background: linear-gradient(135deg, rgba($bka-blue, 0.04), rgba($bka-light-blue, 0.06));
   border-left: 4px solid $bka-blue;
-  border-radius: 6px;
+  border-radius: $radius-sm;
   padding: 1em 1.2em;
-  margin: 1em 0;
+  margin: 1.2em 0;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .callout-box.green {
@@ -61,12 +146,14 @@ $headings-font-family:   "Calibri Light", "Calibri", "Segoe UI", "Helvetica Neue
 // ===== Key concept cards =====
 .key-concept {
   background: white;
-  border: 1px solid rgba($bka-blue, 0.15);
+  border: 1px solid rgba($bka-blue, 0.1);
   border-left: 4px solid $bka-blue;
-  border-radius: 6px;
+  border-radius: $radius-sm;
   padding: 1em 1.2em;
-  margin: 1em 0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  margin: 1.2em 0;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.03);
 
   h4 {
     color: $bka-blue;
@@ -82,11 +169,14 @@ $headings-font-family:   "Calibri Light", "Calibri", "Segoe UI", "Helvetica Neue
 
 // ===== Key takeaway =====
 .key-takeaway {
-  background: $bka-blue;
+  background: linear-gradient(135deg, $bka-blue, darken($bka-blue, 8%));
   color: white;
-  border-radius: 8px;
-  padding: 1em 1.5em;
+  border-radius: $radius-md;
+  padding: 1.2em 1.5em;
   margin: 1.5em 0;
+  box-shadow:
+    0 2px 4px rgba($bka-blue, 0.2),
+    0 8px 24px rgba($bka-blue, 0.1);
 
   strong {
     font-size: 1.1em;
@@ -110,37 +200,68 @@ $headings-font-family:   "Calibri Light", "Calibri", "Segoe UI", "Helvetica Neue
   font-weight: 700;
   margin-right: 0.4em;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba($bka-blue, 0.2);
 }
 
-.step-number.green  { background-color: $bka-green; }
-.step-number.teal   { background-color: $bka-teal; }
-.step-number.orange { background-color: $bka-orange; }
-.step-number.red    { background-color: $bka-red; }
+.step-number.green  { background-color: $bka-green; box-shadow: 0 2px 6px rgba($bka-green, 0.2); }
+.step-number.teal   { background-color: $bka-teal; box-shadow: 0 2px 6px rgba($bka-teal, 0.2); }
+.step-number.orange { background-color: $bka-orange; box-shadow: 0 2px 6px rgba($bka-orange, 0.2); }
+.step-number.red    { background-color: $bka-red; box-shadow: 0 2px 6px rgba($bka-red, 0.2); }
 
 // ===== Blockquotes =====
 blockquote {
   border-left: 4px solid $bka-light-blue;
-  padding: 0.5em 1.2em;
-  margin: 1.2em 0;
-  color: #555;
+  padding: 0.8em 1.4em;
+  margin: 1.5em 0;
+  color: #4A5568;
   font-style: italic;
   background: rgba($bka-light-blue, 0.04);
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 $radius-sm $radius-sm 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 // ===== Figure captions =====
 figcaption, .figure-caption {
-  color: #777;
-  font-size: 0.9em;
+  color: #64748B;
+  font-size: 0.88em;
   font-style: italic;
   text-align: center;
-  margin-top: 0.5em;
+  margin-top: 0.6em;
 }
 
 // ===== Table enhancements =====
-.table th {
-  background: $bka-blue;
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: $radius-md;
+  overflow: hidden;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.03);
+  margin: 1.2em 0;
+  width: 100%;
+}
+
+.table th, thead th {
+  background: $bka-navy;
   color: white;
+  font-weight: 600;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 0.9em;
+}
+
+.table td, tbody td {
+  padding: 8px 14px;
+  border-bottom: 1px solid #E8E8E8;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: rgba($bka-blue, 0.03);
 }
 
 // ===== Quadrant diagram (four modes — web version) =====
@@ -155,11 +276,21 @@ figcaption, .figure-caption {
 
 .quadrant-box {
   background: white;
-  border-radius: 8px;
+  border-radius: $radius-md;
   padding: 1em 1.2em;
   text-align: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.04);
   border-top: 4px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.1),
+      0 8px 20px rgba(0, 0, 0, 0.06);
+  }
 
   strong {
     display: block;
@@ -172,3 +303,19 @@ figcaption, .figure-caption {
 .quadrant-box.q-descriptive { border-top-color: $bka-light-blue; }
 .quadrant-box.q-prescriptive { border-top-color: $bka-green; }
 .quadrant-box.q-predictive  { border-top-color: $bka-teal; }
+
+// ===== TOC sidebar polish =====
+#TOC a {
+  color: $bka-body;
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: $bka-blue;
+  }
+}
+
+#TOC a.active {
+  color: $bka-blue;
+  font-weight: 600;
+}
