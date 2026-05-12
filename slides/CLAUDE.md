@@ -64,9 +64,10 @@ Each standalone deck also includes supplementary lecture materials:
 
 This deck has three Quarto outputs (slides, blog post, R tutorial) and uses an organized subfolder layout:
 
+- `data/` — Real WHO/World Bank measles dataset (`africa_measles.csv`: 46 countries, 1980-2023)
 - `generators/` — Python generator scripts (`generate_essay.py`, etc.). Run with `python storytelling-with-data/generators/generate_essay.py`
 - `generated/` — All generator output (`.docx`, `.png`). Gitignored; regenerate by running the scripts
-- `reference/` — Research notes (`Storytelling with data 2026.docx`) and editing guide (`ai-writing-tells.md`)
+- `reference/` — Research notes, editing guide (`ai-writing-tells.md`), and `design-principles.md` (UX/SCSS reference for all BKA projects)
 - Root contains: `index.qmd` (slides), `blog.qmd` (blog post), `tutorial.qmd` (R tutorial), `tutorial-analysis.R`, `speaker-notes.md`, SCSS themes, logo
 
 ## Shared Assets (`slide-master/`)
@@ -89,9 +90,11 @@ Colors extracted from the template's theme XML:
 | Amber | `#F8A623` |
 | Yellow | `#FED141` |
 
-Fonts: **Calibri Light** (headings), **Calibri** (body).
+Fonts: **Inter** (primary, loaded from Google Fonts), **Calibri Light** / **Calibri** (fallback).
 
-These are defined as SCSS variables (`$bka-blue`, `$bka-light-blue`, etc.) in each deck's `custom.scss`.
+Additional design tokens: `$bka-navy: #242852` (headings), `$bka-body: #2D3748` (body text), `$body-bg: #FAFBFC` (off-white background). Border-radius system: `$radius-sm: 6px`, `$radius-md: 10px`, `$radius-lg: 16px`.
+
+These are defined as SCSS variables in each deck's `custom.scss` and website `styles.scss`. See `storytelling-with-data/reference/design-principles.md` for the full UX design system.
 
 ## Quarto/Reveal.js Conventions
 
@@ -100,7 +103,7 @@ These are defined as SCSS variables (`$bka-blue`, `$bka-light-blue`, etc.) in ea
 - CSS grid layouts break inside reveal.js — use inline HTML `<table>` for diagram layouts instead
 - The `filter: brightness(0) invert(1)` CSS trick for logo color inversion produces artifacts — avoid it; use white-background closing slides with the logo as-is
 - Reusable CSS component classes are defined in `custom.scss`: `.callout-box`, `.example-block`, `.step-number`, `.key-takeaway`, `.columns-equal`, `.good-example`, `.bad-example`
-- **Overflow fix:** All `custom.scss` files include `overflow-y: auto` on `.reveal .slides section` to prevent callout boxes and key-takeaway boxes from being clipped at the bottom of content-heavy slides. Component sizing (padding, margins, font-size) was tightened to minimize the need for scrolling.
+- **Overflow fix:** All `custom.scss` files include `overflow: hidden` on `.reveal .slides` (parent container) and `overflow-y: auto; overflow-x: hidden; overflow-wrap: break-word` on `.reveal .slides section`. The parent-level `overflow: hidden` is critical — section-level overflow doesn't work alone because reveal.js applies CSS transforms to sections.
 
 ## Multi-Chapter Website Courses
 
